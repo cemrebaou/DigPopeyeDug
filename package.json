@@ -1,0 +1,19 @@
+{
+  "name": "yildiz-yakala",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "lib": "cp node_modules/phaser/dist/phaser.min.js node_modules/@capacitor/core/dist/capacitor.js www/lib/ && cp node_modules/@capacitor-community/admob/dist/plugin.js www/lib/admob.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "phaser": "^4.2.1"
+  },
+  "private": true
+}
