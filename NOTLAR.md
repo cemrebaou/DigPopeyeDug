@@ -8,6 +8,9 @@
 ### 2. Arayüz ikonları
 - Kullanıcı yapay zekayla buton/ikon setini üretecek, gelince oyuna yerleştirilecek.
 
+### 3. Pompa hortumu alttan çıksın
+- Hortum düşmana Reis'in üst kısmından değil, pompanın alt ucundan (yer hizasından) gitsin.
+
 ## Yapılanlar
 
 ## Vazgeçilenler
