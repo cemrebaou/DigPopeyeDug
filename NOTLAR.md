@@ -2,12 +2,13 @@
 
 ## Bekleyenler
 
-### 1. Basılı tutulan pompa
-- Pompa bir düşmana bağlandıysa tekrar tekrar basmaya gerek kalmasın.
-- Buton basılı tutuldukça şişirme devam etsin, düşman patlayana kadar.
-- Parmak kalkınca şişirme dursun.
-
-### 2. Yeniden başla butonu
+### 1. Yeniden başla butonu
 - Oyun sırasında bölümü baştan başlatan bir buton olsun.
 
+### 2. Arayüz ikonları
+- Kullanıcı yapay zekayla buton/ikon setini üretecek, gelince oyuna yerleştirilecek.
+
 ## Yapılanlar
+
+## Vazgeçilenler
+- Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
