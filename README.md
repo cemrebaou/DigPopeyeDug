@@ -1,6 +1,6 @@
 # DigPopeyeDug
 
-HTML5 (Phaser) mobil oyun. Capacitor ile Android'e, AdMob reklamlarıyla derlenir.
+Kum fizikli kazı oyunu. HTML5 (Phaser), Capacitor ile Android + AdMob.
 
 ## Klasörler
 - `www/` – oyunun kendisi (HTML/JS). GitHub Pages'te web önizlemesi olarak yayınlanır.
@@ -18,3 +18,7 @@ Her güncellemeden sonra **Releases → Son sürüm** sayfasında:
 ## Yayın imzası (bir kez)
 Repo → Settings → Secrets and variables → Actions içine:
 `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`
+
+## Bölüm tasarımı
+Bölümler `www/js/levels.js` içinde, 20x24 karakterlik haritalar:
+`.` boşluk, `d` toprak, `s` kum, `#` kaya, `k` kapak, `R` Reis, `c` yengeç, `o` ahtapot.
