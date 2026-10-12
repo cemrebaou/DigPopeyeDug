@@ -1,7 +1,7 @@
 // Oyunun tüm ayarları burada. AdMob ID'lerini buraya yaz.
 window.OYUN_CONFIG = {
-  oyunAdi: "Yıldız Yakala",
-  paketAdi: "com.jawk.yildizyakala", // Play Store'a yüklendikten sonra DEĞİŞTİRİLEMEZ
+  oyunAdi: "DigPopeyeDug",
+  paketAdi: "com.jawk.digpopeyedug", // Play Store'a yüklendikten sonra DEĞİŞTİRİLEMEZ
 
   reklam: {
     // true iken Google'ın test reklamları gösterilir (tıklamak güvenli).

@@ -1,4 +1,4 @@
-# Yıldız Yakala
+# DigPopeyeDug
 
 HTML5 (Phaser) mobil oyun. Capacitor ile Android'e, AdMob reklamlarıyla derlenir.
 
