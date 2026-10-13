@@ -85,7 +85,6 @@ class Oyun extends Phaser.Scene {
     this.kapakDegisti = true;
     this.hortum = this.add.graphics().setDepth(4);
 
-    this.golgeler = this.add.graphics().setDepth(2.5);
     this.reis.spr = this.add.image(this.reis.x, this.reis.y, "reis_walk0").setOrigin(0.5, 1).setScale(REIS_OLCEK).setDepth(5);
     this.dusmanlar.forEach((d) => {
       d.spr = this.add.image(d.x, d.y, d.tip.ad + "_walk0").setOrigin(0.5, 1).setScale(DUSMAN_OLCEK).setDepth(3);
@@ -489,20 +488,6 @@ class Oyun extends Phaser.Scene {
     }
     this.kumCiz();
     this.kapakVurgu(zaman);
-    this.golgeCiz();
-  }
-
-  // Ayak altında yumuşak gölge: karakterleri zemine oturtur
-  golgeCiz() {
-    const g = this.golgeler;
-    g.clear();
-    const ciz = (e, gen) => {
-      if (!e.yerde || e.olu) return;
-      g.fillStyle(0x000000, 0.18).fillEllipse(e.x, e.y - 2, gen * 1.15, 16);
-      g.fillStyle(0x000000, 0.22).fillEllipse(e.x, e.y - 2, gen * 0.8, 10);
-    };
-    ciz(this.reis, 70);
-    for (const d of this.dusmanlar) ciz(d, d.w * (1 + d.sisme * 0.12));
   }
 
   // Kapak kenarları: sadece kapak değişince yeniden çizilir, yanıp sönme alpha ile
@@ -571,11 +556,11 @@ class Oyun extends Phaser.Scene {
       // 3D boru: kontur, gövde, alt gölge, üst parlama
       const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
       const hg = this.hortum;
-      hg.lineStyle(7, 0x1e2226, 1).strokePoints(nok);
-      hg.lineStyle(5, 0x7d8790, 1).strokePoints(nok);
-      hg.lineStyle(2, 0x4a5259, 1).strokePoints(kay(1.4));
-      hg.lineStyle(1.5, 0xc4ccd3, 1).strokePoints(kay(-1));
-      hg.lineStyle(1, 0xf2f5f7, 0.9).strokePoints(kay(-1.5));
+      hg.lineStyle(7, 0x121518, 1).strokePoints(nok);
+      hg.lineStyle(5, 0x4f575e, 1).strokePoints(nok);
+      hg.lineStyle(2, 0x2c3237, 1).strokePoints(kay(1.4));
+      hg.lineStyle(1.5, 0x8d969e, 1).strokePoints(kay(-1));
+      hg.lineStyle(1, 0xc9d0d6, 0.85).strokePoints(kay(-1.5));
     }
   }
 
