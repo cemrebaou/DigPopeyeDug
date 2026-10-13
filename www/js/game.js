@@ -30,6 +30,8 @@ const SPRITELAR = [
   "doku_kum", "doku_tahta"
 ];
 
+const SESLER = ["ses_pompa", "ses_sisme", "ses_yengec_pop", "ses_ahtapot_pop", "ses_kazma"];
+
 const DUSMAN_TIP = {
   c: { ad: "crab", hiz: 65, w: 81, h: 63 },
   o: { ad: "octo", hiz: 48, w: 99, h: 66 }
@@ -68,6 +70,12 @@ class Oyun extends Phaser.Scene {
 
   preload() {
     SPRITELAR.forEach((k) => this.load.image(k, "assets/" + k + ".png"));
+    SESLER.forEach((k) => this.load.audio(k, "assets/ses/" + k + ".mp3"));
+  }
+
+  // Ses çal (dosya yoksa ya da tarayıcı engellerse sessizce geç)
+  ses(key, ayar) {
+    try { if (this.cache.audio.exists(key)) this.sound.play(key, ayar); } catch (e) {}
   }
 
   create() {
@@ -456,6 +464,7 @@ class Oyun extends Phaser.Scene {
     if (this.durum !== "oyun" || this.reis.olu) return;
     const r = this.reis;
     r.pompa = 0.35;
+    this.ses("ses_pompa", { volume: 0.7 });
     let hedef = null, en = 1e9;
     for (const d of this.dusmanlar) {
       if (d.olu) continue;
@@ -467,6 +476,7 @@ class Oyun extends Phaser.Scene {
     if (!hedef) return;
     hedef.sisme++;
     hedef.sonPompa = this.time.now;
+    if (hedef.sisme < 4) this.ses("ses_sisme", { volume: 0.8, detune: (hedef.sisme - 1) * 250 });
     if (hedef.sisme >= 4) this.patlat(hedef, 200);
   }
 
@@ -479,6 +489,7 @@ class Oyun extends Phaser.Scene {
 
   patlat(d, puan) {
     d.olu = true;
+    this.ses(d.tip.ad === "octo" ? "ses_ahtapot_pop" : "ses_yengec_pop", { volume: 0.9 });
     // patlama, şişmiş gövdenin ortasında olsun (yarım karakter boyu yukarıda)
     d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.5).setY(d.y - (d.tip.ad === "octo" ? 58 : 70));
     this.tweens.add({ targets: d.spr, alpha: 0, scale: DUSMAN_OLCEK * 1.3, duration: 600, delay: 150, onComplete: () => d.spr.destroy() });
@@ -550,6 +561,7 @@ class Oyun extends Phaser.Scene {
       r.yon = yon;
       const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * dt, true);
       r.kazdi = sonuc.kazdi;
+      if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) { this.sonKazmaSes = zaman; this.ses("ses_kazma", { volume: 0.55, detune: Phaser.Math.Between(-150, 150) }); }
       r.kare += dt * (r.kazdi ? 8 : 12);
       tex = this.kareler.reis_walk[Math.floor(r.kare) % 6];
     } else if (r.pompa > 0) {
