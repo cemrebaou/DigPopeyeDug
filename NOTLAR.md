@@ -11,6 +11,10 @@
 ### 3. Pompa hortumu alttan çıksın
 - Hortum düşmana Reis'in üst kısmından değil, pompanın alt ucundan (yer hizasından) gitsin.
 
+### 4. Kum puslu görünüyor
+- Kum küçük bir dokudan 6 kat büyütülüp yumuşatılıyor + oyun telefonda düşük çözünürlükten büyütülüyor.
+- Çözüm: kumu keskin (piksel piksel) çizmek, oyunu telefonun ekran çözünürlüğünde çizdirmek.
+
 ## Yapılanlar
 
 ## Vazgeçilenler
