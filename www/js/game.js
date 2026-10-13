@@ -139,9 +139,9 @@ class Oyun extends Phaser.Scene {
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
     this.src = {
       [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.98), sinir(b * 0.86))),
-      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.58), sinir(g * 0.4), sinir(b * 0.3))),
-      [KAYA]: yap(kum, (r, g, b) => { const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.42; return renk32(sinir(v), sinir(v * 0.98), sinir(v * 1.06)); }),
-      [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.25), sinir(g * 1.05), sinir(b * 0.85))),
+      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.74), sinir(g * 0.5), sinir(b * 0.33))), // canlı kahve
+      [KAYA]: yap(kum, (r, g, b) => { const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.72; return renk32(sinir(v * 0.96), sinir(v), sinir(v * 1.08)); }), // parlak gri
+      [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
       magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
     };
   }
