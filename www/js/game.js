@@ -19,7 +19,7 @@ const REIS_HIZ = 200, KAZMA_HIZ = 110;
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
-  "reis_pump0", "reis_pump1",
+  "reis_pump0", "reis_pump1", "reis_dus",
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
@@ -33,7 +33,7 @@ const SPRITELAR = [
 
 const SESLER = [
   "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
-  "ses_kazma", "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
+  "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
   "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi"
 ];
 
@@ -49,13 +49,6 @@ function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 // RGBA (little-endian) -> Uint32
 const renk32 = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
-// Kum dokusundan parlak gri kaya rengi
-function kayaRenk(r, g, b) {
-  const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.72;
-  const s = (x) => (x > 255 ? 255 : x) | 0;
-  return renk32(s(v * 0.96), s(v), s(v * 1.08));
-}
-
 // Rengi f ile çarp (ışık/gölge)
 function carp(c, f) {
   let r = (c & 255) * f, g = ((c >>> 8) & 255) * f, b = ((c >>> 16) & 255) * f;
@@ -166,10 +159,11 @@ class Oyun extends Phaser.Scene {
       return out;
     };
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
+    const orijinal = yap(kum, (r, g, b) => renk32(r, g, b));
     this.src = {
-      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.98), sinir(b * 0.86))),
-      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.74), sinir(g * 0.5), sinir(b * 0.33))), // canlı kahve
-      [KAYA]: yap(kum, (r, g, b) => kayaRenk(r, g, b)), // parlak gri
+      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.74), sinir(b * 0.82))), // dökülecek kum: somon pembe
+      [TOPRAK]: orijinal, // sabit kalan zemin: orijinal sarı kum
+      [KAYA]: orijinal,
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
       magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
     };
@@ -183,9 +177,6 @@ class Oyun extends Phaser.Scene {
     const cx = cv.getContext("2d");
     const bas = -(ALAN_H % img.height);
     for (let y = bas; y < yuk; y += img.height) for (let x = 0; x < W; x += img.width) cx.drawImage(img, x, y);
-    const id = cx.getImageData(0, 0, W, yuk), d = id.data, u = new Uint32Array(d.buffer);
-    for (let i = 0, p = 0; i < u.length; i++, p += 4) u[i] = kayaRenk(d[p], d[p + 1], d[p + 2]);
-    cx.putImageData(id, 0, 0);
     const key = "altkaya" + Date.now();
     this.textures.addCanvas(key, cv);
     this.add.image(0, ALT, key).setOrigin(0).setDepth(0);
@@ -606,7 +597,7 @@ class Oyun extends Phaser.Scene {
       if (r.kazdi) r.kazZaman = zaman;
       if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) {
         this.sonKazmaSes = zaman;
-        this.ses(sonuc.tur === "toprak" ? "ses_kazma" : "ses_kum_kazma", { volume: 0.7, detune: Phaser.Math.Between(-120, 120) });
+        this.ses("ses_kum_kazma", { volume: 0.7, detune: Phaser.Math.Between(-120, 120) });
       }
       r.kare += dt * (r.kazdi ? 8 : 12);
       const kaziyor = zaman - (r.kazZaman || -1e9) < 250;
@@ -622,13 +613,15 @@ class Oyun extends Phaser.Scene {
     } else {
       tex = "reis_walk0";
     }
-    if (!r.yerde) tex = "reis_fall2";
+    const havada = !r.yerde;
+    if (havada) tex = "reis_dus";
     if (r.yerde) { r.sonGuvenliX = r.x; r.sonGuvenliY = r.y; }
 
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
     else r.spr.setAlpha(1);
 
-    r.spr.setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
+    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y - 58);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
