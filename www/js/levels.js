@@ -9,6 +9,7 @@
 //   c  yengeç
 //   o  ahtapot
 //   b  uçan kuş (eğilerek altından geç)
+//   > < ^ v  pervane (sağa/sola/yukarı/aşağı rüzgar)
 // Eksik satırlar otomatik kaya ile doldurulur.
 
 const HAVA = "....................";
@@ -318,6 +319,124 @@ window.BOLUMLER.push(
       "d..................d",
       "d..o.....c.........d",
       ZEMIN
+    ]
+  }
+);
+
+// ---- RÜZGAR BÖLÜMLERİ (16-20) ----
+// > < ^ v = pervane (sağa / sola / yukarı / aşağı üfler). Başta KAPALI, dokununca açılır/kapanır.
+// Rüzgar Reis'i, düşmanları ve kumu iter. Pervanenin yüksekliği, hangi boydaki şeyleri etkileyeceğini belirler:
+// zemindeki pervane yürüyenleri (Reis, yengeç, ahtapot) ve kumu iter, kuş daha yukarıdan uçtuğu için etkilenmez.
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 16",
+    ipucu: "Pervaneye dokun, rüzgar essin!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "........R...........",
+      "d..ddddddddddddddddd",
+      "d..ddddddddddddddddd",
+      "d..ddddddddddddddddd",
+      "#..#################",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d....>.....c.......d",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#",
+      "###############....#"
+    ]
+  },
+  {
+    ad: "Bölüm 17",
+    ipucu: "Pervanenin üstüne dur, yukarı süzül!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ZEMIN,
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..o...........b...d",
+      "########...#########",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d........^..R.....cd",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 18",
+    ipucu: "Pervane kumu savurur, çukura döker!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ZEMIN,
+      "d.....sssssss......d",
+      "d.....sssssss......d",
+      "d.....sssssss......d",
+      "dR.>..sssssss......d",
+      "#############...####",
+      "############......##",
+      "############......##",
+      "############......##",
+      "############.c..o.##",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 19",
+    ipucu: "Kapak + rüzgar + kuş: dikkat!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "..........R.........",
+      "d..dddddddsssssddddd",
+      "d..dddddddsssssddddd",
+      "d..dddddddsssssddddd",
+      "#..#######kkkkk#####",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d....>..c...b..o...d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 20",
+    ipucu: "Hepsini birden kullan!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ZEMIN,
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d......>.sssco.....d",
+      "###...###kkk##....##",
+      "d............#....##",
+      "d............#....##",
+      "d............#....##",
+      "d............#....##",
+      "d...^..R....b#....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##",
+      "##############....##"
     ]
   }
 );

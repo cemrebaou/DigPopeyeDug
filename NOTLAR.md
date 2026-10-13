@@ -32,3 +32,11 @@
 - Eğilme: buton (aşağı ok) bir kez basınca eğik kalır, tekrar basınca (yukarı ok) kalkar. Eğikken kazılmaz, hız x0.8, hitbox 100 px (ayakta 126). Tavan alçaksa kalkılamaz. Pompalayınca otomatik kalkar. Sprite: `reis_egil0-3`.
 - Bölüm 11-15: kuş bölümleri. `##` asılı bloklar altında 3 satırlık alçak tünel (kuş giremez, eğik Reis girer).
 - Butonlar sıkıştırıldı: sol, sağ, eğil, pompa (170/170/170/180 px).
+
+## v0.16 — Rüzgar / pervane (bölüm 16-20)
+- Haritada `>` `<` `^` `v` = pervane (sağa/sola/yukarı/aşağı). Başta kapalı, dokununca açılır/kapanır. Sprite: `fan0-7` (dönüş kareleri). Kapalıyken gri tonlu ve duruyor.
+- Rüzgar bölgesi: pervane merkezinden başlayan ışınlar (en çok 84 kum tanesi), kaya/toprak/kapağa çarpınca durur, kum rüzgarı durdurmaz. Bant yüksekliği pervane boyu (~96 px); pervanenin yüksekliği hangi varlıkların etkileneceğini belirler (zemindeki pervane yürüyenleri iter, kuş etkilenmez; yüksek pervane kuşu iter).
+- Etki: Reis/yengeç/ahtapot yatayda 110 px/sn itilir, yukarı rüzgarda 200 px/sn süzülür (yana dönebilir), aşağı rüzgarda düşüş hızlanır, kuş aşağı rüzgarda alçalır. Kum taneleri savrulur (yukarı rüzgarda havada asılı kalır).
+- Haritanın altı artık açık: çukurdan (24. satıra kadar açık sütun) düşen ölür (düşman +150 puan).
+- Bölümler: 16 çukura itme, 17 yukarı süzülme, 18 kumu çukura savurma, 19 kapak+rüzgar+kuş, 20 karışık final.
+- Bölümlerde `ipucu` alanı ekran ipucunu değiştirir.

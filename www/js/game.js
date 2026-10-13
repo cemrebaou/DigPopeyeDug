@@ -14,8 +14,10 @@ const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner rek
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
 const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
-const REIS_BOY = 126, REIS_EGIK_BOY = 90; // hitbox yükseklikleri (ayaktan yukarı px)
-const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.9;                       // eğik yürüme hızı çarpanı
+const REIS_BOY = 126, REIS_EGIK_BOY = 80; // hitbox yükseklikleri (ayaktan yukarı px)
+const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.8;                       // eğik yürüme hızı çarpanı
+const RUZGAR_HIZ = 110, RUZGAR_MENZIL = 84, PERVANE_OLCEK = 0.65; // rüzgar: itme hızı (px/sn), en uzun menzil (kum tanesi), pervane görsel ölçeği
+const PERVANE_YON = { ">": "r", "<": "l", "^": "u", "v": "d" };
 const KUS_HAVA = 110;                       // kuşun hitbox alt kenarının zeminden yüksekliği (ayakta çarpar, eğikken geçer)
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
@@ -31,6 +33,7 @@ const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran",
+  ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => "fan" + i),
   ...[0, 1, 2, 3].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
   ...[0, 1, 2, 3].map((i) => "bird_walk" + i),
   ...[0, 1, 2, 3].map((i) => "bird_pump" + i), "bird_pop0",
@@ -136,6 +139,10 @@ class Oyun extends Phaser.Scene {
       d.spr = this.add.image(d.x, d.tip.ucar ? d.y - d.h / 2 : d.y, d.tip.ad + "_walk0").setOrigin(0.5, d.tip.ucar ? 0.5 : 1).setScale(DUSMAN_OLCEK).setDepth(3);
     });
 
+    this.pervaneKur();
+    this.ruzgarCizim = this.add.graphics().setDepth(6);
+    this.ruzgarSay = 0;
+
     this.arayuz();
     this.kontroller();
     this.tumunuKirlet();
@@ -211,6 +218,8 @@ class Oyun extends Phaser.Scene {
     this.durgun = new Uint8Array(GX * GY); // kum tanesi kaç karedir hareketsiz
     this.kirli = new Uint8Array(GX * GY);
     this.dusmanlar = [];
+    this.pervaneler = [];
+    this.ruzgarYon = new Uint8Array(GX * GY);
     this.reis = null;
     const satirlar = bolum.harita.slice();
     while (satirlar.length < SATIR) satirlar.push("#".repeat(SUTUN));
@@ -231,6 +240,7 @@ class Oyun extends Phaser.Scene {
         }
         const px = c * KARE_PX + KARE_PX / 2, py = OY + (r + 1) * KARE_PX;
         if (ch === "R") this.reis = { x: px, y: py, w: 45, h: REIS_BOY, egik: false, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
+        if (PERVANE_YON[ch]) this.pervaneler.push({ yon: PERVANE_YON[ch], px, py, acik: false });
         if (DUSMAN_TIP[ch]) {
           const t = DUSMAN_TIP[ch];
           this.dusmanlar.push({ tip: t, x: px, y: t.ucar ? py - KUS_HAVA : py, zemin: py, faz: Math.random() * 6.28, w: t.w, h: t.h, vy: 0, yon: Math.random() < 0.5 ? -1 : 1, kare: 0, sisme: 0, sonPompa: 0, olu: false });
@@ -254,7 +264,7 @@ class Oyun extends Phaser.Scene {
   arayuz() {
     this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
     this.skorYazi = this.add.text(W / 2 + 40, 34, "Skor: " + this.skor, { ...YAZI, fontSize: "38px", color: "#ffe066" }).setOrigin(0.5, 0).setDepth(10);
-    this.ipucu = this.add.text(W / 2, 100, "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
+    this.ipucu = this.add.text(W / 2, 100, BOLUMLER[this.bolum].ipucu || "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
 
     // Yeniden başla
@@ -327,6 +337,122 @@ class Oyun extends Phaser.Scene {
     return true;
   }
 
+  // ---------- Rüzgar / pervane ----------
+  pervaneKur() {
+    const fw = 121 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK; // görsel boyutu (79 x 96)
+    this.pervaneler.forEach((p) => {
+      const yatayMi = p.yon === "r" || p.yon === "l";
+      p.cx = p.px;
+      if (yatayMi) p.cy = p.py - fh / 2;                 // zemine oturur
+      else if (p.yon === "u") p.cy = p.py - fw / 2;       // zeminden yukarı üfler
+      else p.cy = p.py - KARE_PX + fw / 2;                // tavana asılı, aşağı üfler
+      p.yari = fh * 0.42;                                 // rüzgar bandının yarı genişliği (px)
+      p.on = fw / 2;                                      // ön kenara uzaklık (px)
+      const spr = this.add.image(p.cx, p.cy, "fan0").setScale(PERVANE_OLCEK).setDepth(3).setTint(0x9a9a9a);
+      if (p.yon === "l") spr.setFlipX(true);
+      if (p.yon === "u") spr.setAngle(-90);
+      if (p.yon === "d") spr.setAngle(90);
+      spr.setInteractive({ useHandCursor: true });
+      spr.on("pointerdown", () => this.pervaneTikla(p));
+      p.spr = spr;
+      p.hucre = new Int32Array(0); p.menzil = [];
+      p.isin = [];
+      for (let n = 0; n < 16; n++) p.isin.push({ a: Math.random() * 2 - 1, t: Math.random(), v: 0.5 + Math.random() * 0.6 });
+    });
+  }
+
+  pervaneTikla(p) {
+    if (this.durum !== "oyun") return;
+    p.acik = !p.acik;
+    p.spr.setTint(p.acik ? 0xffffff : 0x9a9a9a);
+    this.ruzgarKur();
+  }
+
+  // Açık pervanelerin rüzgar bölgesini çıkarır (kayaya/toprağa/kapağa çarpan ışın durur; kum rüzgarı durdurmaz)
+  ruzgarKur() {
+    this.ruzgarYon.fill(0);
+    const kod = { r: 1, l: 2, u: 3, d: 4 };
+    for (const p of this.pervaneler) {
+      p.hucre = new Int32Array(0); p.menzil = [];
+      if (!p.acik) continue;
+      const gx0 = Math.floor(p.cx / C), gy0 = Math.floor((p.cy - OY) / C), bh = Math.floor(p.yari / C);
+      const dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0, dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
+      p.adim = dx + dy * GX;
+      const liste = [];
+      for (let o = -bh; o <= bh; o++) {
+        let x = gx0 + (dx ? 0 : o), y = gy0 + (dy ? 0 : o), n = 0;
+        for (let k = 0; k < RUZGAR_MENZIL; k++, x += dx, y += dy) {
+          if (x < 0 || x >= GX || y < 0 || y >= GY) break;
+          const i = y * GX + x, h = this.g[i];
+          if (h !== BOS && h !== KUM) break;
+          liste.push(i); this.ruzgarYon[i] = kod[p.yon]; n++;
+        }
+        p.menzil.push(n * C);
+      }
+      p.hucre = Int32Array.from(liste);
+    }
+  }
+
+  ruzgarGuncelle(dt, zaman) {
+    if (!this.pervaneler.length) return;
+    this.ruzgarSay++;
+    const aktif = this.pervaneler.some((p) => p.acik);
+    if (aktif && this.ruzgarSay % 8 === 0) this.ruzgarKur();
+    const g = this.ruzgarCizim;
+    g.clear();
+    for (const p of this.pervaneler) {
+      p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
+      if (!p.acik) continue;
+      const dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0, dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
+      const nx = dy ? 1 : 0, ny = dx ? 1 : 0; // yana doğru birim vektör
+      for (const s of p.isin) {
+        s.t += dt * s.v;
+        if (s.t > 1) { s.t = 0; s.a = Math.random() * 2 - 1; s.v = 0.5 + Math.random() * 0.6; }
+        const bi = Math.round((s.a + 1) / 2 * (p.menzil.length - 1));
+        const uz = p.menzil[bi] || 0;
+        if (uz < p.on + 20) continue;
+        const bas = p.on + s.t * (uz - p.on), alfa = Math.sin(Math.PI * s.t) * 0.34;
+        const pts = [];
+        for (let j = 0; j <= 6; j++) {
+          const d = bas - 56 * j / 6;
+          if (d < p.on) continue;
+          const yan = s.a * p.yari + Math.sin(d * 0.07 + s.t * 10) * 3.5;
+          pts.push({ x: p.cx + dx * d + nx * yan, y: p.cy + dy * d + ny * yan });
+        }
+        if (pts.length < 2) continue;
+        g.lineStyle(3.2, 0xffffff, alfa).strokePoints(pts);
+        g.lineStyle(1.4, 0xd8f0ff, Math.min(1, alfa * 1.4)).strokePoints(pts);
+      }
+    }
+  }
+
+  // Varlığın merkezindeki rüzgar: 0 yok, 1 sağ, 2 sol, 3 yukarı, 4 aşağı
+  ruzgarKuvvet(e) {
+    const cx = Math.floor(e.x / C), cy = Math.floor((e.y - e.h / 2 - OY) / C);
+    if (cx < 0 || cx >= GX || cy < 0 || cy >= GY) return 0;
+    return this.ruzgarYon[cy * GX + cx];
+  }
+
+  yukari(e, dy) {
+    let n = dy;
+    while (n > 0) {
+      const adim = Math.min(1, n);
+      const b = this.govde(e, 0, -adim);
+      for (let x = b.x0; x <= b.x1; x++) if (this.katiMi(x, b.y0)) { e.vy = 0; return; }
+      e.y -= adim; n -= adim;
+    }
+  }
+
+  // Yürüyen / düşen varlıklar (Reis, yengeç, ahtapot) için rüzgar etkisi
+  ruzgarUygula(e, dt) {
+    const k = this.ruzgarKuvvet(e);
+    if (!k) return 0;
+    if (k === 1 || k === 2) this.yatay(e, (k === 1 ? 1 : -1) * RUZGAR_HIZ * dt, false);
+    else if (k === 3) { this.yukari(e, 200 * dt); e.vy = 0; e.yerde = false; }
+    else if (k === 4 && !e.yerde) e.vy = Math.min(e.vy + 2200 * dt, 900);
+    return k;
+  }
+
   kapakAc(sx, sy) {
     const yigin = [[sx, sy]];
     let n = 0;
@@ -345,7 +471,7 @@ class Oyun extends Phaser.Scene {
   hucre(x, y) {
     if (x < 0 || x >= GX) return KAYA;
     if (y < 0) return BOS;
-    if (y >= GY) return KAYA;
+    if (y >= GY) return BOS; // haritanın altı açık: oradan düşen ölür (çukur bölümleri)
     return this.g[y * GX + x];
   }
   katiMi(x, y) { return this.hucre(x, y) !== BOS; }
@@ -454,6 +580,7 @@ class Oyun extends Phaser.Scene {
         const x = sagdan ? GX - 1 - k : k;
         const i = y * GX + x;
         if (g[i] !== KUM) continue;
+        if (this.ruzgarYon[i] === 3) continue; // yukarı üfleyen rüzgarda kum havada asılı kalır
         const a = i + GX;
         let hedef = -1;
         if (g[a] === BOS && !eng[a]) hedef = a;
@@ -475,6 +602,24 @@ class Oyun extends Phaser.Scene {
         } else if (si[i] !== i && ++this.durgun[i] > 20) {
           // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
           si[i] = i; this.kirlet(i);
+        }
+      }
+    }
+    // Rüzgar kum tanelerini savurur
+    for (const p of this.pervaneler) {
+      if (!p.acik) continue;
+      const lst = p.hucre, st = p.adim;
+      for (let n = lst.length - 1; n >= 0; n--) {
+        const i = lst[n];
+        if (g[i] !== KUM || Math.random() > 0.7) continue;
+        const x = i % GX;
+        if ((st === 1 && x === GX - 1) || (st === -1 && x === 0)) continue;
+        const t = i + st;
+        if (t < 0 || t >= GX * GY) continue;
+        if (g[t] === BOS && !eng[t]) {
+          g[t] = KUM; si[t] = si[i]; g[i] = BOS;
+          this.durgun[t] = 0;
+          this.kirlet(i); this.kirlet(t);
         }
       }
     }
@@ -593,6 +738,7 @@ class Oyun extends Phaser.Scene {
     this.sonZaman = simdi;
     this.kare++;
     this.kumAdim();
+    this.ruzgarGuncelle(dt, zaman);
     if (this.durum === "oyun") {
       this.reisGuncelle(dt, zaman);
       this.dusmanGuncelle(dt, zaman);
@@ -635,7 +781,7 @@ class Oyun extends Phaser.Scene {
     if (this.egilBtn) { const k = r.egik ? "btn_kalk" : "btn_egil"; if (this.egilBtn.texture.key !== k) this.egilBtn.setTexture(k); }
     this.yercekimi(r, dt);
 
-    // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar
+    // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar  (rüzgar bunun ardından uygulanır)
     if (!r.yerde) {
       r.havada = (r.havada || 0) + dt;
       if (r.havada > 0.12 && !this.dusmeSes && this.cache.audio.exists("ses_dusme")) {
@@ -646,11 +792,14 @@ class Oyun extends Phaser.Scene {
       r.havada = 0;
     }
 
+    const rk = this.ruzgarUygula(r, dt);
+    if (rk === 3) r.havada = 0;
     let yon = 0;
     if (this.tuslar.sol) yon = -1;
     if (this.tuslar.sag) yon = 1;
     r.pompa = Math.max(0, r.pompa - dt);
     if (!r.yerde && yon !== 0) r.yon = yon; // havadayken de basılan yöne bakar
+    if (rk === 3 && yon !== 0) this.yatay(r, yon * REIS_HIZ * 0.6 * this.hizCarpan * dt, false); // yukarı rüzgarda havada yana süzülür
 
     let tex;
     if (yon !== 0 && r.pompa <= 0 && r.yerde && r.egik) {
@@ -782,6 +931,14 @@ class Oyun extends Phaser.Scene {
 
       if (d.y > ALT + 100) { d.olu = true; d.spr.destroy(); this.puanEkle(150, d.x, ALT); continue; }
 
+      // rüzgar
+      const rk = this.ruzgarKuvvet(d);
+      if (d.tip.ucar) {
+        if (rk === 1 || rk === 2) this.yatay(d, (rk === 1 ? 1 : -1) * RUZGAR_HIZ * dt, false);
+        if (rk === 4) d.hoverEk = Math.max((d.hoverEk || 0) - 160 * dt, -85);
+        else if (d.hoverEk) d.hoverEk += Math.sign(-d.hoverEk) * Math.min(Math.abs(d.hoverEk), 70 * dt);
+      } else if (rk) this.ruzgarUygula(d, dt);
+
       // sönme: pompalama bıraktıktan 0,5 sn sonra başlar, sonra hızlıca (0,35 sn'de bir kademe) söner
       if (d.sisme > 0 && zaman - d.sonPompa > 500 && zaman - (d.sonSonme || 0) > 350) { d.sisme--; d.sonSonme = zaman; this.ses("ses_sonme", { volume: 0.6 }); }
 
@@ -793,7 +950,7 @@ class Oyun extends Phaser.Scene {
       if (d.tip.ucar) {
         // Uçan kuş: aynı hizadaysa Reis'e doğru süzülür, geçtikten sonra (280 px) dönüp tekrar gelir; duvara çarpınca döner
         d.faz += dt * 3.2;
-        d.y = d.zemin - KUS_HAVA + Math.sin(d.faz) * 2.5;
+        d.y = d.zemin - KUS_HAVA - (d.hoverEk || 0) + Math.sin(d.faz) * 2.5;
         const gor = !r.olu && Math.abs(r.y - d.zemin) < 70 && !this.aradaDuvarVarMi(d, r);
         if (gor && !d.hedefAldi) { d.yon = Math.sign(r.x - d.x) || d.yon; d.hedefAldi = true; }
         if (gor && (r.x - d.x) * d.yon < -280) d.yon *= -1;
