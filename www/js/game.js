@@ -263,9 +263,9 @@ class Oyun extends Phaser.Scene {
 
   kontroller() {
     this.input.addPointer(3);
-    // Butonlar: ok ve pompa %30 büyük, oklar arası mesafe 2 kat
+    // Butonlar: ok ve pompa %30 büyük, oklar arası boşluk 2 kat (20→40 px)
     this.ikonButon(95, KONTROL_Y, "btn_sol", 166, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
-    this.ikonButon(391, KONTROL_Y, "btn_sag", 166, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
+    this.ikonButon(301, KONTROL_Y, "btn_sag", 166, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
     this.ikonButon(612, KONTROL_Y, "btn_pompa", 177, () => this.pompala());
 
     // Kapaklara dokunma
