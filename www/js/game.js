@@ -31,7 +31,11 @@ const SPRITELAR = [
   "doku_kum", "doku_tahta"
 ];
 
-const SESLER = ["ses_pompa", "ses_sisme", "ses_yengec_pop", "ses_ahtapot_pop", "ses_kazma"];
+const SESLER = [
+  "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
+  "ses_kazma", "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
+  "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi"
+];
 
 const DUSMAN_TIP = {
   c: { ad: "crab", hiz: 65, w: 81, h: 63 },
@@ -79,7 +83,19 @@ class Oyun extends Phaser.Scene {
     try { if (this.cache.audio.exists(key)) this.sound.play(key, ayar); } catch (e) {}
   }
 
+  // Düşme sesi: sadece havadayken çalar, yere değince kısa sürede kısılıp durur
+  dusmeSesiDurdur() {
+    const s = this.dusmeSes;
+    if (!s) return;
+    this.dusmeSes = null;
+    try {
+      this.tweens.add({ targets: s, volume: 0, duration: 80, onComplete: () => { try { s.stop(); s.destroy(); } catch (e) {} } });
+    } catch (e) {}
+  }
+
   create() {
+    if (this.dusmeSes) { try { this.dusmeSes.stop(); this.dusmeSes.destroy(); } catch (e) {} }
+    this.dusmeSes = null; this.kumSayac = 0; this.sonKumSes = 0; this.sonKazmaSes = 0;
     this.durum = "oyun";
     this.kare = 0;
     this.tuslar = { sol: false, sag: false };
@@ -283,7 +299,7 @@ class Oyun extends Phaser.Scene {
       this.g[i] = BOS; this.kirlet(i); n++;
       yigin.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
     }
-    if (n) { this.kapakDegisti = true; this.cameras.main.shake(120, 0.004); }
+    if (n) { this.kapakDegisti = true; this.cameras.main.shake(120, 0.004); this.ses("ses_kapak", { volume: 0.8 }); }
   }
 
   // ---------- Izgara yardımcıları ----------
@@ -341,7 +357,7 @@ class Oyun extends Phaser.Scene {
   yatay(e, dx, kazar) {
     const yon = Math.sign(dx);
     let kalan = Math.abs(dx);
-    let kazdi = false;
+    let kazdi = false, tur = null;
     while (kalan > 0) {
       const d = Math.min(1, kalan) * yon;
       const b = this.govde(e, d);
@@ -361,12 +377,16 @@ class Oyun extends Phaser.Scene {
           for (let y = b.y0 - tir; y < b.y0; y++) for (let x = b.x0; x <= b.x1; x++) if (this.katiMi(x, y)) bos = false;
           if (bos) { e.y -= tir * C; continue; }
         }
-        return { durdu: true, kazdi };
+        return { durdu: true, kazdi, tur };
       }
-      for (const y of kazilacak) { const i = y * GX + sx; this.g[i] = BOS; this.kirlet(i); kazdi = true; }
+      for (const y of kazilacak) {
+        const i = y * GX + sx;
+        if (this.g[i] === TOPRAK) tur = "toprak"; else if (!tur) tur = "kum";
+        this.g[i] = BOS; this.kirlet(i); kazdi = true;
+      }
       e.x += d; kalan -= 1;
     }
-    return { durdu: false, kazdi };
+    return { durdu: false, kazdi, tur };
   }
 
   // ---------- Kum fiziği ----------
@@ -379,6 +399,7 @@ class Oyun extends Phaser.Scene {
         for (let x = Math.max(0, b.x0); x <= Math.min(GX - 1, b.x1); x++) eng[y * GX + x] = 1;
     }
     const sagdan = (this.kare & 1) === 1;
+    let hareket = 0;
     for (let y = GY - 2; y >= 0; y--) {
       for (let k = 0; k < GX; k++) {
         const x = sagdan ? GX - 1 - k : k;
@@ -401,11 +422,19 @@ class Oyun extends Phaser.Scene {
           g[i] = BOS;
           this.durgun[hedef] = 0;
           this.kirlet(i); this.kirlet(hedef);
+          hareket++;
         } else if (si[i] !== i && ++this.durgun[i] > 20) {
           // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
           si[i] = i; this.kirlet(i);
         }
       }
+    }
+    // Kum akış sesi: yeterince kum aktığında (kapak açılınca, göçünce) çalar
+    this.kumSayac = (this.kumSayac || 0) * 0.93 + hareket;
+    const simdi = this.time.now;
+    if (this.durum === "oyun" && this.kare > 60 && this.kumSayac > 40 && simdi - (this.sonKumSes || 0) > 1300) {
+      this.sonKumSes = simdi; this.kumSayac = 0;
+      this.ses(Math.random() < 0.5 ? "ses_kum_dokul" : "ses_kum_dok", { volume: 0.6 });
     }
   }
 
@@ -553,6 +582,17 @@ class Oyun extends Phaser.Scene {
     }
     this.yercekimi(r, dt);
 
+    // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar
+    if (!r.yerde) {
+      r.havada = (r.havada || 0) + dt;
+      if (r.havada > 0.12 && !this.dusmeSes && this.cache.audio.exists("ses_dusme")) {
+        try { this.dusmeSes = this.sound.add("ses_dusme", { volume: 0.6 }); this.dusmeSes.play(); } catch (e) { this.dusmeSes = null; }
+      }
+    } else {
+      if ((r.havada || 0) > 0.12) { this.dusmeSesiDurdur(); this.ses("ses_dustu", { volume: 0.8 }); }
+      r.havada = 0;
+    }
+
     let yon = 0;
     if (this.tuslar.sol) yon = -1;
     if (this.tuslar.sag) yon = 1;
@@ -564,9 +604,18 @@ class Oyun extends Phaser.Scene {
       const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * dt, true);
       r.kazdi = sonuc.kazdi;
       if (r.kazdi) r.kazZaman = zaman;
-      if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) { this.sonKazmaSes = zaman; this.ses("ses_kazma", { volume: 0.55, detune: Phaser.Math.Between(-150, 150) }); }
+      if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) {
+        this.sonKazmaSes = zaman;
+        this.ses(sonuc.tur === "toprak" ? "ses_kazma" : "ses_kum_kazma", { volume: 0.7, detune: Phaser.Math.Between(-120, 120) });
+      }
       r.kare += dt * (r.kazdi ? 8 : 12);
       const kaziyor = zaman - (r.kazZaman || -1e9) < 250;
+      // adım sesi: yürüme döngüsünde her yarım turda bir (kazarken yok)
+      const adimNo = Math.floor(r.kare / 3);
+      if (adimNo !== r.sonAdim) {
+        r.sonAdim = adimNo;
+        if (!kaziyor) this.ses("ses_adim" + Phaser.Math.Between(1, 3), { volume: 0.6 });
+      }
       tex = kaziyor ? this.kareler.reis_kaz[Math.floor(r.kare) % 6] : this.kareler.reis_walk[Math.floor(r.kare) % 6];
     } else if (r.pompa > 0) {
       tex = this.kareler.reis_pump[Math.floor(zaman / 120) % 2];
@@ -629,7 +678,7 @@ class Oyun extends Phaser.Scene {
       if (d.y > ALT + 100) { d.olu = true; d.spr.destroy(); this.puanEkle(150, d.x, ALT); continue; }
 
       // sönme: pompalama bıraktıktan 0,5 sn sonra başlar, sonra hızlıca (0,35 sn'de bir kademe) söner
-      if (d.sisme > 0 && zaman - d.sonPompa > 500 && zaman - (d.sonSonme || 0) > 350) { d.sisme--; d.sonSonme = zaman; }
+      if (d.sisme > 0 && zaman - d.sonPompa > 500 && zaman - (d.sonSonme || 0) > 350) { d.sisme--; d.sonSonme = zaman; this.ses("ses_sonme", { volume: 0.6 }); }
 
       if (d.sisme > 0) {
         d.spr.setTexture(d.tip.ad + "_pump" + Math.min(3, d.sisme)).setPosition(d.x, d.y);
@@ -665,6 +714,8 @@ class Oyun extends Phaser.Scene {
     this.durum = "olum";
     this.reis.olu = true;
     this.reis.vy = -400;
+    this.dusmeSesiDurdur();
+    this.ses("ses_olme", { volume: 0.9 });
     this.time.delayedCall(1200, () => this.bitisEkrani(false));
   }
 
@@ -672,6 +723,7 @@ class Oyun extends Phaser.Scene {
     if (this.durum !== "oyun") return;
     this.durum = "kazandi";
     kayitYaz("dpd_bolum", this.bolum + 1);
+    this.ses("ses_kazandi", { volume: 0.9 });
     this.time.delayedCall(700, () => this.bitisEkrani(true));
   }
 
