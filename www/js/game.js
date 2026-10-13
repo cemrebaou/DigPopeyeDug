@@ -14,8 +14,8 @@ const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner rek
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
 const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
-const REIS_BOY = 126, REIS_EGIK_BOY = 80; // hitbox yükseklikleri (ayaktan yukarı px)
-const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.8;                       // eğik yürüme hızı çarpanı
+const REIS_BOY = 126, REIS_EGIK_BOY = 90; // hitbox yükseklikleri (ayaktan yukarı px)
+const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.9;                       // eğik yürüme hızı çarpanı
 const KUS_HAVA = 110;                       // kuşun hitbox alt kenarının zeminden yüksekliği (ayakta çarpar, eğikken geçer)
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
