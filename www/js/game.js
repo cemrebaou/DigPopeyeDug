@@ -479,7 +479,8 @@ class Oyun extends Phaser.Scene {
 
   patlat(d, puan) {
     d.olu = true;
-    d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.7);
+    // patlama, şişmiş gövdenin ortasında olsun (yarım karakter boyu yukarıda)
+    d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.5).setY(d.y - 70);
     this.tweens.add({ targets: d.spr, alpha: 0, scale: DUSMAN_OLCEK * 1.3, duration: 600, delay: 150, onComplete: () => d.spr.destroy() });
     this.puanEkle(puan, d.x, d.y - d.h);
     this.cameras.main.shake(100, 0.005);
