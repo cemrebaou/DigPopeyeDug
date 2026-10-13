@@ -23,7 +23,7 @@ const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
 // Boşta bekleme animasyonu zamanlaması (ms)
 // Pompa görselinde hortumun çıktığı nokta (görsel pikseli): [merkezden yatay, tabandan yukarı]
-const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 21], reis_pump1: [39, 21] };
+const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 9], reis_pump1: [39, 15] };
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
 const IDLE_SABIRSIZ_MIN = 150, IDLE_SABIRSIZ_MAX = 260;            // sabırsız pozlar (2<->3): pıt pıt pıt, ikisi de kısa ve eşit
