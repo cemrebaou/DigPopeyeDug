@@ -556,24 +556,24 @@ class Oyun extends Phaser.Scene {
       // 3D boru: kontur, gövde, alt gölge, üst parlama
       const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
       const hg = this.hortum;
-      // hortum: pompa butonundaki koyu kömür grisi
-      hg.lineStyle(7, 0x0e0d0d, 1).strokePoints(nok);
-      hg.lineStyle(5, 0x383634, 1).strokePoints(nok);
-      hg.lineStyle(2, 0x1e1d1c, 1).strokePoints(kay(1.4));
-      hg.lineStyle(1.5, 0x6f6b67, 1).strokePoints(kay(-1));
-      hg.lineStyle(1, 0xa29d97, 0.7).strokePoints(kay(-1.5));
+      // hortum: pompa butonundaki koyu kömür grisi (ince)
+      hg.lineStyle(4, 0x0e0d0d, 1).strokePoints(nok);
+      hg.lineStyle(2.8, 0x383634, 1).strokePoints(nok);
+      hg.lineStyle(1.2, 0x1e1d1c, 1).strokePoints(kay(0.8));
+      hg.lineStyle(0.9, 0x6f6b67, 1).strokePoints(kay(-0.6));
+      hg.lineStyle(0.6, 0xa29d97, 0.7).strokePoints(kay(-0.9));
       // düşman tarafındaki uç: koyu sarı pirinç başlık
       const t = egri.getTangent(1);
-      const L = 13, bx = ex - t.x * L, by = ey - t.y * L;
+      const L = 7.5, bx = ex - t.x * L, by = ey - t.y * L;
       const nx = -t.y, ny = t.x;
-      hg.lineStyle(11, 0x2e2010, 1).lineBetween(bx, by, ex, ey);
-      hg.lineStyle(9, 0x9a7638, 1).lineBetween(bx, by, ex, ey);
-      hg.lineStyle(3, 0x5e4520, 1).lineBetween(bx + nx * 2.5, by + ny * 2.5, ex + nx * 2.5, ey + ny * 2.5);
-      hg.lineStyle(2.5, 0xd8b673, 1).lineBetween(bx - nx * 2, by - ny * 2, ex - nx * 2, ey - ny * 2);
-      hg.lineStyle(1, 0xf4e2b0, 0.9).lineBetween(bx - nx * 3, by - ny * 3, ex - nx * 3, ey - ny * 3);
+      hg.lineStyle(6.4, 0x2e2010, 1).lineBetween(bx, by, ex, ey);
+      hg.lineStyle(5.2, 0x9a7638, 1).lineBetween(bx, by, ex, ey);
+      hg.lineStyle(1.8, 0x5e4520, 1).lineBetween(bx + nx * 1.4, by + ny * 1.4, ex + nx * 1.4, ey + ny * 1.4);
+      hg.lineStyle(1.4, 0xd8b673, 1).lineBetween(bx - nx * 1.1, by - ny * 1.1, ex - nx * 1.1, ey - ny * 1.1);
+      hg.lineStyle(0.6, 0xf4e2b0, 0.9).lineBetween(bx - nx * 1.7, by - ny * 1.7, ex - nx * 1.7, ey - ny * 1.7);
       // halka
-      const hx = bx + t.x * 4, hy = by + t.y * 4;
-      hg.lineStyle(2, 0x4a3518, 1).lineBetween(hx + nx * 4.5, hy + ny * 4.5, hx - nx * 4.5, hy - ny * 4.5);
+      const hx = bx + t.x * 2.3, hy = by + t.y * 2.3;
+      hg.lineStyle(1.2, 0x4a3518, 1).lineBetween(hx + nx * 2.6, hy + ny * 2.6, hx - nx * 2.6, hy - ny * 2.6);
     }
   }
 
