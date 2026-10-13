@@ -16,10 +16,15 @@ const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 const REIS_OLCEK = 0.585 * 0.75, DUSMAN_OLCEK = 0.63;
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
+// Boşta bekleme animasyonu zamanlaması (ms)
+const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
+const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
+const IDLE_SABIRSIZ_BEKLEME_MIN = 500, IDLE_SABIRSIZ_BEKLEME_MAX = 1100; // poz 2<->3 arası bekleme
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran",
+  ...[0, 1, 2, 3].map((i) => "reis_idle" + i),
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
@@ -631,8 +636,25 @@ class Oyun extends Phaser.Scene {
         if (!kaziyor) this.ses("ses_adim" + Phaser.Math.Between(1, 3), { volume: 0.6 });
       }
       tex = kaziyor ? this.kareler.reis_kaz[Math.floor(r.kare) % 6] : this.kareler.reis_walk[Math.floor(r.kare) % 6];
+      r.idleSure = 0;
     } else if (r.pompa > 0) {
       tex = this.kareler.reis_pump[Math.floor(zaman / 120) % 2];
+      r.idleSure = 0;
+    } else if (r.yerde) {
+      // Boşta bekleme: ilk iki poz arasında aralıklarla geçiş yapar (peş peşe değil).
+      // Uzun süre kıpırdamazsa sabırsızlanıp ayağını yere vurma moduna (3-4) geçer.
+      r.idleSure = (r.idleSure || 0) + dt * 1000;
+      const sabirsiz = r.idleSure > IDLE_SABIR_ESIGI;
+      if (r.idleDegisim === undefined || zaman > r.idleDegisim || r.idleSabirsizDi !== sabirsiz) {
+        r.idlePoz = r.idlePoz === 0 ? 1 : 0;
+        r.idleSabirsizDi = sabirsiz;
+        const minB = sabirsiz ? IDLE_SABIRSIZ_BEKLEME_MIN : IDLE_BEKLEME_MIN;
+        const maxB = sabirsiz ? IDLE_SABIRSIZ_BEKLEME_MAX : IDLE_BEKLEME_MAX;
+        r.idleDegisim = zaman + Phaser.Math.Between(minB, maxB);
+      }
+      tex = sabirsiz
+        ? (r.idlePoz === 0 ? "reis_idle2" : "reis_idle3")
+        : (r.idlePoz === 0 ? "reis_idle0" : "reis_idle1");
     } else {
       tex = "reis_walk0";
     }
