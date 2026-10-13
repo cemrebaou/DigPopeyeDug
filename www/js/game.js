@@ -588,6 +588,7 @@ class Oyun extends Phaser.Scene {
     if (this.tuslar.sol) yon = -1;
     if (this.tuslar.sag) yon = 1;
     r.pompa = Math.max(0, r.pompa - dt);
+    if (!r.yerde && yon !== 0) r.yon = yon; // havadayken de basılan yöne bakar
 
     let tex;
     if (yon !== 0 && r.pompa <= 0 && r.yerde) {
