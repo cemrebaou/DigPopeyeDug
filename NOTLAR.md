@@ -13,6 +13,7 @@
 - Karakterlerin altındaki gri gölge kaldırıldı.
 - Yeni çakıllı kum dokusu. Butonların arkasındaki tahta kaldırıldı, gri kaya kesintisiz aşağı devam ediyor.
 - Pompa hortumu ince, pompa butonundaki koyu kömür grisi; düşman ucunda koyu sarı pirinç başlık.
+- Düşman sönmesi: pompalamayı bırakınca 0,5 sn bekler, sonra 0,35 sn'de bir kademe hızlı söner.
 
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.

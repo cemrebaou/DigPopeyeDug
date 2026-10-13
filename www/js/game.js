@@ -611,7 +611,8 @@ class Oyun extends Phaser.Scene {
 
       if (d.y > ALT + 100) { d.olu = true; d.spr.destroy(); this.puanEkle(150, d.x, ALT); continue; }
 
-      if (d.sisme > 0 && zaman - d.sonPompa > 1500) { d.sisme--; d.sonPompa = zaman; }
+      // sönme: pompalama bıraktıktan 0,5 sn sonra başlar, sonra hızlıca (0,35 sn'de bir kademe) söner
+      if (d.sisme > 0 && zaman - d.sonPompa > 500 && zaman - (d.sonSonme || 0) > 350) { d.sisme--; d.sonSonme = zaman; }
 
       if (d.sisme > 0) {
         d.spr.setTexture(d.tip.ad + "_pump" + Math.min(3, d.sisme)).setPosition(d.x, d.y);
