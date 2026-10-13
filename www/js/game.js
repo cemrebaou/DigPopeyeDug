@@ -13,7 +13,7 @@ const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner rek
 
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
-const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
+const REIS_OLCEK = 0.585 * 0.75, DUSMAN_OLCEK = 0.63;
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
 
@@ -211,14 +211,14 @@ class Oyun extends Phaser.Scene {
           this.srcI[i] = i;
         }
         const px = c * KARE_PX + KARE_PX / 2, py = OY + (r + 1) * KARE_PX;
-        if (ch === "R") this.reis = { x: px, y: py, w: 45, h: 126, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
+        if (ch === "R") this.reis = { x: px, y: py, w: 34, h: 95, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
         if (DUSMAN_TIP[ch]) {
           const t = DUSMAN_TIP[ch];
           this.dusmanlar.push({ tip: t, x: px, y: py, w: t.w, h: t.h, vy: 0, yon: Math.random() < 0.5 ? -1 : 1, kare: 0, sisme: 0, sonPompa: 0, olu: false });
         }
       }
     }
-    if (!this.reis) this.reis = { x: 60, y: OY, w: 45, h: 126, vy: 0, yon: 1, yerde: false, kare: 0, pompa: 0, olu: false };
+    if (!this.reis) this.reis = { x: 60, y: OY, w: 34, h: 95, vy: 0, yon: 1, yerde: false, kare: 0, pompa: 0, olu: false };
 
     // Mağara arka planı: başlangıçta üstünde dolu bir şey olan boş kareler
     this.magara = new Uint8Array(GX * GY);
