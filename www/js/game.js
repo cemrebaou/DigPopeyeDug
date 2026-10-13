@@ -19,7 +19,7 @@ const REIS_HIZ = 200, KAZMA_HIZ = 110;
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
-  "reis_pump0", "reis_pump1", "reis_dus",
+  "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran",
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
@@ -237,6 +237,13 @@ class Oyun extends Phaser.Scene {
 
     // Yeniden başla
     this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor }));
+
+    // Tam ekran (sadece tarayıcıda; telefondaki uygulamada zaten tam ekran)
+    if (!Ads.native && this.sys.game.device.fullscreen.available) {
+      this.ikonButon(W - 56 - 98, 62, "btn_tamekran", 84, () => {
+        if (this.scale.isFullscreen) this.scale.stopFullscreen(); else this.scale.startFullscreen();
+      });
+    }
   }
 
   // Resimli buton: basınca küçülür

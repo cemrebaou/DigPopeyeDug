@@ -78,3 +78,143 @@ window.BOLUMLER = [
     ]
   }
 ];
+
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 4",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "dddssssddddddd..dddd",
+      "dddssssddddddd..dddd",
+      "dddssssddddddd..dddd",
+      "###kkkk#######..####",
+      "d..................d",
+      "d..................d",
+      "d.......ssss.......d",
+      "d.......ssss.....c.d",
+      "########kkkk########",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d.......o..........d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 5",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".R..................",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "################..##",
+      "d....dd....dd......d",
+      "d....dd....dd......d",
+      "d....dd....dd......d",
+      "d.c..dd.o..ddc.....d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 6",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "dsssdddsssdddsssdd..",
+      "dsssdddsssdddsssdd..",
+      "dsssdddsssdddsssdd..",
+      "#kkk###kkk###kkk##..",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d.c.....o.....c....d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 7",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "################..##",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d........c.........d",
+      "##..################",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d........o.........d",
+      "##############..####",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d...c...........o..d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 8",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".R..................",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "############..######",
+      "d..................d",
+      "d..................d",
+      "d..sssss......sssssd",
+      "d..sssss.c....sssssd",
+      "###kkkkk######kkkkk#",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d....o.........c...d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 9",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".R..................",
+      "dddssssddddddddddd..",
+      "dddssssddddddddddd..",
+      "dddssssddddddddddd..",
+      "###kkkk###########..",
+      "d......dd.....dd....",
+      "d......dd.....dd....",
+      "d......dd.....dd....",
+      "d.c..c.dd..o..dd....",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 10",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "...................R",
+      "dd..dsssdddddddsssdd",
+      "dd..dsssdddddddsssdd",
+      "dd..dsssdddddddsssdd",
+      "##..#kkk#######kkk##",
+      "d..................d",
+      "d..................d",
+      "d.........ssss.....d",
+      "d......c..ssss..c..d",
+      "##########kkkk######",
+      "d.....dd...........d",
+      "d.....dd...........d",
+      "d.....dd...........d",
+      "d.c...dd...o....o..d",
+      ZEMIN
+    ]
+  }
+);

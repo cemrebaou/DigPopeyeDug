@@ -20,5 +20,7 @@
 
 - Düşerken yeni düşme görseli (reis_dus). Tüm sabit zemin (toprak, kaya) orijinal sarı kum dokusu; dökülecek kum zeytin yeşili. Kazma sesi: sadece kum kazma sesi.
 
+- Tam ekran düğmesi (restart'ın solunda, sadece tarayıcıda). Toplam 10 bölüm.
+
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
