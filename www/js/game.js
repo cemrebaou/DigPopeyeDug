@@ -307,7 +307,8 @@ class Oyun extends Phaser.Scene {
       k.on("keydown-RIGHT", () => (this.tuslar.sag = true));
       k.on("keyup-RIGHT", () => (this.tuslar.sag = false));
       k.on("keydown-SPACE", () => this.pompala());
-      k.on("keydown-DOWN", () => this.egilTikla());
+      k.on("keydown-DOWN", () => { if (!this.reis.egik) this.egilTikla(); });
+      k.on("keydown-UP", () => { if (this.reis.egik) this.egilTikla(); });
       k.on("keydown-R", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
     }
   }
