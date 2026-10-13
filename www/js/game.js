@@ -17,6 +17,8 @@ const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
 // Boşta bekleme animasyonu zamanlaması (ms)
+// Pompa görselinde hortumun çıktığı nokta (görsel pikseli): [merkezden yatay, tabandan yukarı]
+const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 21], reis_pump1: [39, 21] };
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
 const IDLE_SABIRSIZ_MIN = 150, IDLE_SABIRSIZ_MAX = 260;            // sabırsız pozlar (2<->3): pıt pıt pıt, ikisi de kısa ve eşit
@@ -689,7 +691,9 @@ class Oyun extends Phaser.Scene {
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
     if (r.pompa > 0 && h && !h.olu) {
-      const sx = r.x + r.yon * 24, sy = r.y - 7;
+      // hortum, pompa görselindeki hortum çıkış (soket) noktasından başlar: [merkezden yatay px, tabandan yukarı px] (görsel pikseli)
+      const cikis = POMPA_HORTUM_CIKIS[tex] || POMPA_HORTUM_CIKIS.reis_pump0;
+      const sx = r.x + r.yon * cikis[0] * REIS_OLCEK, sy = r.y - cikis[1] * REIS_OLCEK;
       const ex = h.x - r.yon * h.w * 0.28, ey = h.y - 14;
       const yer = Math.min(r.y, h.y) - 3;
       const kontrol = new Phaser.Math.Vector2((sx + ex) / 2, Math.min(yer, Math.max(sy, ey) + 10));
@@ -698,12 +702,12 @@ class Oyun extends Phaser.Scene {
       // 3D boru: kontur, gövde, alt gölge, üst parlama
       const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
       const hg = this.hortum;
-      // hortum: pompa butonundaki koyu kömür grisi (ince)
-      hg.lineStyle(4, 0x0e0d0d, 1).strokePoints(nok);
-      hg.lineStyle(2.8, 0x383634, 1).strokePoints(nok);
-      hg.lineStyle(1.2, 0x1e1d1c, 1).strokePoints(kay(0.8));
-      hg.lineStyle(0.9, 0x6f6b67, 1).strokePoints(kay(-0.6));
-      hg.lineStyle(0.6, 0xa29d97, 0.7).strokePoints(kay(-0.9));
+      // hortum: pompa butonundaki koyu kömür grisi (pompanın eski hortumuna bakılarak kalınlaştırıldı)
+      hg.lineStyle(6.4, 0x0e0d0d, 1).strokePoints(nok);
+      hg.lineStyle(4.6, 0x383634, 1).strokePoints(nok);
+      hg.lineStyle(1.9, 0x1e1d1c, 1).strokePoints(kay(1.3));
+      hg.lineStyle(1.4, 0x6f6b67, 1).strokePoints(kay(-1));
+      hg.lineStyle(0.9, 0xa29d97, 0.7).strokePoints(kay(-1.5));
       // düşman tarafındaki uç: koyu sarı pirinç başlık
       const t = egri.getTangent(1);
       const L = 7.5, bx = ex - t.x * L, by = ey - t.y * L;
