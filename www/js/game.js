@@ -43,7 +43,8 @@ const SPRITELAR = [
 const SESLER = [
   "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
   "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
-  "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi"
+  "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi",
+  "ses_ayak_vur"
 ];
 
 const DUSMAN_TIP = {
@@ -655,6 +656,7 @@ class Oyun extends Phaser.Scene {
         const minB = sabirsiz ? IDLE_SABIRSIZ_MIN : IDLE_BEKLEME_MIN;
         const maxB = sabirsiz ? IDLE_SABIRSIZ_MAX : IDLE_BEKLEME_MAX;
         r.idleDegisim = zaman + Phaser.Math.Between(minB, maxB);
+        if (sabirsiz) this.ses("ses_ayak_vur", { volume: 0.8 });
       }
       if (sabirsiz) {
         tex = r.idlePoz === 0 ? "reis_idle2" : "reis_idle3";
@@ -685,8 +687,8 @@ class Oyun extends Phaser.Scene {
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
     else r.spr.setAlpha(1);
 
-    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
+    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.85).setPosition(r.x, r.y - 58);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(REIS_OLCEK).setPosition(r.x, r.y);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
