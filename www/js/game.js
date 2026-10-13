@@ -150,6 +150,7 @@ class Oyun extends Phaser.Scene {
     this.g = new Uint8Array(GX * GY);
     this.srcI = new Int32Array(GX * GY); // kum tanesinin dokudaki yeri (düşerken dokusunu taşır)
     this.engel = new Uint8Array(GX * GY);
+    this.durgun = new Uint8Array(GX * GY); // kum tanesi kaç karedir hareketsiz
     this.kirli = new Uint8Array(GX * GY);
     this.dusmanlar = [];
     this.reis = null;
@@ -369,7 +370,11 @@ class Oyun extends Phaser.Scene {
         if (hedef >= 0) {
           g[hedef] = KUM; si[hedef] = si[i];
           g[i] = BOS;
+          this.durgun[hedef] = 0;
           this.kirlet(i); this.kirlet(hedef);
+        } else if (si[i] !== i && ++this.durgun[i] > 20) {
+          // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
+          si[i] = i; this.kirlet(i);
         }
       }
     }
@@ -407,7 +412,7 @@ class Oyun extends Phaser.Scene {
       const s = tip === KUM ? si[i] : i;
       const kaynak0 = ((s / GX) | 0) * C * W + (s % GX) * C;
       const dz = src[tip];
-      const ton = tip === KUM ? 0.92 + ((s * 2654435761) >>> 28) / 15 * 0.14 : 1;
+      const ton = 1;
       const ust = bosMu(cx, cy - 1) || cy === 0, alt = bosMu(cx, cy + 1);
       const sol = bosMu(cx - 1, cy), sag = bosMu(cx + 1, cy);
       for (let yy = 0; yy < C; yy++) {
