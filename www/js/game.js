@@ -7,7 +7,8 @@ const KARE_PX = HARITA_KARE * C; // 36
 const GX = SUTUN * HARITA_KARE; // 120
 const GY = SATIR * HARITA_KARE; // 144
 const OY = 130;              // oyun alanının ekrandaki üst kenarı
-const ALT = OY + GY * C;     // 994
+const ALAN_H = GY * C;       // 864
+const ALT = OY + ALAN_H;     // 994
 const KONTROL_Y = 1062;      // butonların ortası (altındaki 150px banner reklam için boş)
 
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
@@ -23,7 +24,10 @@ const SPRITELAR = [
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
   ...[0, 1, 2].map((i) => "octo_walk" + i),
-  ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0"
+  ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0",
+  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden",
+  "bar_yesil", "bar_mor", "bar_turuncu", "panel",
+  "doku_kum", "doku_tahta"
 ];
 
 const DUSMAN_TIP = {
@@ -31,8 +35,14 @@ const DUSMAN_TIP = {
   o: { ad: "octo", hiz: 48, w: 99, h: 66 }
 };
 
+const YAZI = { fontFamily: "Arial Black, Arial", fontStyle: "bold", color: "#ffffff", stroke: "#3b2412", strokeThickness: 8 };
+
 function kayitOku(k, v) { try { const x = localStorage.getItem(k); return x === null ? v : JSON.parse(x); } catch (e) { return v; } }
 function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+// RGBA (little-endian) -> Uint32
+const renk32 = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
+const KONTUR = renk32(58, 34, 16);
 
 class Oyun extends Phaser.Scene {
   constructor() { super("Oyun"); }
@@ -41,6 +51,7 @@ class Oyun extends Phaser.Scene {
     this.bolum = data && data.bolum !== undefined ? data.bolum : kayitOku("dpd_bolum", 0);
     if (this.bolum >= BOLUMLER.length) this.bolum = 0;
     this.skor = data && data.skor ? data.skor : 0;
+    this.baslangicSkor = this.skor;
   }
 
   preload() {
@@ -57,17 +68,18 @@ class Oyun extends Phaser.Scene {
     this.animasyonlar();
     this.arkaPlan();
     this.haritaYukle(BOLUMLER[this.bolum]);
+    this.dokulariHazirla();
 
-    // Kum dokusu
-    this.kumTex = this.textures.createCanvas("kum" + Date.now(), GX, GY);
-    this.kumTex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    this.kumImg = this.add.image(0, OY, this.kumTex.key).setOrigin(0).setScale(C).setDepth(1);
-    this.imgData = this.kumTex.context.createImageData(GX, GY);
+    // Zemin, ekran çözünürlüğünde (1:1) çizilir; büyütme yok, bulanıklık yok
+    this.kumTex = this.textures.createCanvas("zemin" + Date.now(), W, ALAN_H);
+    this.add.image(0, OY, this.kumTex.key).setOrigin(0).setDepth(1);
+    this.imgData = this.kumTex.context.createImageData(W, ALAN_H);
+    this.piksel = new Uint32Array(this.imgData.data.buffer);
 
     this.kapakCizim = this.add.graphics().setDepth(2);
+    this.kapakDegisti = true;
     this.hortum = this.add.graphics().setDepth(4);
 
-    // Reis
     this.reis.spr = this.add.image(this.reis.x, this.reis.y, "reis_walk0").setOrigin(0.5, 1).setScale(REIS_OLCEK).setDepth(5);
     this.dusmanlar.forEach((d) => {
       d.spr = this.add.image(d.x, d.y, d.tip.ad + "_walk0").setOrigin(0.5, 1).setScale(DUSMAN_OLCEK).setDepth(3);
@@ -75,6 +87,7 @@ class Oyun extends Phaser.Scene {
 
     this.arayuz();
     this.kontroller();
+    this.tumunuKirlet();
     this.kumCiz();
   }
 
@@ -90,17 +103,48 @@ class Oyun extends Phaser.Scene {
 
   arkaPlan() {
     const g = this.add.graphics().setDepth(0);
-    g.fillGradientStyle(0x6ec6ff, 0x6ec6ff, 0xbfe9ff, 0xbfe9ff, 1);
+    g.fillGradientStyle(0x5bb8f0, 0x5bb8f0, 0xbfe9ff, 0xbfe9ff, 1);
     g.fillRect(0, 0, W, ALT);
-    g.fillStyle(0x2b1d12, 1);
-    g.fillRect(0, ALT, W, H - ALT);
-    this.arkaG = g;
+    // Alt kontrol bandı: tahta
+    this.add.tileSprite(0, ALT, W, H - ALT, "doku_tahta").setOrigin(0).setDepth(0).setTint(0x8a7060);
+    const s = this.add.graphics().setDepth(0);
+    s.fillStyle(0x2a1a0d, 1);
+    s.fillRect(0, ALT, W, 6);
+  }
+
+  // ---------- Dokular ----------
+  // Her malzeme için ekran boyutunda bir piksel kaynağı hazırlanır
+  dokulariHazirla() {
+    const doku = (key) => {
+      const img = this.textures.get(key).getSourceImage();
+      const cv = document.createElement("canvas");
+      cv.width = W; cv.height = ALAN_H;
+      const cx = cv.getContext("2d");
+      for (let y = 0; y < ALAN_H; y += img.height) for (let x = 0; x < W; x += img.width) cx.drawImage(img, x, y);
+      return cx.getImageData(0, 0, W, ALAN_H).data;
+    };
+    const kum = doku("doku_kum"), tahta = doku("doku_tahta");
+    const n = W * ALAN_H;
+    const yap = (kaynak, f) => {
+      const out = new Uint32Array(n);
+      for (let i = 0, p = 0; i < n; i++, p += 4) out[i] = f(kaynak[p], kaynak[p + 1], kaynak[p + 2]);
+      return out;
+    };
+    const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
+    this.src = {
+      [KUM]: yap(kum, (r, g, b) => renk32(r, g, b)),
+      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.6), sinir(g * 0.43), sinir(b * 0.38))),
+      [KAYA]: yap(kum, (r, g, b) => { const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.42; return renk32(sinir(v), sinir(v * 0.98), sinir(v * 1.06)); }),
+      [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.25), sinir(g * 1.05), sinir(b * 0.85))),
+      magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
+    };
   }
 
   haritaYukle(bolum) {
     this.g = new Uint8Array(GX * GY);
-    this.ton = new Uint8Array(GX * GY);
+    this.srcI = new Int32Array(GX * GY); // kum tanesinin dokudaki yeri (düşerken dokusunu taşır)
     this.engel = new Uint8Array(GX * GY);
+    this.kirli = new Uint8Array(GX * GY);
     this.dusmanlar = [];
     this.reis = null;
     const satirlar = bolum.harita.slice();
@@ -118,7 +162,7 @@ class Oyun extends Phaser.Scene {
         for (let y = 0; y < HARITA_KARE; y++) for (let x = 0; x < HARITA_KARE; x++) {
           const i = (r * HARITA_KARE + y) * GX + c * HARITA_KARE + x;
           this.g[i] = tip;
-          this.ton[i] = (Math.random() * 255) | 0;
+          this.srcI[i] = i;
         }
         const px = c * KARE_PX + KARE_PX / 2, py = OY + (r + 1) * KARE_PX;
         if (ch === "R") this.reis = { x: px, y: py, w: 45, h: 126, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
@@ -143,31 +187,37 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Arayüz ----------
   arayuz() {
-    const st = { fontFamily: "Arial", fontSize: "40px", color: "#ffffff", fontStyle: "bold", stroke: "#000000", strokeThickness: 6 };
-    this.bolumYazi = this.add.text(24, 30, BOLUMLER[this.bolum].ad, st).setDepth(10);
-    this.skorYazi = this.add.text(W - 24, 30, "Skor: " + this.skor, st).setOrigin(1, 0).setDepth(10);
-    this.ipucu = this.add.text(W / 2, 90, "Kapaklara dokun, açılsın!", { ...st, fontSize: "28px", color: "#ffe08a" }).setOrigin(0.5).setDepth(10);
+    this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
+    this.skorYazi = this.add.text(W / 2 + 40, 34, "Skor: " + this.skor, { ...YAZI, fontSize: "38px", color: "#ffe066" }).setOrigin(0.5, 0).setDepth(10);
+    this.ipucu = this.add.text(W / 2, 100, "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
+
+    // Yeniden başla
+    this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor }));
+  }
+
+  // Resimli buton: basınca küçülür
+  ikonButon(x, y, key, boyut, bas, birak) {
+    const b = this.add.image(x, y, key).setDepth(20).setInteractive({ useHandCursor: true });
+    const olcek = boyut / b.width;
+    b.setScale(olcek);
+    b.on("pointerdown", () => { b.setScale(olcek * 0.9); bas && bas(); });
+    const geri = () => { b.setScale(olcek); birak && birak(); };
+    b.on("pointerup", geri);
+    b.on("pointerout", geri);
+    return b;
   }
 
   kontroller() {
     this.input.addPointer(3);
-    const buton = (x, yazi, w, renk, bas, birak) => {
-      const r = this.add.rectangle(x, KONTROL_Y, w, 100, renk, 0.9).setStrokeStyle(4, 0xffffff).setDepth(20).setInteractive();
-      this.add.text(x, KONTROL_Y, yazi, { fontFamily: "Arial", fontSize: "44px", color: "#fff", fontStyle: "bold" }).setOrigin(0.5).setDepth(21);
-      r.on("pointerdown", bas);
-      if (birak) { r.on("pointerup", birak); r.on("pointerout", birak); }
-      return r;
-    };
-    buton(95, "◀", 150, 0x264653, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
-    buton(265, "▶", 150, 0x264653, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
-    buton(585, "POMPA", 230, 0xc1121f, () => this.pompala());
+    this.ikonButon(88, KONTROL_Y, "btn_sol", 128, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
+    this.ikonButon(236, KONTROL_Y, "btn_sag", 128, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
+    this.ikonButon(628, KONTROL_Y, "btn_pompa", 136, () => this.pompala());
 
     // Kapaklara dokunma
     this.input.on("pointerdown", (p) => {
       if (this.durum !== "oyun" || p.y < OY || p.y >= ALT) return;
       const gx = Math.floor(p.x / C), gy = Math.floor((p.y - OY) / C);
-      // parmak hassasiyeti: 4 kare çevresine bak
       for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
         const x = gx + dx, y = gy + dy;
         if (x >= 0 && x < GX && y >= 0 && y < GY && this.g[y * GX + x] === KAPAK) { this.kapakAc(x, y); return; }
@@ -182,6 +232,7 @@ class Oyun extends Phaser.Scene {
       k.on("keydown-RIGHT", () => (this.tuslar.sag = true));
       k.on("keyup-RIGHT", () => (this.tuslar.sag = false));
       k.on("keydown-SPACE", () => this.pompala());
+      k.on("keydown-R", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor }));
     }
   }
 
@@ -193,10 +244,10 @@ class Oyun extends Phaser.Scene {
       if (x < 0 || x >= GX || y < 0 || y >= GY) continue;
       const i = y * GX + x;
       if (this.g[i] !== KAPAK) continue;
-      this.g[i] = BOS; n++;
+      this.g[i] = BOS; this.kirlet(i); n++;
       yigin.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
     }
-    if (n) this.cameras.main.shake(120, 0.004);
+    if (n) { this.kapakDegisti = true; this.cameras.main.shake(120, 0.004); }
   }
 
   // ---------- Izgara yardımcıları ----------
@@ -208,7 +259,19 @@ class Oyun extends Phaser.Scene {
   }
   katiMi(x, y) { return this.hucre(x, y) !== BOS; }
 
-  // Varlığın gövdesinin kapladığı sütun/satır aralığı
+  // Değişen hücreyi ve komşularını yeniden çizilecek olarak işaretle
+  kirlet(i) {
+    const k = this.kirli;
+    k[i] = 1;
+    if (i >= GX) k[i - GX] = 1;
+    if (i < GX * (GY - 1)) k[i + GX] = 1;
+    const x = i % GX;
+    if (x > 0) k[i - 1] = 1;
+    if (x < GX - 1) k[i + 1] = 1;
+    this.cizimGerek = true;
+  }
+  tumunuKirlet() { this.kirli.fill(1); this.cizimGerek = true; }
+
   govde(e, ox = 0, oy = 0) {
     return {
       x0: Math.floor((e.x + ox - e.w / 2) / C),
@@ -218,7 +281,6 @@ class Oyun extends Phaser.Scene {
     };
   }
 
-  // Ayak altında zemin var mı
   zeminVar(e) {
     const b = this.govde(e);
     const y = Math.floor((e.y - OY) / C);
@@ -265,7 +327,7 @@ class Oyun extends Phaser.Scene {
         }
         return { durdu: true, kazdi };
       }
-      for (const y of kazilacak) { this.g[y * GX + sx] = BOS; kazdi = true; }
+      for (const y of kazilacak) { const i = y * GX + sx; this.g[i] = BOS; this.kirlet(i); kazdi = true; }
       e.x += d; kalan -= 1;
     }
     return { durdu: false, kazdi };
@@ -273,7 +335,7 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Kum fiziği ----------
   kumAdim() {
-    const g = this.g, ton = this.ton, eng = this.engel;
+    const g = this.g, si = this.srcI, eng = this.engel;
     eng.fill(0);
     if (!this.reis.olu) {
       const b = this.govde(this.reis);
@@ -299,31 +361,50 @@ class Oyun extends Phaser.Scene {
           }
         }
         if (hedef >= 0) {
-          g[hedef] = KUM; ton[hedef] = ton[i];
+          g[hedef] = KUM; si[hedef] = si[i];
           g[i] = BOS;
+          this.kirlet(i); this.kirlet(hedef);
         }
       }
     }
   }
 
+  // Sadece değişen hücreleri yeniden çizer
   kumCiz() {
-    const d = this.imgData.data, g = this.g, ton = this.ton, mg = this.magara;
+    if (!this.cizimGerek) return;
+    this.cizimGerek = false;
+    const g = this.g, si = this.srcI, mg = this.magara, kir = this.kirli, px = this.piksel, src = this.src;
+    const magaraSrc = src.magara;
     for (let i = 0; i < GX * GY; i++) {
-      const p = i * 4, t = ton[i] / 255;
-      let r = 0, gg = 0, b = 0, a = 255;
-      switch (g[i]) {
-        case KUM: r = 230 - t * 30; gg = 190 - t * 30; b = 110 - t * 25; break;
-        case TOPRAK: r = 150 - t * 25; gg = 98 - t * 18; b = 52 - t * 12; break;
-        case KAYA: { const v = 85 - t * 25; r = v; gg = v * 0.92; b = v * 0.85; break; }
-        case KAPAK: {
-          const y = Math.floor(i / GX);
-          const cizgi = y % 4 === 0;
-          r = cizgi ? 90 : 160 - t * 15; gg = cizgi ? 55 : 105 - t * 10; b = cizgi ? 25 : 45; break;
+      if (!kir[i]) continue;
+      kir[i] = 0;
+      const cx = i % GX, cy = (i / GX) | 0;
+      const hedef0 = cy * C * W + cx * C;
+      const tip = g[i];
+      if (tip === BOS) {
+        if (mg[i]) {
+          for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = magaraSrc[o + xx]; }
+        } else {
+          for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = 0; }
         }
-        default:
-          if (mg[i]) { r = 55; gg = 38; b = 25; } else a = 0;
+        continue;
       }
-      d[p] = r; d[p + 1] = gg; d[p + 2] = b; d[p + 3] = a;
+      // dokudaki kaynak (kum taneleri kendi dokusunu taşır)
+      const s = tip === KUM ? si[i] : i;
+      const kaynak0 = ((s / GX) | 0) * C * W + (s % GX) * C;
+      const dz = src[tip];
+      // açık kenarlarda koyu kontur
+      const ust = cy > 0 && g[i - GX] === BOS;
+      const alt = cy < GY - 1 && g[i + GX] === BOS;
+      const sol = cx > 0 && g[i - 1] === BOS;
+      const sag = cx < GX - 1 && g[i + 1] === BOS;
+      for (let yy = 0; yy < C; yy++) {
+        const o = hedef0 + yy * W, ko = kaynak0 + yy * W;
+        const yKenar = (ust && yy < 2) || (alt && yy >= C - 2);
+        for (let xx = 0; xx < C; xx++) {
+          px[o + xx] = yKenar || (sol && xx < 2) || (sag && xx >= C - 2) ? KONTUR : dz[ko + xx];
+        }
+      }
     }
     this.kumTex.context.putImageData(this.imgData, 0, 0);
     this.kumTex.refresh();
@@ -348,7 +429,6 @@ class Oyun extends Phaser.Scene {
     if (hedef.sisme >= 4) this.patlat(hedef, 200);
   }
 
-  // Reis ile düşman arasında kazılmamış bir şey var mı
   gorusVar(r, d) {
     const y = Math.floor((Math.min(r.y, d.y) - 25 - OY) / C);
     const x0 = Math.floor(Math.min(r.x, d.x) / C), x1 = Math.floor(Math.max(r.x, d.x) / C);
@@ -367,19 +447,17 @@ class Oyun extends Phaser.Scene {
   puanEkle(p, x, y) {
     this.skor += p;
     this.skorYazi.setText("Skor: " + this.skor);
-    const t = this.add.text(x, y, "+" + p, { fontFamily: "Arial", fontSize: "36px", color: "#ffe066", fontStyle: "bold", stroke: "#000", strokeThickness: 5 }).setOrigin(0.5).setDepth(15);
+    const t = this.add.text(x, y, "+" + p, { ...YAZI, fontSize: "38px", color: "#ffe066", strokeThickness: 7 }).setOrigin(0.5).setDepth(15);
     this.tweens.add({ targets: t, y: y - 70, alpha: 0, duration: 900, onComplete: () => t.destroy() });
   }
 
   // ---------- Döngü ----------
-  update(zaman, dtMs) {
+  update(zaman) {
     const simdi = performance.now();
     const dt = Math.min(this.sonZaman ? (simdi - this.sonZaman) / 1000 : 0.016, 0.05);
     this.sonZaman = simdi;
     this.kare++;
     this.kumAdim();
-    this.kumCiz();
-    this.kapakVurgu(zaman);
     if (this.durum === "oyun") {
       this.reisGuncelle(dt, zaman);
       this.dusmanGuncelle(dt, zaman);
@@ -387,15 +465,19 @@ class Oyun extends Phaser.Scene {
     } else if (this.durum === "olum") {
       this.reisGuncelle(dt, zaman);
     }
+    this.kumCiz();
+    this.kapakVurgu(zaman);
   }
 
+  // Kapak kenarları: sadece kapak değişince yeniden çizilir, yanıp sönme alpha ile
   kapakVurgu(zaman) {
     const g = this.kapakCizim;
+    g.setAlpha(0.5 + 0.4 * Math.sin(zaman / 250));
+    if (!this.kapakDegisti) return;
+    this.kapakDegisti = false;
     g.clear();
-    const a = 0.45 + 0.35 * Math.sin(zaman / 250);
-    g.lineStyle(3, 0xffe066, a);
-    // kapak hücrelerinin kenarlarını çiz
-    for (let y = 0; y < GY; y += 1) for (let x = 0; x < GX; x++) {
+    g.lineStyle(4, 0xffe066, 1);
+    for (let y = 0; y < GY; y++) for (let x = 0; x < GX; x++) {
       if (this.g[y * GX + x] !== KAPAK) continue;
       const px = x * C, py = OY + y * C;
       if (this.hucre(x, y - 1) !== KAPAK) g.lineBetween(px, py, px + C, py);
@@ -434,17 +516,24 @@ class Oyun extends Phaser.Scene {
       tex = "reis_walk0";
     }
     if (!r.yerde) tex = "reis_fall2";
+    if (r.yerde) { r.sonGuvenliX = r.x; r.sonGuvenliY = r.y; }
 
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
     else r.spr.setAlpha(1);
 
     r.spr.setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
 
-    // pompa hortumu
+    // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
     if (r.pompa > 0 && h && !h.olu) {
-      this.hortum.lineStyle(5, 0xc1121f, 1);
-      this.hortum.lineBetween(r.x + r.yon * 27, r.y - 60, h.x, h.y - h.h / 2);
+      const sx = r.x + r.yon * 24, sy = r.y - 7;
+      const ex = h.x - r.yon * h.w * 0.28, ey = h.y - 14;
+      const yer = Math.min(r.y, h.y) - 3;
+      const kontrol = new Phaser.Math.Vector2((sx + ex) / 2, Math.min(yer, Math.max(sy, ey) + 10));
+      const egri = new Phaser.Curves.QuadraticBezier(new Phaser.Math.Vector2(sx, sy), kontrol, new Phaser.Math.Vector2(ex, ey));
+      const nok = egri.getPoints(16);
+      this.hortum.lineStyle(9, 0x3b0a0a, 1).strokePoints(nok);
+      this.hortum.lineStyle(5, 0xc1121f, 1).strokePoints(nok);
     }
   }
 
@@ -460,10 +549,8 @@ class Oyun extends Phaser.Scene {
       for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { top++; if (this.hucre(x, y) === KUM) dolu++; }
       if (top && dolu / top > 0.45) { this.patlat(d, 300); continue; }
 
-      // ekrandan aşağı düştü
       if (d.y > ALT + 100) { d.olu = true; d.spr.destroy(); this.puanEkle(150, d.x, ALT); continue; }
 
-      // sönme
       if (d.sisme > 0 && zaman - d.sonPompa > 1500) { d.sisme--; d.sonPompa = zaman; }
 
       if (d.sisme > 0) {
@@ -471,7 +558,6 @@ class Oyun extends Phaser.Scene {
         continue;
       }
 
-      // Reis yakındaysa ona doğru git
       if (Math.abs(r.y - d.y) < 70 && Math.abs(r.x - d.x) < 420 && !r.olu) d.yon = Math.sign(r.x - d.x) || d.yon;
 
       if (d.yerde) {
@@ -486,9 +572,7 @@ class Oyun extends Phaser.Scene {
 
   kontrolEt() {
     const r = this.reis;
-    // Reis kumun altında kaldı mı / ekrandan düştü mü
     if (r.y > ALT + 50) return this.olum();
-
     if (this.dokunulmaz <= 0) {
       for (const d of this.dusmanlar) {
         if (d.olu || d.sisme > 0) continue;
@@ -516,44 +600,51 @@ class Oyun extends Phaser.Scene {
   bitisEkrani(kazandi) {
     Ads.oyunBitti();
     const grup = this.add.container(0, 0).setDepth(50);
-    grup.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.7).setInteractive());
-    const st = { fontFamily: "Arial", fontSize: "72px", color: "#ffffff", fontStyle: "bold" };
-    grup.add(this.add.text(W / 2, 380, kazandi ? "Bölüm Tamam!" : "Yakalandın!", st).setOrigin(0.5));
-    grup.add(this.add.text(W / 2, 480, "Skor: " + this.skor, { ...st, fontSize: "52px", color: "#fca311" }).setOrigin(0.5));
+    grup.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.6).setInteractive());
+    const panel = this.add.image(W / 2, 470, "panel");
+    panel.setScale(640 / panel.width);
+    grup.add(panel);
+    grup.add(this.add.text(W / 2, 400, kazandi ? "Bölüm Tamam!" : "Yakalandın!", { ...YAZI, fontSize: "64px" }).setOrigin(0.5));
+    grup.add(this.add.text(W / 2, 500, "Skor: " + this.skor, { ...YAZI, fontSize: "48px", color: "#ffe066" }).setOrigin(0.5));
 
     if (kazandi) {
       const son = this.bolum + 1 >= BOLUMLER.length;
-      grup.add(this.buton(W / 2, 660, son ? "Baştan Başla" : "Sonraki Bölüm", 0x2a9d8f, () =>
+      grup.add(this.barButon(W / 2, 800, "bar_yesil", son ? "Baştan Başla" : "Sonraki Bölüm", () =>
         this.scene.restart({ bolum: son ? 0 : this.bolum + 1, skor: this.skor })));
     } else {
-      grup.add(this.buton(W / 2, 660, "Tekrar Dene", 0x2a9d8f, () => this.scene.restart({ bolum: this.bolum, skor: 0 })));
+      grup.add(this.barButon(W / 2, 800, "bar_yesil", "Tekrar Dene", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor })));
       if (this.devamHakki) {
-        grup.add(this.buton(W / 2, 810, "▶ Reklam izle, devam et", 0x6a4c93, async () => {
+        grup.add(this.barButon(W / 2, 960, "bar_mor", "Reklam izle, devam et", async () => {
           const izlendi = await Ads.odulluIzle();
           if (!izlendi) return;
           this.devamHakki = false;
           grup.destroy();
           this.dirilt();
-        }));
+        }, 48));
       }
     }
+  }
+
+  // Uzun buton (yazı üstüne kodla eklenir)
+  barButon(x, y, key, yazi, tik, yaziKaydir = 0) {
+    const c = this.add.container(x, y);
+    const arka = this.add.image(0, 0, key).setInteractive({ useHandCursor: true });
+    const olcek = 540 / arka.width;
+    arka.setScale(olcek);
+    const t = this.add.text(yaziKaydir, -4, yazi, { ...YAZI, fontSize: yazi.length > 16 ? "31px" : "42px", strokeThickness: 7 }).setOrigin(0.5);
+    arka.on("pointerdown", () => { c.setScale(0.94); });
+    arka.on("pointerout", () => c.setScale(1));
+    arka.on("pointerup", () => { c.setScale(1); tik(); });
+    c.add([arka, t]);
+    return c;
   }
 
   dirilt() {
     const r = this.reis;
     r.olu = false; r.vy = 0;
-    if (r.y > ALT) { r.y = r.sonGuvenliY || OY + 120; r.x = r.sonGuvenliX || 60; }
+    if (r.y > ALT || !this.zeminVar(r)) { r.y = r.sonGuvenliY || OY + 120; r.x = r.sonGuvenliX || 60; }
     this.dokunulmaz = 2.5;
     this.durum = "oyun";
-  }
-
-  buton(x, y, yazi, renk, tik) {
-    const c = this.add.container(x, y);
-    const arka = this.add.rectangle(0, 0, 560, 110, renk).setStrokeStyle(4, 0xffffff).setInteractive({ useHandCursor: true });
-    const t = this.add.text(0, 0, yazi, { fontFamily: "Arial", fontSize: "40px", color: "#ffffff", fontStyle: "bold" }).setOrigin(0.5);
-    arka.on("pointerdown", tik);
-    c.add([arka, t]);
-    return c;
   }
 }
 
