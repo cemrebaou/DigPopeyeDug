@@ -556,11 +556,24 @@ class Oyun extends Phaser.Scene {
       // 3D boru: kontur, gövde, alt gölge, üst parlama
       const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
       const hg = this.hortum;
-      hg.lineStyle(7, 0x121518, 1).strokePoints(nok);
-      hg.lineStyle(5, 0x4f575e, 1).strokePoints(nok);
-      hg.lineStyle(2, 0x2c3237, 1).strokePoints(kay(1.4));
-      hg.lineStyle(1.5, 0x8d969e, 1).strokePoints(kay(-1));
-      hg.lineStyle(1, 0xc9d0d6, 0.85).strokePoints(kay(-1.5));
+      // hortum: pompa butonundaki koyu kömür grisi
+      hg.lineStyle(7, 0x0e0d0d, 1).strokePoints(nok);
+      hg.lineStyle(5, 0x383634, 1).strokePoints(nok);
+      hg.lineStyle(2, 0x1e1d1c, 1).strokePoints(kay(1.4));
+      hg.lineStyle(1.5, 0x6f6b67, 1).strokePoints(kay(-1));
+      hg.lineStyle(1, 0xa29d97, 0.7).strokePoints(kay(-1.5));
+      // düşman tarafındaki uç: koyu sarı pirinç başlık
+      const t = egri.getTangent(1);
+      const L = 13, bx = ex - t.x * L, by = ey - t.y * L;
+      const nx = -t.y, ny = t.x;
+      hg.lineStyle(11, 0x2e2010, 1).lineBetween(bx, by, ex, ey);
+      hg.lineStyle(9, 0x9a7638, 1).lineBetween(bx, by, ex, ey);
+      hg.lineStyle(3, 0x5e4520, 1).lineBetween(bx + nx * 2.5, by + ny * 2.5, ex + nx * 2.5, ey + ny * 2.5);
+      hg.lineStyle(2.5, 0xd8b673, 1).lineBetween(bx - nx * 2, by - ny * 2, ex - nx * 2, ey - ny * 2);
+      hg.lineStyle(1, 0xf4e2b0, 0.9).lineBetween(bx - nx * 3, by - ny * 3, ex - nx * 3, ey - ny * 3);
+      // halka
+      const hx = bx + t.x * 4, hy = by + t.y * 4;
+      hg.lineStyle(2, 0x4a3518, 1).lineBetween(hx + nx * 4.5, hy + ny * 4.5, hx - nx * 4.5, hy - ny * 4.5);
     }
   }
 

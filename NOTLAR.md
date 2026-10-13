@@ -11,7 +11,7 @@
 - 3D görünüm: yeni 3D kum dokusu, üst kenarlarda parlama, alt kenarlarda gölge, tane tane ton farkı, mağara köşelerinde karanlık. (Eski koyu kontur kaldırıldı.)
 - Zemin renkleri: canlı kahve toprak, parlak gri kaya, açık tahta kapak; mağara koyu kaldı.
 - Karakterlerin altındaki gri gölge kaldırıldı.
-- Pompa hortumu ince, koyu gri 3D boru: üstte parlama, altta gölge.
+- Pompa hortumu ince, pompa butonundaki koyu kömür grisi; düşman ucunda koyu sarı pirinç başlık.
 
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
