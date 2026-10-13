@@ -19,7 +19,10 @@ const REIS_HIZ = 200, KAZMA_HIZ = 110;
 // Boşta bekleme animasyonu zamanlaması (ms)
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
-const IDLE_SABIRSIZ_BEKLEME_MIN = 500, IDLE_SABIRSIZ_BEKLEME_MAX = 1100; // poz 2<->3 arası bekleme
+const IDLE_KALDIRMA_MIN = 250, IDLE_KALDIRMA_MAX = 450;            // poz 2 (ayak kaldırma) kısa sürer
+const IDLE_VURMA_MIN = 1400, IDLE_VURMA_MAX = 2200;                // poz 3 (vurma + tozlu) ekranda uzun kalır
+// Bazı pozlarda ayağın görsel olarak yere tam basması için küçük aşağı kaydırma (px)
+const REIS_GORSEL_DY = { reis_idle2: 5 };
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
@@ -648,8 +651,14 @@ class Oyun extends Phaser.Scene {
       if (r.idleDegisim === undefined || zaman > r.idleDegisim || r.idleSabirsizDi !== sabirsiz) {
         r.idlePoz = r.idlePoz === 0 ? 1 : 0;
         r.idleSabirsizDi = sabirsiz;
-        const minB = sabirsiz ? IDLE_SABIRSIZ_BEKLEME_MIN : IDLE_BEKLEME_MIN;
-        const maxB = sabirsiz ? IDLE_SABIRSIZ_BEKLEME_MAX : IDLE_BEKLEME_MAX;
+        let minB, maxB;
+        if (sabirsiz) {
+          // poz 0 -> reis_idle2 (ayak kaldırma, kısa), poz 1 -> reis_idle3 (vurma/tozlu, uzun)
+          minB = r.idlePoz === 0 ? IDLE_KALDIRMA_MIN : IDLE_VURMA_MIN;
+          maxB = r.idlePoz === 0 ? IDLE_KALDIRMA_MAX : IDLE_VURMA_MAX;
+        } else {
+          minB = IDLE_BEKLEME_MIN; maxB = IDLE_BEKLEME_MAX;
+        }
         r.idleDegisim = zaman + Phaser.Math.Between(minB, maxB);
       }
       tex = sabirsiz
@@ -666,7 +675,7 @@ class Oyun extends Phaser.Scene {
     else r.spr.setAlpha(1);
 
     if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y + (REIS_GORSEL_DY[tex] || 0));
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
