@@ -42,7 +42,12 @@ function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 // RGBA (little-endian) -> Uint32
 const renk32 = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
-const KONTUR = renk32(58, 34, 16);
+// Rengi f ile çarp (ışık/gölge)
+function carp(c, f) {
+  let r = (c & 255) * f, g = ((c >>> 8) & 255) * f, b = ((c >>> 16) & 255) * f;
+  if (r > 255) r = 255; if (g > 255) g = 255; if (b > 255) b = 255;
+  return ((c & 0xff000000) | (b << 16) | (g << 8) | r) >>> 0;
+}
 
 class Oyun extends Phaser.Scene {
   constructor() { super("Oyun"); }
@@ -80,6 +85,7 @@ class Oyun extends Phaser.Scene {
     this.kapakDegisti = true;
     this.hortum = this.add.graphics().setDepth(4);
 
+    this.golgeler = this.add.graphics().setDepth(2.5);
     this.reis.spr = this.add.image(this.reis.x, this.reis.y, "reis_walk0").setOrigin(0.5, 1).setScale(REIS_OLCEK).setDepth(5);
     this.dusmanlar.forEach((d) => {
       d.spr = this.add.image(d.x, d.y, d.tip.ad + "_walk0").setOrigin(0.5, 1).setScale(DUSMAN_OLCEK).setDepth(3);
@@ -132,8 +138,8 @@ class Oyun extends Phaser.Scene {
     };
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
     this.src = {
-      [KUM]: yap(kum, (r, g, b) => renk32(r, g, b)),
-      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.6), sinir(g * 0.43), sinir(b * 0.38))),
+      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.98), sinir(b * 0.86))),
+      [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.58), sinir(g * 0.4), sinir(b * 0.3))),
       [KAYA]: yap(kum, (r, g, b) => { const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.42; return renk32(sinir(v), sinir(v * 0.98), sinir(v * 1.06)); }),
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.25), sinir(g * 1.05), sinir(b * 0.85))),
       magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
@@ -266,8 +272,8 @@ class Oyun extends Phaser.Scene {
     if (i >= GX) k[i - GX] = 1;
     if (i < GX * (GY - 1)) k[i + GX] = 1;
     const x = i % GX;
-    if (x > 0) k[i - 1] = 1;
-    if (x < GX - 1) k[i + 1] = 1;
+    if (x > 0) { k[i - 1] = 1; if (i >= GX) k[i - GX - 1] = 1; if (i < GX * (GY - 1)) k[i + GX - 1] = 1; }
+    if (x < GX - 1) { k[i + 1] = 1; if (i >= GX) k[i - GX + 1] = 1; if (i < GX * (GY - 1)) k[i + GX + 1] = 1; }
     this.cizimGerek = true;
   }
   tumunuKirlet() { this.kirli.fill(1); this.cizimGerek = true; }
@@ -369,12 +375,17 @@ class Oyun extends Phaser.Scene {
     }
   }
 
-  // Sadece değişen hücreleri yeniden çizer
+  // Sadece değişen hücreleri yeniden çizer.
+  // 3D görünüm: ışık üstten gelir. Havaya bakan üst kenar parlar, alt kenar gölgelenir,
+  // her kum tanesinin kendi tonu var, mağara köşeleri karanlık (ortam gölgesi).
   kumCiz() {
     if (!this.cizimGerek) return;
     this.cizimGerek = false;
     const g = this.g, si = this.srcI, mg = this.magara, kir = this.kirli, px = this.piksel, src = this.src;
     const magaraSrc = src.magara;
+    const UST = [1.32, 1.2, 1.08], ALTG = [0.88, 0.72, 0.55];
+    const bosMu = (x, y) => x >= 0 && x < GX && y >= 0 && y < GY && g[y * GX + x] === BOS;
+    const doluMu = (x, y) => x < 0 || x >= GX || y >= GY || (y >= 0 && g[y * GX + x] !== BOS);
     for (let i = 0; i < GX * GY; i++) {
       if (!kir[i]) continue;
       kir[i] = 0;
@@ -383,26 +394,32 @@ class Oyun extends Phaser.Scene {
       const tip = g[i];
       if (tip === BOS) {
         if (mg[i]) {
-          for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = magaraSrc[o + xx]; }
+          // çevredeki dolu hücre sayısı kadar karart
+          let n = 0;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && doluMu(cx + dx, cy + dy)) n++;
+          const f = 1 - n * 0.075;
+          for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = carp(magaraSrc[o + xx], f); }
         } else {
           for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = 0; }
         }
         continue;
       }
-      // dokudaki kaynak (kum taneleri kendi dokusunu taşır)
       const s = tip === KUM ? si[i] : i;
       const kaynak0 = ((s / GX) | 0) * C * W + (s % GX) * C;
       const dz = src[tip];
-      // açık kenarlarda koyu kontur
-      const ust = cy > 0 && g[i - GX] === BOS;
-      const alt = cy < GY - 1 && g[i + GX] === BOS;
-      const sol = cx > 0 && g[i - 1] === BOS;
-      const sag = cx < GX - 1 && g[i + 1] === BOS;
+      const ton = tip === KUM ? 0.92 + ((s * 2654435761) >>> 28) / 15 * 0.14 : 1;
+      const ust = bosMu(cx, cy - 1) || cy === 0, alt = bosMu(cx, cy + 1);
+      const sol = bosMu(cx - 1, cy), sag = bosMu(cx + 1, cy);
       for (let yy = 0; yy < C; yy++) {
         const o = hedef0 + yy * W, ko = kaynak0 + yy * W;
-        const yKenar = (ust && yy < 2) || (alt && yy >= C - 2);
+        let fy = ton;
+        if (ust && yy < 3) fy *= UST[yy];
+        if (alt && yy >= C - 3) fy *= ALTG[yy - (C - 3)];
         for (let xx = 0; xx < C; xx++) {
-          px[o + xx] = yKenar || (sol && xx < 2) || (sag && xx >= C - 2) ? KONTUR : dz[ko + xx];
+          let f = fy;
+          if (sol && xx < 2) f *= xx === 0 ? 1.14 : 1.06;
+          if (sag && xx >= C - 2) f *= xx === C - 1 ? 0.7 : 0.84;
+          px[o + xx] = f === 1 ? dz[ko + xx] : carp(dz[ko + xx], f);
         }
       }
     }
@@ -467,6 +484,20 @@ class Oyun extends Phaser.Scene {
     }
     this.kumCiz();
     this.kapakVurgu(zaman);
+    this.golgeCiz();
+  }
+
+  // Ayak altında yumuşak gölge: karakterleri zemine oturtur
+  golgeCiz() {
+    const g = this.golgeler;
+    g.clear();
+    const ciz = (e, gen) => {
+      if (!e.yerde || e.olu) return;
+      g.fillStyle(0x000000, 0.18).fillEllipse(e.x, e.y - 2, gen * 1.15, 16);
+      g.fillStyle(0x000000, 0.22).fillEllipse(e.x, e.y - 2, gen * 0.8, 10);
+    };
+    ciz(this.reis, 70);
+    for (const d of this.dusmanlar) ciz(d, d.w * (1 + d.sisme * 0.12));
   }
 
   // Kapak kenarları: sadece kapak değişince yeniden çizilir, yanıp sönme alpha ile
