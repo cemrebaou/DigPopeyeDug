@@ -878,7 +878,7 @@ class Oyun extends Phaser.Scene {
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
     else r.spr.setAlpha(1);
 
-    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.85).setPosition(r.x, r.y - 58);
+    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.8).setPosition(r.x, r.y - 58);
     else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, r.y);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
