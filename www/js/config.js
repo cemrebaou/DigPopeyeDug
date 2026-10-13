@@ -1,7 +1,7 @@
 // Oyunun tüm ayarları burada. AdMob ID'lerini buraya yaz.
 window.OYUN_CONFIG = {
   oyunAdi: "DigPopeyeDug",
-  surum: "v0.02", // sağ altta görünür
+  surum: "v0.03", // sağ altta görünür
   paketAdi: "com.jawk.digpopeyedug", // Play Store'a yüklendikten sonra DEĞİŞTİRİLEMEZ
 
   reklam: {
