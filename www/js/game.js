@@ -9,7 +9,7 @@ const GY = SATIR * HARITA_KARE; // 144
 const OY = 130;              // oyun alanının ekrandaki üst kenarı
 const ALAN_H = GY * C;       // 864
 const ALT = OY + ALAN_H;     // 994
-const KONTROL_Y = 1086;      // butonların ortası (altındaki 150px banner reklam için boş)
+const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner reklam için boş)
 
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
@@ -263,10 +263,11 @@ class Oyun extends Phaser.Scene {
 
   kontroller() {
     this.input.addPointer(3);
-    // Butonlar: ok ve pompa %30 büyük, oklar arası boşluk 2 kat (20→40 px)
-    this.ikonButon(95, KONTROL_Y, "btn_sol", 166, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
-    this.ikonButon(301, KONTROL_Y, "btn_sag", 166, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
-    this.ikonButon(612, KONTROL_Y, "btn_pompa", 177, () => this.pompala());
+    // Butonlar: oklar 208 px, pompa 221 px, sol-sağ ok arası 10 px boşluk
+    this.ikonButon(118, KONTROL_Y, "btn_sol", 208, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
+    this.ikonButon(336, KONTROL_Y, "btn_sag", 208, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
+    this.ikonButon(596, KONTROL_Y, "btn_pompa", 221, () => this.pompala());
+    this.add.text(W - 10, H - 8, (window.OYUN_CONFIG && OYUN_CONFIG.surum) || "v0.01", { fontFamily: "Arial", fontSize: "22px", color: "#ffffff", stroke: "#3b2412", strokeThickness: 4 }).setOrigin(1, 1).setDepth(30);
 
     // Kapaklara dokunma
     this.input.on("pointerdown", (p) => {

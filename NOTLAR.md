@@ -22,7 +22,7 @@
 
 - Tam ekran düğmesi (restart'ın solunda, sadece tarayıcıda). Toplam 10 bölüm.
 
-- Son bölümden sonra "Daha Zor Baştan Başla": her turda Reis ve düşman hızı %10 artar. Yön okları ve pompa %30 büyük, oklar arası boşluk 2 kat.
+- Son bölümden sonra "Daha Zor Baştan Başla": her turda Reis ve düşman hızı %10 artar. Yön okları 208 px, pompa 221 px, oklar arası 10 px boşluk; sağ altta sürüm yazısı (v0.01, config.js).
 
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
