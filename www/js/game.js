@@ -64,9 +64,9 @@ class Oyun extends Phaser.Scene {
     if (this.bolum >= BOLUMLER.length) this.bolum = 0;
     this.skor = data && data.skor ? data.skor : 0;
     this.baslangicSkor = this.skor;
-    // Tur: bütün bölümler bitince baştan başlanır, her turda hızlar %10 artar
+    // Tur: bütün bölümler bitince baştan başlanır, her turda hızlar %25 artar (100, 125, 150, 175...)
     this.tur = data && data.tur !== undefined ? data.tur : kayitOku("dpd_tur", 0);
-    this.hizCarpan = 1 + 0.1 * this.tur;
+    this.hizCarpan = 1 + 0.25 * this.tur;
   }
 
   preload() {
@@ -313,6 +313,16 @@ class Oyun extends Phaser.Scene {
     return this.g[y * GX + x];
   }
   katiMi(x, y) { return this.hucre(x, y) !== BOS; }
+
+  // İki varlık (düşman ve Reis) arasında, düşmanın gövde yüksekliği boyunca katı bir hücre var mı?
+  aradaDuvarVarMi(d, r) {
+    const y0 = Math.floor((d.y - d.h - OY) / C);
+    const y1 = Math.floor((d.y - 1 - OY) / C);
+    const x0 = Math.floor(Math.min(d.x, r.x) / C);
+    const x1 = Math.floor(Math.max(d.x, r.x) / C);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) if (this.katiMi(x, y)) return true;
+    return false;
+  }
 
   // Değişen hücreyi ve komşularını yeniden çizilecek olarak işaretle
   kirlet(i) {
@@ -691,7 +701,7 @@ class Oyun extends Phaser.Scene {
         continue;
       }
 
-      if (Math.abs(r.y - d.y) < 70 && Math.abs(r.x - d.x) < 420 && !r.olu) d.yon = Math.sign(r.x - d.x) || d.yon;
+      if (Math.abs(r.y - d.y) < 70 && Math.abs(r.x - d.x) < 420 && !r.olu && !this.aradaDuvarVarMi(d, r)) d.yon = Math.sign(r.x - d.x) || d.yon;
 
       if (d.yerde) {
         const s = this.yatay(d, d.yon * d.tip.hiz * this.hizCarpan * dt, false);
