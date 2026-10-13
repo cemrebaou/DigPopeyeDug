@@ -19,15 +19,14 @@ const REIS_HIZ = 200, KAZMA_HIZ = 110;
 // Boşta bekleme animasyonu zamanlaması (ms)
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
-const IDLE_KALDIRMA_MIN = 250, IDLE_KALDIRMA_MAX = 450;            // poz 2 (ayak kaldırma) kısa sürer
-const IDLE_VURMA_MIN = 1400, IDLE_VURMA_MAX = 2200;                // poz 3 (vurma + tozlu) ekranda uzun kalır
-// Bazı pozlarda ayağın görsel olarak yere tam basması için küçük aşağı kaydırma (px)
-const REIS_GORSEL_DY = { reis_idle2: 5 };
+const IDLE_SABIRSIZ_MIN = 150, IDLE_SABIRSIZ_MAX = 260;            // sabırsız pozlar (2<->3): pıt pıt pıt, ikisi de kısa ve eşit
+const IDLE_KIRPMA_ARALIK_MIN = 3500, IDLE_KIRPMA_ARALIK_MAX = 7000; // normal beklemede ara sıra çift göz kırpma
+const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: kapa-aç-kapa-aç, her kare kısa
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran",
-  ...[0, 1, 2, 3].map((i) => "reis_idle" + i),
+  ...[0, 1, 2, 3, 4, 5].map((i) => "reis_idle" + i),
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
@@ -639,31 +638,41 @@ class Oyun extends Phaser.Scene {
         if (!kaziyor) this.ses("ses_adim" + Phaser.Math.Between(1, 3), { volume: 0.6 });
       }
       tex = kaziyor ? this.kareler.reis_kaz[Math.floor(r.kare) % 6] : this.kareler.reis_walk[Math.floor(r.kare) % 6];
-      r.idleSure = 0;
+      r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (r.pompa > 0) {
       tex = this.kareler.reis_pump[Math.floor(zaman / 120) % 2];
-      r.idleSure = 0;
+      r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (r.yerde) {
       // Boşta bekleme: ilk iki poz arasında aralıklarla geçiş yapar (peş peşe değil).
-      // Uzun süre kıpırdamazsa sabırsızlanıp ayağını yere vurma moduna (3-4) geçer.
+      // Uzun süre kıpırdamazsa sabırsızlanıp ayağını yere vurma moduna (2-3, pıt pıt pıt) geçer.
       r.idleSure = (r.idleSure || 0) + dt * 1000;
       const sabirsiz = r.idleSure > IDLE_SABIR_ESIGI;
       if (r.idleDegisim === undefined || zaman > r.idleDegisim || r.idleSabirsizDi !== sabirsiz) {
         r.idlePoz = r.idlePoz === 0 ? 1 : 0;
         r.idleSabirsizDi = sabirsiz;
-        let minB, maxB;
-        if (sabirsiz) {
-          // poz 0 -> reis_idle2 (ayak kaldırma, kısa), poz 1 -> reis_idle3 (vurma/tozlu, uzun)
-          minB = r.idlePoz === 0 ? IDLE_KALDIRMA_MIN : IDLE_VURMA_MIN;
-          maxB = r.idlePoz === 0 ? IDLE_KALDIRMA_MAX : IDLE_VURMA_MAX;
-        } else {
-          minB = IDLE_BEKLEME_MIN; maxB = IDLE_BEKLEME_MAX;
-        }
+        const minB = sabirsiz ? IDLE_SABIRSIZ_MIN : IDLE_BEKLEME_MIN;
+        const maxB = sabirsiz ? IDLE_SABIRSIZ_MAX : IDLE_BEKLEME_MAX;
         r.idleDegisim = zaman + Phaser.Math.Between(minB, maxB);
       }
-      tex = sabirsiz
-        ? (r.idlePoz === 0 ? "reis_idle2" : "reis_idle3")
-        : (r.idlePoz === 0 ? "reis_idle0" : "reis_idle1");
+      if (sabirsiz) {
+        tex = r.idlePoz === 0 ? "reis_idle2" : "reis_idle3";
+        r.blinkAsama = 0; r.blinkZaman = undefined;
+      } else {
+        // Normal beklemede ara sıra çift göz kırpma: kapa-aç-kapa-aç, sonra açık devam
+        if (r.blinkZaman === undefined) r.blinkZaman = zaman + Phaser.Math.Between(IDLE_KIRPMA_ARALIK_MIN, IDLE_KIRPMA_ARALIK_MAX);
+        if (!r.blinkAsama && zaman > r.blinkZaman) { r.blinkAsama = 1; r.blinkDegisim = zaman + IDLE_KIRPMA_KARE_SURE; }
+        if (r.blinkAsama && zaman > r.blinkDegisim) {
+          r.blinkAsama++;
+          r.blinkDegisim = zaman + IDLE_KIRPMA_KARE_SURE;
+          if (r.blinkAsama > 4) {
+            r.blinkAsama = 0;
+            r.blinkZaman = zaman + Phaser.Math.Between(IDLE_KIRPMA_ARALIK_MIN, IDLE_KIRPMA_ARALIK_MAX);
+          }
+        }
+        if (r.blinkAsama === 1 || r.blinkAsama === 3) tex = "reis_idle5";       // göz kapalı
+        else if (r.blinkAsama === 2 || r.blinkAsama === 4) tex = "reis_idle4"; // göz açık (kırpma pozu)
+        else tex = r.idlePoz === 0 ? "reis_idle0" : "reis_idle1";
+      }
     } else {
       tex = "reis_walk0";
     }
@@ -675,7 +684,7 @@ class Oyun extends Phaser.Scene {
     else r.spr.setAlpha(1);
 
     if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y + (REIS_GORSEL_DY[tex] || 0));
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setPosition(r.x, r.y);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
