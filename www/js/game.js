@@ -567,9 +567,15 @@ class Oyun extends Phaser.Scene {
       const yer = Math.min(r.y, h.y) - 3;
       const kontrol = new Phaser.Math.Vector2((sx + ex) / 2, Math.min(yer, Math.max(sy, ey) + 10));
       const egri = new Phaser.Curves.QuadraticBezier(new Phaser.Math.Vector2(sx, sy), kontrol, new Phaser.Math.Vector2(ex, ey));
-      const nok = egri.getPoints(16);
-      this.hortum.lineStyle(9, 0x3b0a0a, 1).strokePoints(nok);
-      this.hortum.lineStyle(5, 0xc1121f, 1).strokePoints(nok);
+      const nok = egri.getPoints(20);
+      // 3D boru: kontur, gövde, alt gölge, üst parlama
+      const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
+      const hg = this.hortum;
+      hg.lineStyle(12, 0x2a0606, 1).strokePoints(nok);
+      hg.lineStyle(9, 0xb3121c, 1).strokePoints(nok);
+      hg.lineStyle(4, 0x6e0910, 1).strokePoints(kay(2.5));
+      hg.lineStyle(3, 0xff6b6b, 1).strokePoints(kay(-1.8));
+      hg.lineStyle(1.5, 0xffd6d6, 0.9).strokePoints(kay(-2.6));
     }
   }
 
