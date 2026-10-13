@@ -8,6 +8,7 @@
 //   R  Reis başlangıcı (ayakları bu karenin altında)
 //   c  yengeç
 //   o  ahtapot
+//   b  uçan kuş (eğilerek altından geç)
 // Eksik satırlar otomatik kaya ile doldurulur.
 
 const HAVA = "....................";
@@ -214,6 +215,108 @@ window.BOLUMLER.push(
       "d.....dd...........d",
       "d.....dd...........d",
       "d.c...dd...o....o..d",
+      ZEMIN
+    ]
+  }
+);
+
+// ---- KUŞ BÖLÜMLERİ (11-15) ----
+// b = uçan kuş. Zeminden 110 px yukarıda uçar: ayakta yürürsen kafana çarpar, EĞİLİNCE altından geçersin.
+// Kuş koridorları 5 satır yüksek. Asılı kaya blokları (##) altında 3 satırlık alçak tünel bırakır:
+// kuş giremez, eğilen Reis girer (tünelde ayağa kalkılamaz, eğikken kazılmaz).
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 11",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".R..................",
+      "dddddddssssdddd..ddd",
+      "dddddddssssdddd..ddd",
+      "dddddddssssdddd..ddd",
+      "#######kkkk####..###",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d...b..............d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 12",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "dddddsssdddddddd..dd",
+      "dddddsssdddddddd..dd",
+      "dddddsssdddddddd..dd",
+      "#####kkk########..##",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..........b.......d",
+      "##..################",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d.......c..........d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 13",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "dddd..dddddssssddddd",
+      "dddd..dddddssssddddd",
+      "dddd..dddddssssddddd",
+      "####..#####kkkk#####",
+      "d......##..........d",
+      "d......##..........d",
+      "d..................d",
+      "d..................d",
+      "dc.............b...d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 14",
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".................R..",
+      "dddddddddd..dssssddd",
+      "dddddddddd..dssssddd",
+      "dddddddddd..dssssddd",
+      "##########..#kkkk###",
+      "d.....##...........d",
+      "d.....##...........d",
+      "d..................d",
+      "d..................d",
+      "d..b..........b....d",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 15",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "R...................",
+      "d..ddddssssddddddddd",
+      "d..ddddssssddddddddd",
+      "d..ddddssssddddddddd",
+      "#..####kkkk#########",
+      "d...##......##.....d",
+      "d...##......##.....d",
+      "d..................d",
+      "d..................d",
+      "d........b......b..d",
+      "################..##",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "d..o.....c.........d",
       ZEMIN
     ]
   }

@@ -26,3 +26,9 @@
 
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
+
+## v0.12 — Kuş + Eğilme
+- Yeni düşman `b` (uçan kuş): zeminden 110 px yukarıda uçar, ayakta kafaya çarpar; eğilince altından geçilir. Sprite: `bird_walk0-3`, `bird_pump0-3`, `bird_pop0`.
+- Eğilme: buton (aşağı ok) bir kez basınca eğik kalır, tekrar basınca (yukarı ok) kalkar. Eğikken kazılmaz, hız x0.8, hitbox 100 px (ayakta 126). Tavan alçaksa kalkılamaz. Pompalayınca otomatik kalkar. Sprite: `reis_egil0-3`.
+- Bölüm 11-15: kuş bölümleri. `##` asılı bloklar altında 3 satırlık alçak tünel (kuş giremez, eğik Reis girer).
+- Butonlar sıkıştırıldı: sol, sağ, eğil, pompa (170/170/170/180 px).

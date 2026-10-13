@@ -14,6 +14,9 @@ const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner rek
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
 const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
+const REIS_BOY = 126, REIS_EGIK_BOY = 100; // hitbox yükseklikleri (ayaktan yukarı px)
+const EGIK_HIZ = 0.8;                       // eğik yürüme hızı çarpanı
+const KUS_HAVA = 110;                       // kuşun hitbox alt kenarının zeminden yüksekliği (ayakta çarpar, eğikken geçer)
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
 // Boşta bekleme animasyonu zamanlaması (ms)
@@ -28,6 +31,9 @@ const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran",
+  ...[0, 1, 2, 3].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
+  ...[0, 1, 2, 3].map((i) => "bird_walk" + i),
+  ...[0, 1, 2, 3].map((i) => "bird_pump" + i), "bird_pop0",
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_idle" + i),
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
@@ -49,7 +55,8 @@ const SESLER = [
 
 const DUSMAN_TIP = {
   c: { ad: "crab", hiz: 65, w: 81, h: 63 },
-  o: { ad: "octo", hiz: 48, w: 99, h: 66 }
+  o: { ad: "octo", hiz: 48, w: 99, h: 66 },
+  b: { ad: "bird", hiz: 115, w: 60, h: 46, ucar: true }
 };
 
 const YAZI = { fontFamily: "Arial Black, Arial", fontStyle: "bold", color: "#ffffff", stroke: "#3b2412", strokeThickness: 8 };
@@ -126,7 +133,7 @@ class Oyun extends Phaser.Scene {
 
     this.reis.spr = this.add.image(this.reis.x, this.reis.y, "reis_walk0").setOrigin(0.5, 1).setScale(REIS_OLCEK).setDepth(5);
     this.dusmanlar.forEach((d) => {
-      d.spr = this.add.image(d.x, d.y, d.tip.ad + "_walk0").setOrigin(0.5, 1).setScale(DUSMAN_OLCEK).setDepth(3);
+      d.spr = this.add.image(d.x, d.tip.ucar ? d.y - d.h / 2 : d.y, d.tip.ad + "_walk0").setOrigin(0.5, d.tip.ucar ? 0.5 : 1).setScale(DUSMAN_OLCEK).setDepth(3);
     });
 
     this.arayuz();
@@ -142,7 +149,9 @@ class Oyun extends Phaser.Scene {
       reis_pump: ["reis_pump0", "reis_pump1"],
       reis_kaz: [0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
       crab_walk: [0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
-      octo_walk: [0, 1, 2].map((i) => "octo_walk" + i)
+      octo_walk: [0, 1, 2].map((i) => "octo_walk" + i),
+      bird_walk: [0, 1, 2, 3].map((i) => "bird_walk" + i),
+      reis_egil: [0, 1, 2, 3].map((i) => "reis_egil" + i)
     };
   }
 
@@ -221,14 +230,14 @@ class Oyun extends Phaser.Scene {
           this.srcI[i] = i;
         }
         const px = c * KARE_PX + KARE_PX / 2, py = OY + (r + 1) * KARE_PX;
-        if (ch === "R") this.reis = { x: px, y: py, w: 45, h: 126, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
+        if (ch === "R") this.reis = { x: px, y: py, w: 45, h: REIS_BOY, egik: false, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
         if (DUSMAN_TIP[ch]) {
           const t = DUSMAN_TIP[ch];
-          this.dusmanlar.push({ tip: t, x: px, y: py, w: t.w, h: t.h, vy: 0, yon: Math.random() < 0.5 ? -1 : 1, kare: 0, sisme: 0, sonPompa: 0, olu: false });
+          this.dusmanlar.push({ tip: t, x: px, y: t.ucar ? py - KUS_HAVA : py, zemin: py, faz: Math.random() * 6.28, w: t.w, h: t.h, vy: 0, yon: Math.random() < 0.5 ? -1 : 1, kare: 0, sisme: 0, sonPompa: 0, olu: false });
         }
       }
     }
-    if (!this.reis) this.reis = { x: 60, y: OY, w: 45, h: 126, vy: 0, yon: 1, yerde: false, kare: 0, pompa: 0, olu: false };
+    if (!this.reis) this.reis = { x: 60, y: OY, w: 45, h: REIS_BOY, egik: false, vy: 0, yon: 1, yerde: false, kare: 0, pompa: 0, olu: false };
 
     // Mağara arka planı: başlangıçta üstünde dolu bir şey olan boş kareler
     this.magara = new Uint8Array(GX * GY);
@@ -273,10 +282,11 @@ class Oyun extends Phaser.Scene {
 
   kontroller() {
     this.input.addPointer(3);
-    // Butonlar: oklar 208 px, pompa 221 px, sol-sağ ok arası 10 px boşluk
-    this.ikonButon(118, KONTROL_Y, "btn_sol", 208, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
-    this.ikonButon(336, KONTROL_Y, "btn_sag", 208, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
-    this.ikonButon(596, KONTROL_Y, "btn_pompa", 221, () => this.pompala());
+    // Butonlar (aralar sıkı): sol, sağ, eğil, pompa
+    this.ikonButon(91, KONTROL_Y, "btn_sol", 170, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
+    this.ikonButon(265, KONTROL_Y, "btn_sag", 170, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
+    this.egilBtn = this.ikonButon(439, KONTROL_Y, "btn_egil", 170, () => this.egilTikla());
+    this.ikonButon(618, KONTROL_Y, "btn_pompa", 180, () => this.pompala());
     this.add.text(W - 10, H - 8, (window.OYUN_CONFIG && OYUN_CONFIG.surum) || "v0.01", { fontFamily: "Arial", fontSize: "22px", color: "#ffffff", stroke: "#3b2412", strokeThickness: 4 }).setOrigin(1, 1).setDepth(30);
 
     // Kapaklara dokunma
@@ -297,8 +307,23 @@ class Oyun extends Phaser.Scene {
       k.on("keydown-RIGHT", () => (this.tuslar.sag = true));
       k.on("keyup-RIGHT", () => (this.tuslar.sag = false));
       k.on("keydown-SPACE", () => this.pompala());
+      k.on("keydown-DOWN", () => this.egilTikla());
       k.on("keydown-R", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
     }
+  }
+
+  // Eğil / kalk: bir kez basınca eğik kalır, tekrar basınca kalkar (tavan alçaksa kalkamaz)
+  egilTikla() {
+    const r = this.reis;
+    if (this.durum !== "oyun" || r.olu) return;
+    if (!r.egik) r.egik = true;
+    else if (this.kalkabilir(r)) r.egik = false;
+  }
+
+  kalkabilir(r) {
+    const b = this.govde({ x: r.x, y: r.y, w: r.w, h: REIS_BOY });
+    for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) if (this.katiMi(x, y)) return false;
+    return true;
   }
 
   kapakAc(sx, sy) {
@@ -394,7 +419,7 @@ class Oyun extends Phaser.Scene {
       }
       if (engelSatir >= 0) {
         // basamak: sadece en alttaki 2 kare engelse yukarı çık
-        if (engelSatir >= b.y1 - 1 && engelSatir <= b.y1) {
+        if (!(e.tip && e.tip.ucar) && engelSatir >= b.y1 - 1 && engelSatir <= b.y1) {
           const tir = b.y1 - engelSatir + 1;
           let bos = true;
           for (let y = b.y0 - tir; y < b.y0; y++) for (let x = b.x0; x <= b.x1; x++) if (this.katiMi(x, y)) bos = false;
@@ -517,6 +542,7 @@ class Oyun extends Phaser.Scene {
   pompala() {
     if (this.durum !== "oyun" || this.reis.olu) return;
     const r = this.reis;
+    if (r.egik && this.kalkabilir(r)) r.egik = false; // pompalamak için ayağa kalkar
     r.pompa = 0.35;
     this.ses("ses_pompa", { volume: 0.7 });
     let hedef = null, en = 1e9;
@@ -524,7 +550,8 @@ class Oyun extends Phaser.Scene {
       if (d.olu) continue;
       const dx = (d.x - r.x) * r.yon;
       const mesafe = dx - d.w / 2 - r.w / 2;
-      if (dx > 0 && mesafe < 190 && Math.abs(d.y - r.y) < 70 && mesafe < en && this.gorusVar(r, d)) { en = mesafe; hedef = d; }
+      const dikey = d.tip.ucar ? Math.abs((d.y - d.h / 2) - (r.y - 60)) < 95 : Math.abs(d.y - r.y) < 70;
+      if (dx > 0 && mesafe < 190 && dikey && mesafe < en && this.gorusVar(r, d)) { en = mesafe; hedef = d; }
     }
     this.pompaHedef = hedef;
     if (!hedef) return;
@@ -545,7 +572,7 @@ class Oyun extends Phaser.Scene {
     d.olu = true;
     this.ses(d.tip.ad === "octo" ? "ses_ahtapot_pop" : "ses_yengec_pop", { volume: 0.9 });
     // patlama, şişmiş gövdenin ortasında olsun (yarım karakter boyu yukarıda)
-    d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.5).setY(d.y - (d.tip.ad === "octo" ? 58 : 70));
+    d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.5).setY(d.tip.ucar ? d.y - d.h / 2 : d.y - (d.tip.ad === "octo" ? 58 : 70));
     this.tweens.add({ targets: d.spr, alpha: 0, scale: DUSMAN_OLCEK * 1.3, duration: 600, delay: 150, onComplete: () => d.spr.destroy() });
     this.puanEkle(puan, d.x, d.y - d.h);
     this.cameras.main.shake(100, 0.005);
@@ -603,6 +630,8 @@ class Oyun extends Phaser.Scene {
       r.spr.setTexture(this.kareler.reis_fall[Math.floor(r.kare) % 4]).setPosition(r.x, r.y);
       return;
     }
+    r.h = r.egik ? REIS_EGIK_BOY : REIS_BOY;
+    if (this.egilBtn) { const k = r.egik ? "btn_kalk" : "btn_egil"; if (this.egilBtn.texture.key !== k) this.egilBtn.setTexture(k); }
     this.yercekimi(r, dt);
 
     // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar
@@ -623,7 +652,17 @@ class Oyun extends Phaser.Scene {
     if (!r.yerde && yon !== 0) r.yon = yon; // havadayken de basılan yöne bakar
 
     let tex;
-    if (yon !== 0 && r.pompa <= 0 && r.yerde) {
+    if (yon !== 0 && r.pompa <= 0 && r.yerde && r.egik) {
+      // eğik yürüme: kazma yok, kum/toprak engel olur
+      r.yon = yon;
+      this.yatay(r, yon * REIS_HIZ * EGIK_HIZ * this.hizCarpan * dt, false);
+      r.kazdi = false;
+      r.kare += dt * 10;
+      const adimNo = Math.floor(r.kare / 2);
+      if (adimNo !== r.sonAdim) { r.sonAdim = adimNo; this.ses("ses_adim" + Phaser.Math.Between(1, 3), { volume: 0.5 }); }
+      tex = this.kareler.reis_egil[Math.floor(r.kare) % 4];
+      r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
+    } else if (yon !== 0 && r.pompa <= 0 && r.yerde) {
       r.yon = yon;
       const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * this.hizCarpan * dt, true);
       r.kazdi = sonuc.kazdi;
@@ -644,6 +683,9 @@ class Oyun extends Phaser.Scene {
       r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (r.pompa > 0) {
       tex = this.kareler.reis_pump[Math.floor(zaman / 120) % 2];
+      r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
+    } else if (r.yerde && r.egik) {
+      tex = "reis_egil0";
       r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (r.yerde) {
       // Boşta bekleme: ilk iki poz arasında aralıklarla geçiş yapar (peş peşe değil).
@@ -696,7 +738,7 @@ class Oyun extends Phaser.Scene {
       // hortum, pompa görselindeki hortum çıkış (soket) noktasından başlar: [merkezden yatay px, tabandan yukarı px] (görsel pikseli)
       const cikis = POMPA_HORTUM_CIKIS[tex] || POMPA_HORTUM_CIKIS.reis_pump0;
       const sx = r.x + r.yon * cikis[0] * REIS_OLCEK, sy = r.y - cikis[1] * REIS_OLCEK;
-      const ex = h.x - r.yon * h.w * 0.28, ey = h.y - 14;
+      const ex = h.x - r.yon * h.w * 0.28, ey = h.tip.ucar ? h.y - h.h / 2 : h.y - 14;
       const yer = Math.min(r.y, h.y) - 3;
       const kontrol = new Phaser.Math.Vector2((sx + ex) / 2, Math.min(yer, Math.max(sy, ey) + 10));
       const egri = new Phaser.Curves.QuadraticBezier(new Phaser.Math.Vector2(sx, sy), kontrol, new Phaser.Math.Vector2(ex, ey));
@@ -729,7 +771,7 @@ class Oyun extends Phaser.Scene {
     const r = this.reis;
     for (const d of this.dusmanlar) {
       if (d.olu) continue;
-      this.yercekimi(d, dt);
+      if (d.tip.ucar) d.yerde = true; else this.yercekimi(d, dt);
 
       // kumun altında kaldı mı
       const b = this.govde(d);
@@ -743,7 +785,23 @@ class Oyun extends Phaser.Scene {
       if (d.sisme > 0 && zaman - d.sonPompa > 500 && zaman - (d.sonSonme || 0) > 350) { d.sisme--; d.sonSonme = zaman; this.ses("ses_sonme", { volume: 0.6 }); }
 
       if (d.sisme > 0) {
-        d.spr.setTexture(d.tip.ad + "_pump" + Math.min(3, d.sisme)).setPosition(d.x, d.y);
+        d.spr.setTexture(d.tip.ad + "_pump" + Math.min(3, d.sisme)).setPosition(d.x, d.tip.ucar ? d.y - d.h / 2 : d.y);
+        continue;
+      }
+
+      if (d.tip.ucar) {
+        // Uçan kuş: aynı hizadaysa Reis'e doğru süzülür, geçtikten sonra (280 px) dönüp tekrar gelir; duvara çarpınca döner
+        d.faz += dt * 3.2;
+        d.y = d.zemin - KUS_HAVA + Math.sin(d.faz) * 2.5;
+        const gor = !r.olu && Math.abs(r.y - d.zemin) < 70 && !this.aradaDuvarVarMi(d, r);
+        if (gor && !d.hedefAldi) { d.yon = Math.sign(r.x - d.x) || d.yon; d.hedefAldi = true; }
+        if (gor && (r.x - d.x) * d.yon < -280) d.yon *= -1;
+        if (!gor) d.hedefAldi = false;
+        const s = this.yatay(d, d.yon * d.tip.hiz * this.hizCarpan * dt, false);
+        if (s.durdu) d.yon *= -1;
+        d.kare += dt * 12;
+        const kk = this.kareler.bird_walk;
+        d.spr.setTexture(kk[Math.floor(d.kare) % kk.length]).setFlipX(d.yon < 0).setPosition(d.x, d.y - d.h / 2);
         continue;
       }
 
@@ -765,6 +823,12 @@ class Oyun extends Phaser.Scene {
     if (this.dokunulmaz <= 0) {
       for (const d of this.dusmanlar) {
         if (d.olu || d.sisme > 0) continue;
+        if (d.tip.ucar) {
+          // kuş: ayakta kafaya çarpar, eğikken altından geçilir
+          const oy = Math.min(d.y, r.y) - Math.max(d.y - d.h, r.y - r.h);
+          if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 14 && oy > 6) return this.olum();
+          continue;
+        }
         if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 18 && Math.abs((d.y - d.h / 2) - (r.y - r.h / 2)) < (d.h + r.h) / 2 - 15) return this.olum();
       }
     }
