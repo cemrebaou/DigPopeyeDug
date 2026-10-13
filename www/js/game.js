@@ -20,6 +20,7 @@ const REIS_HIZ = 200, KAZMA_HIZ = 110;
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1",
+  ...[0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
   ...[0, 1, 2, 3].map((i) => "reis_fall" + i),
   ...[0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
@@ -117,6 +118,7 @@ class Oyun extends Phaser.Scene {
       reis_walk: [0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
       reis_fall: [0, 1, 2, 3].map((i) => "reis_fall" + i),
       reis_pump: ["reis_pump0", "reis_pump1"],
+      reis_kaz: [0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
       crab_walk: [0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
       octo_walk: [0, 1, 2].map((i) => "octo_walk" + i)
     };
@@ -561,9 +563,11 @@ class Oyun extends Phaser.Scene {
       r.yon = yon;
       const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * dt, true);
       r.kazdi = sonuc.kazdi;
+      if (r.kazdi) r.kazZaman = zaman;
       if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) { this.sonKazmaSes = zaman; this.ses("ses_kazma", { volume: 0.55, detune: Phaser.Math.Between(-150, 150) }); }
       r.kare += dt * (r.kazdi ? 8 : 12);
-      tex = this.kareler.reis_walk[Math.floor(r.kare) % 6];
+      const kaziyor = zaman - (r.kazZaman || -1e9) < 250;
+      tex = kaziyor ? this.kareler.reis_kaz[Math.floor(r.kare) % 6] : this.kareler.reis_walk[Math.floor(r.kare) % 6];
     } else if (r.pompa > 0) {
       tex = this.kareler.reis_pump[Math.floor(zaman / 120) % 2];
     } else {

@@ -14,6 +14,7 @@
 - Yeni çakıllı kum dokusu. Butonların arkasındaki tahta kaldırıldı, gri kaya kesintisiz aşağı devam ediyor.
 - Pompa hortumu ince, pompa butonundaki koyu kömür grisi; düşman ucunda koyu sarı pirinç başlık.
 - Düşman sönmesi: pompalamayı bırakınca 0,5 sn bekler, sonra 0,35 sn'de bir kademe hızlı söner.
+- Kazma animasyonu: kum/toprak kazarken Reis eller havada kazma hareketi yapıyor (6 kare).
 - Sesler (ilk 5): pompa, şişme (her kademede incelir), yengeç patlaması, ahtapot patlaması, kazma. Kayıttan kesildi, kayıt çok kısık olduğu için gürültülü olabilir.
 
 ## Vazgeçilenler
