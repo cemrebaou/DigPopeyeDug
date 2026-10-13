@@ -571,11 +571,11 @@ class Oyun extends Phaser.Scene {
       // 3D boru: kontur, gövde, alt gölge, üst parlama
       const kay = (dy) => nok.map((p) => new Phaser.Math.Vector2(p.x, p.y + dy));
       const hg = this.hortum;
-      hg.lineStyle(12, 0x2a0606, 1).strokePoints(nok);
-      hg.lineStyle(9, 0xb3121c, 1).strokePoints(nok);
-      hg.lineStyle(4, 0x6e0910, 1).strokePoints(kay(2.5));
-      hg.lineStyle(3, 0xff6b6b, 1).strokePoints(kay(-1.8));
-      hg.lineStyle(1.5, 0xffd6d6, 0.9).strokePoints(kay(-2.6));
+      hg.lineStyle(7, 0x1e2226, 1).strokePoints(nok);
+      hg.lineStyle(5, 0x7d8790, 1).strokePoints(nok);
+      hg.lineStyle(2, 0x4a5259, 1).strokePoints(kay(1.4));
+      hg.lineStyle(1.5, 0xc4ccd3, 1).strokePoints(kay(-1));
+      hg.lineStyle(1, 0xf2f5f7, 0.9).strokePoints(kay(-1.5));
     }
   }
 
