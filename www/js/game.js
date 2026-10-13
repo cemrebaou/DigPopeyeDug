@@ -42,6 +42,13 @@ function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 // RGBA (little-endian) -> Uint32
 const renk32 = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
+// Kum dokusundan parlak gri kaya rengi
+function kayaRenk(r, g, b) {
+  const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.72;
+  const s = (x) => (x > 255 ? 255 : x) | 0;
+  return renk32(s(v * 0.96), s(v), s(v * 1.08));
+}
+
 // Rengi f ile çarp (ışık/gölge)
 function carp(c, f) {
   let r = (c & 255) * f, g = ((c >>> 8) & 255) * f, b = ((c >>> 16) & 255) * f;
@@ -74,6 +81,7 @@ class Oyun extends Phaser.Scene {
     this.arkaPlan();
     this.haritaYukle(BOLUMLER[this.bolum]);
     this.dokulariHazirla();
+    this.altKaya();
 
     // Zemin, ekran çözünürlüğünde (1:1) çizilir; büyütme yok, bulanıklık yok
     this.kumTex = this.textures.createCanvas("zemin" + Date.now(), W, ALAN_H);
@@ -111,10 +119,6 @@ class Oyun extends Phaser.Scene {
     g.fillGradientStyle(0x5bb8f0, 0x5bb8f0, 0xbfe9ff, 0xbfe9ff, 1);
     g.fillRect(0, 0, W, ALT);
     // Alt kontrol bandı: tahta
-    this.add.tileSprite(0, ALT, W, H - ALT, "doku_tahta").setOrigin(0).setDepth(0).setTint(0x8a7060);
-    const s = this.add.graphics().setDepth(0);
-    s.fillStyle(0x2a1a0d, 1);
-    s.fillRect(0, ALT, W, 6);
   }
 
   // ---------- Dokular ----------
@@ -139,10 +143,26 @@ class Oyun extends Phaser.Scene {
     this.src = {
       [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.98), sinir(b * 0.86))),
       [TOPRAK]: yap(kum, (r, g, b) => renk32(sinir(r * 0.74), sinir(g * 0.5), sinir(b * 0.33))), // canlı kahve
-      [KAYA]: yap(kum, (r, g, b) => { const v = (r * 0.3 + g * 0.59 + b * 0.11) * 0.72; return renk32(sinir(v * 0.96), sinir(v), sinir(v * 1.08)); }), // parlak gri
+      [KAYA]: yap(kum, (r, g, b) => kayaRenk(r, g, b)), // parlak gri
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
       magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
     };
+  }
+
+  // Butonların arkası: oyun alanındaki gri kaya kesintisiz aşağı devam eder
+  altKaya() {
+    const yuk = H - ALT, img = this.textures.get("doku_kum").getSourceImage();
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = yuk;
+    const cx = cv.getContext("2d");
+    const bas = -(ALAN_H % img.height);
+    for (let y = bas; y < yuk; y += img.height) for (let x = 0; x < W; x += img.width) cx.drawImage(img, x, y);
+    const id = cx.getImageData(0, 0, W, yuk), d = id.data, u = new Uint32Array(d.buffer);
+    for (let i = 0, p = 0; i < u.length; i++, p += 4) u[i] = kayaRenk(d[p], d[p + 1], d[p + 2]);
+    cx.putImageData(id, 0, 0);
+    const key = "altkaya" + Date.now();
+    this.textures.addCanvas(key, cv);
+    this.add.image(0, ALT, key).setOrigin(0).setDepth(0);
   }
 
   haritaYukle(bolum) {
