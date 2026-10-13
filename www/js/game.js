@@ -348,7 +348,7 @@ class Oyun extends Phaser.Scene {
       else p.cy = p.py - KARE_PX + fw / 2;                // tavana asılı, aşağı üfler
       p.yari = fh * 0.42;                                 // rüzgar bandının yarı genişliği (px)
       p.on = fw / 2;                                      // ön kenara uzaklık (px)
-      const spr = this.add.image(p.cx, p.cy, "fan0").setScale(PERVANE_OLCEK).setDepth(3).setTint(0x9a9a9a);
+      const spr = this.add.image(p.cx, p.cy, "fan0").setScale(PERVANE_OLCEK).setDepth(3);
       if (p.yon === "l") spr.setFlipX(true);
       if (p.yon === "u") spr.setAngle(-90);
       if (p.yon === "d") spr.setAngle(90);
@@ -364,7 +364,6 @@ class Oyun extends Phaser.Scene {
   pervaneTikla(p) {
     if (this.durum !== "oyun") return;
     p.acik = !p.acik;
-    p.spr.setTint(p.acik ? 0xffffff : 0x9a9a9a);
     this.ruzgarKur();
   }
 
