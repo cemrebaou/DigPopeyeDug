@@ -9,7 +9,7 @@ const GY = SATIR * HARITA_KARE; // 144
 const OY = 130;              // oyun alanının ekrandaki üst kenarı
 const ALAN_H = GY * C;       // 864
 const ALT = OY + ALAN_H;     // 994
-const KONTROL_Y = 1062;      // butonların ortası (altındaki 150px banner reklam için boş)
+const KONTROL_Y = 1086;      // butonların ortası (altındaki 150px banner reklam için boş)
 
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4;
 
@@ -64,6 +64,9 @@ class Oyun extends Phaser.Scene {
     if (this.bolum >= BOLUMLER.length) this.bolum = 0;
     this.skor = data && data.skor ? data.skor : 0;
     this.baslangicSkor = this.skor;
+    // Tur: bütün bölümler bitince baştan başlanır, her turda hızlar %10 artar
+    this.tur = data && data.tur !== undefined ? data.tur : kayitOku("dpd_tur", 0);
+    this.hizCarpan = 1 + 0.1 * this.tur;
   }
 
   preload() {
@@ -236,7 +239,7 @@ class Oyun extends Phaser.Scene {
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
 
     // Yeniden başla
-    this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor }));
+    this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
 
     // Tam ekran (sadece tarayıcıda; telefondaki uygulamada zaten tam ekran)
     if (!Ads.native && this.sys.game.device.fullscreen.available) {
@@ -260,9 +263,10 @@ class Oyun extends Phaser.Scene {
 
   kontroller() {
     this.input.addPointer(3);
-    this.ikonButon(88, KONTROL_Y, "btn_sol", 128, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
-    this.ikonButon(236, KONTROL_Y, "btn_sag", 128, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
-    this.ikonButon(628, KONTROL_Y, "btn_pompa", 136, () => this.pompala());
+    // Butonlar: ok ve pompa %30 büyük, oklar arası mesafe 2 kat
+    this.ikonButon(95, KONTROL_Y, "btn_sol", 166, () => (this.tuslar.sol = true), () => (this.tuslar.sol = false));
+    this.ikonButon(391, KONTROL_Y, "btn_sag", 166, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
+    this.ikonButon(612, KONTROL_Y, "btn_pompa", 177, () => this.pompala());
 
     // Kapaklara dokunma
     this.input.on("pointerdown", (p) => {
@@ -282,7 +286,7 @@ class Oyun extends Phaser.Scene {
       k.on("keydown-RIGHT", () => (this.tuslar.sag = true));
       k.on("keyup-RIGHT", () => (this.tuslar.sag = false));
       k.on("keydown-SPACE", () => this.pompala());
-      k.on("keydown-R", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor }));
+      k.on("keydown-R", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
     }
   }
 
@@ -600,7 +604,7 @@ class Oyun extends Phaser.Scene {
     let tex;
     if (yon !== 0 && r.pompa <= 0 && r.yerde) {
       r.yon = yon;
-      const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * dt, true);
+      const sonuc = this.yatay(r, yon * (r.kazdi ? KAZMA_HIZ : REIS_HIZ) * this.hizCarpan * dt, true);
       r.kazdi = sonuc.kazdi;
       if (r.kazdi) r.kazZaman = zaman;
       if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) {
@@ -689,7 +693,7 @@ class Oyun extends Phaser.Scene {
       if (Math.abs(r.y - d.y) < 70 && Math.abs(r.x - d.x) < 420 && !r.olu) d.yon = Math.sign(r.x - d.x) || d.yon;
 
       if (d.yerde) {
-        const s = this.yatay(d, d.yon * d.tip.hiz * dt, false);
+        const s = this.yatay(d, d.yon * d.tip.hiz * this.hizCarpan * dt, false);
         if (s.durdu) d.yon *= -1;
       }
       d.kare += dt * 8;
@@ -723,7 +727,8 @@ class Oyun extends Phaser.Scene {
   bolumBitti() {
     if (this.durum !== "oyun") return;
     this.durum = "kazandi";
-    kayitYaz("dpd_bolum", this.bolum + 1);
+    if (this.bolum + 1 >= BOLUMLER.length) { kayitYaz("dpd_bolum", 0); kayitYaz("dpd_tur", this.tur + 1); }
+    else kayitYaz("dpd_bolum", this.bolum + 1);
     this.ses("ses_kazandi", { volume: 0.9 });
     this.time.delayedCall(700, () => this.bitisEkrani(true));
   }
@@ -740,10 +745,10 @@ class Oyun extends Phaser.Scene {
 
     if (kazandi) {
       const son = this.bolum + 1 >= BOLUMLER.length;
-      grup.add(this.barButon(W / 2, 800, "bar_yesil", son ? "Baştan Başla" : "Sonraki Bölüm", () =>
-        this.scene.restart({ bolum: son ? 0 : this.bolum + 1, skor: this.skor })));
+      grup.add(this.barButon(W / 2, 800, "bar_yesil", son ? "Daha Zor Baştan Başla" : "Sonraki Bölüm", () =>
+        this.scene.restart({ bolum: son ? 0 : this.bolum + 1, skor: this.skor, tur: son ? this.tur + 1 : this.tur })));
     } else {
-      grup.add(this.barButon(W / 2, 800, "bar_yesil", "Tekrar Dene", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor })));
+      grup.add(this.barButon(W / 2, 800, "bar_yesil", "Tekrar Dene", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur })));
       if (this.devamHakki) {
         grup.add(this.barButon(W / 2, 960, "bar_mor", "Reklam izle, devam et", async () => {
           const izlendi = await Ads.odulluIzle();
