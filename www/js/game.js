@@ -161,7 +161,7 @@ class Oyun extends Phaser.Scene {
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
     const orijinal = yap(kum, (r, g, b) => renk32(r, g, b));
     this.src = {
-      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.04), sinir(g * 0.74), sinir(b * 0.82))), // dökülecek kum: somon pembe
+      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 0.85), sinir(g * 1.0), sinir(b * 1.1))), // dökülecek kum: zeytin yeşili
       [TOPRAK]: orijinal, // sabit kalan zemin: orijinal sarı kum
       [KAYA]: orijinal,
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),

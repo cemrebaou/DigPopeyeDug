@@ -18,7 +18,7 @@
 - Yeni sesler (kullanıcının ürettikleri): kum kazma, toprak kazma, kapak, adım x3, düşerken (sadece havadayken), iniş, kum akışı x2, sönme, ölme, bölüm tamam; pompa ve patlamalar yenilendi. Şişirme sesi bekleniyor.
 - Eski sesler (ilk 5): pompa, şişme (her kademede incelir), yengeç patlaması, ahtapot patlaması, kazma. Kayıttan kesildi, kayıt çok kısık olduğu için gürültülü olabilir.
 
-- Düşerken yeni düşme görseli (reis_dus). Tüm sabit zemin (toprak, kaya) orijinal sarı kum dokusu; dökülecek kum somon pembe. Kazma sesi: sadece kum kazma sesi.
+- Düşerken yeni düşme görseli (reis_dus). Tüm sabit zemin (toprak, kaya) orijinal sarı kum dokusu; dökülecek kum zeytin yeşili. Kazma sesi: sadece kum kazma sesi.
 
 ## Vazgeçilenler
 - Basılı tutulan pompa: mevcut pompa hali beğenildi, aynen kalacak.
