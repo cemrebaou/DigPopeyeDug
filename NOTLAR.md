@@ -2,6 +2,9 @@
 
 ## Bekleyenler
 
+### 1. Gri gölge gereksiz
+- Karakterlerin altındaki gri gölge kaldırılacak (şimdilik dokunulmadı, bilgi olarak duruyor).
+
 ## Yapılanlar (önizlemede, GitHub'a henüz gönderilmedi)
 - Yeniden başla butonu (sağ üst, yeşil). Bölümü baştaki skorla yeniden başlatır.
 - Arayüz ikonları: oklar, pompa, yeniden başla, bitiş paneli ve butonlar yeni görsellerle.
