@@ -51,3 +51,10 @@
 - Bölümler: 21 it-düşür, 22 toprağa sıkış+zıpla, 23 buldozer (taşla ez, çukura tıkaç, zıpla), 24 kuşa düşür (2 kaya), 25 rüzgar kayayı iter, 26 kaya asansörü (yukarı rüzgar), 27 kaya merdiven, 28 direk aşma, 29 iki kaya, 30 final (köprü+kapak+kuş).
 - Düşmanların çukura/kenara düşmemesi için 1 karelik `d` kenar (lip) kullanıldı; pompa görüş çizgisi lip'e takılır, lip'in üstünden pompalanır.
 - v0.22: bölüm 23 yenilendi; kaya arkasında mağara gölgesi izi kalmıyor (TAS magara sayılmaz).
+
+## v0.23 — Dikenler, testereler, sallanan toplar (bölüm 31-45)
+- Bölüm 20: başlangıç sütun 1'e alındı. Kayanın gri izi (magara) kaldırıldı: kaya hücreleri şeffaf çiziliyor.
+- `A` yer dikeni, `W` tavan dikeni: sadece Reis'i öldürür; kum/kaya hücrenin >=%50'sini örterse etkisiz olur.
+- `X` sabit testere, `N` raydaki testere (sadece Reis'i öldürür). `Y`/`Z` dokununca sağa/sola fırlayan testere (Reis'i ve düşmanları keser; kapağa çarparsa yerine döner, başka yere çarparsa durur).
+- `S` sürekli sallanan, `P` dokununca sallanan dikenli top (düşmanları da öldürür). Zincir boyu bölümde `zincir` (kare). Metal zincir + parlama efekti.
+- 31-35 dikenler, 36-40 testereler, 41-45 toplar; öncekiler (kaya, kapak, pervane, eğilme, zıplama) karışık kullanıldı.
