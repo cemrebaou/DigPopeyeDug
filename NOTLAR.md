@@ -40,3 +40,13 @@
 - Haritanın altı artık açık: çukurdan (24. satıra kadar açık sütun) düşen ölür (düşman +150 puan).
 - Bölümler: 16 çukura itme, 17 yukarı süzülme, 18 kumu çukura savurma, 19 kapak+rüzgar+kuş, 20 karışık final.
 - Bölümlerde `ipucu` alanı ekran ipucunu değiştirir.
+
+## v0.21 — Kaya itme + zıplama (bölüm 21-30)
+- Zıpla: yukarı ok butonu (pompanın üstünde, geçici), PC: yukarı ok (eğikken kalkar). ZIPLA_V=590 → ~125 px yükseklik, ~4 kare uzaklık. Havada yön verilir.
+- Kaya: haritada 2x2'lik `T` kümesi. Izgarada TAS(5) olarak yazılır, 1 kum tanesi (6 px) adımlarla kayar. Yerçekimi, itme (Reis iterken kazmaz, hızı %60), sıkışma (önü toprak/kum/kaya ise kıpırdamaz), altında destek 4 tane ve altına düşerse kenardan devrilir.
+- Düşen/kayan kaya düşmanı ezer; üstüne düşen Reis ölür. Üstündeki Reis kayayla taşınır.
+- Rüzgar kayayı iter; yukarı rüzgar kayayı kaldırır (kaya rüzgarı kapatır: ışın kayada durur). Kaya her karede ışın yeniden kurulur.
+- yatay(): basamak çıkma artık sadece alttaki 2 tane yüksekliğindeki engellerde (yüksek kayaya tırmanmaz).
+- Kum yayılıp ince tabaka olur, bu yüzden kayayı sıkıştıran engel TOPRAK (d) blok (L22, L29).
+- Bölümler: 21 it-düşür, 22 toprağa sıkış+zıpla, 23 çukura köprü, 24 kuşa düşür (2 kaya), 25 rüzgar kayayı iter, 26 kaya asansörü (yukarı rüzgar), 27 kaya merdiven, 28 direk aşma, 29 iki kaya, 30 final (köprü+kapak+kuş).
+- Düşmanların çukura/kenara düşmemesi için 1 karelik `d` kenar (lip) kullanıldı; pompa görüş çizgisi lip'e takılır, lip'in üstünden pompalanır.

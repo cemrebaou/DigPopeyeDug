@@ -10,6 +10,7 @@
 //   o  ahtapot
 //   b  uçan kuş (eğilerek altından geç)
 //   > < ^ v  pervane (sağa/sola/yukarı/aşağı rüzgar)
+//   T  itilebilen kaya (2x2 kare: iki satır x iki sütun T)
 // Eksik satırlar otomatik kaya ile doldurulur.
 
 const HAVA = "....................";
@@ -437,6 +438,177 @@ window.BOLUMLER.push(
       "##############....##",
       "##############....##",
       "##############....##"
+    ]
+  }
+);
+
+// ---- KAYA + ZIPLAMA BÖLÜMLERİ (21-30) ----
+// T = itilebilen kaya (2x2 kare). Üstünde 4 T'lik kare yaz: ör. "TT" iki satırda üst üste.
+// Kaya yerçekimiyle düşer, Reis yürüyerek iter (iterken kazamaz), önü kum/kaya ise SIKIŞIR.
+// Düşen / kayan kaya düşmanı ezer. Rüzgar kayayı iter, yukarı rüzgar kayayı kaldırır (üstüne çıkıp binebilirsin).
+// Zıpla: sağdaki yukarı ok butonu (PC: yukarı ok). Yaklaşık 3,5 kare yüksek, 4 kare uzağa atlar.
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 21",
+    ipucu: "Taşı it, düşmanın üstüne düşür!",
+    harita: [
+      HAVA, HAVA,
+      "....TT..............",
+      ".R..TT..............",
+      "dddddddd..dddddddddd",
+      "dddddddd..dddddddddd",
+      "dddddddd..dddddddddd",
+      "#######....#########",
+      "#######....#########",
+      "#######....#########",
+      "#######.c..#########",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 22",
+    ipucu: "Taş toprağa sıkışır: zıpla, önce kaz!",
+    harita: [
+      HAVA, HAVA,
+      "...TT..dd...........",
+      "...TT..dd...........",
+      "dddddddddd..dddddddd",
+      "dddddddddd..dddddddd",
+      "dddddddddd..dddddddd",
+      "#########....#######",
+      "#########....#######",
+      "#########....#######",
+      "#########.o..#######",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 23",
+    ipucu: "Taşı çukura it, üstüne çık, zıpla!",
+    harita: [
+      HAVA, HAVA,
+      "...TT...............",
+      ".R.TT.......d...o...",
+      "dddddd.....ddddddddd",
+      "dddddd.....ddddddddd",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 24",
+    ipucu: "Kuş altından geçerken taşı düşür!",
+    harita: [
+      HAVA, HAVA,
+      "....TT........TT....",
+      ".R..TT........TT....",
+      "dddddddd..dddddddddd",
+      "dddddddd..dddddddddd",
+      "dddddddd..dddddddddd",
+      "####..............##",
+      "####..............##",
+      "####..............##",
+      "####..............##",
+      "####..........b...##",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 25",
+    ipucu: "Pervane taşı iter. Sonra kapat!",
+    harita: [
+      HAVA, HAVA,
+      "....TT..............",
+      ".R>.TT........d.o...",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "###########....#####",
+      "###########....#####",
+      "###########....#####",
+      "###########.c..#####",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 26",
+    ipucu: "Taşa çık, pervaneyi aç!",
+    harita: [
+      HAVA, HAVA, HAVA,
+      "...........d.c...o..",
+      "#######..###########",
+      "#######..###########",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#......TT..........#",
+      "#.R....TT..........#",
+      "########.###########",
+      "########^###########",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 27",
+    ipucu: "Taşı duvara it, merdiven yap!",
+    harita: [
+      HAVA, HAVA, HAVA, HAVA, HAVA,
+      "..........d..c...o..",
+      "..........dddddddddd",
+      "..........dddddddddd",
+      "....TT....dddddddddd",
+      ".R..TT....dddddddddd",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 28",
+    ipucu: "Direği aşmak için taşı kullan!",
+    harita: [
+      HAVA, HAVA, HAVA, HAVA, HAVA,
+      "..........dd........",
+      "..........dd........",
+      "....TT....dd........",
+      ".R..TT....dd........",
+      "dddddddddddd........",
+      "dddddddddddd........",
+      "dddddddddddd........",
+      "dddddddddddd........",
+      "dddddddddddd..c..o..",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 29",
+    ipucu: "İki taş, iki çukur. Toprağa dikkat!",
+    harita: [
+      HAVA, HAVA,
+      "...TT.....TT.dd.....",
+      "...TT.....TT.dd.....",
+      "ddddddd..ddddddd..dd",
+      "ddddddd..ddddddd..dd",
+      "ddddddd..ddddddd..dd",
+      "######....#####....#",
+      "######....#####....#",
+      "######....#####....#",
+      "######.c..#####.o..#",
+      ZEMIN
+    ]
+  },
+  {
+    ad: "Bölüm 30",
+    ipucu: "Köprü kur, kapağı aç, hepsini temizle!",
+    harita: [
+      HAVA, HAVA,
+      "...TT.........TT....",
+      ".R.TT.......d.TT.o.b",
+      "dddddd.....dddkkdddd",
+      "dddddd.....dd....ddd",
+      "#############....###",
+      "#############....###",
+      "#############....###",
+      "#############.c.o###",
+      ZEMIN
     ]
   }
 );
