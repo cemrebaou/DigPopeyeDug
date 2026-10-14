@@ -484,13 +484,13 @@ window.BOLUMLER.push(
   },
   {
     ad: "Bölüm 23",
-    ipucu: "Taşı çukura it, üstüne çık, zıpla!",
+    ipucu: "Taşı sür, düşmanları ez! Sonra zıpla.",
     harita: [
       HAVA, HAVA,
       "...TT...............",
-      ".R.TT.......d...o...",
-      "dddddd.....ddddddddd",
-      "dddddd.....ddddddddd",
+      ".R.TT..c.....#.o...c",
+      "ddddddddd..ddddddddd",
+      "ddddddddd..ddddddddd",
       ZEMIN
     ]
   },

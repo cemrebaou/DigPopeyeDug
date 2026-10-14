@@ -48,5 +48,6 @@
 - Rüzgar kayayı iter; yukarı rüzgar kayayı kaldırır (kaya rüzgarı kapatır: ışın kayada durur). Kaya her karede ışın yeniden kurulur.
 - yatay(): basamak çıkma artık sadece alttaki 2 tane yüksekliğindeki engellerde (yüksek kayaya tırmanmaz).
 - Kum yayılıp ince tabaka olur, bu yüzden kayayı sıkıştıran engel TOPRAK (d) blok (L22, L29).
-- Bölümler: 21 it-düşür, 22 toprağa sıkış+zıpla, 23 çukura köprü, 24 kuşa düşür (2 kaya), 25 rüzgar kayayı iter, 26 kaya asansörü (yukarı rüzgar), 27 kaya merdiven, 28 direk aşma, 29 iki kaya, 30 final (köprü+kapak+kuş).
+- Bölümler: 21 it-düşür, 22 toprağa sıkış+zıpla, 23 buldozer (taşla ez, çukura tıkaç, zıpla), 24 kuşa düşür (2 kaya), 25 rüzgar kayayı iter, 26 kaya asansörü (yukarı rüzgar), 27 kaya merdiven, 28 direk aşma, 29 iki kaya, 30 final (köprü+kapak+kuş).
 - Düşmanların çukura/kenara düşmemesi için 1 karelik `d` kenar (lip) kullanıldı; pompa görüş çizgisi lip'e takılır, lip'in üstünden pompalanır.
+- v0.22: bölüm 23 yenilendi; kaya arkasında mağara gölgesi izi kalmıyor (TAS magara sayılmaz).

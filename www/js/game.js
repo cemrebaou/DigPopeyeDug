@@ -273,7 +273,7 @@ class Oyun extends Phaser.Scene {
     for (let x = 0; x < GX; x++) {
       let yer = false;
       for (let y = 0; y < GY; y++) {
-        if (this.g[y * GX + x] !== BOS) yer = true;
+        if (this.g[y * GX + x] !== BOS && this.g[y * GX + x] !== TAS) yer = true; // kaya mağara sayılmaz (arkasında gölge izi kalmasın)
         if (yer) this.magara[y * GX + x] = 1;
       }
     }
