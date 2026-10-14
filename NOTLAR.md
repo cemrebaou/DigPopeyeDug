@@ -58,3 +58,9 @@
 - `X` sabit testere, `N` raydaki testere (sadece Reis'i öldürür). `Y`/`Z` dokununca sağa/sola fırlayan testere (Reis'i ve düşmanları keser; kapağa çarparsa yerine döner, başka yere çarparsa durur).
 - `S` sürekli sallanan, `P` dokununca sallanan dikenli top (düşmanları da öldürür). Zincir boyu bölümde `zincir` (kare). Metal zincir + parlama efekti.
 - 31-35 dikenler, 36-40 testereler, 41-45 toplar; öncekiler (kaya, kapak, pervane, eğilme, zıplama) karışık kullanıldı.
+
+## v0.24
+- Bölüme `dusmanYon: -1` eklenebilir (düşmanlar sola, Reis'e doğru başlar). 16 ve 20'de kullanıldı; 20'de düşman alanı yeniden düzenlendi.
+- 22: toprak engel çukurun hemen yanına alındı. 32: çukur 6 geniş (atlanamaz, kaya şart).
+- 34, 35, 42, 44, 45: ahtapot alanı genişletildi (çıkıntının sağı 5-6 kare). 35'e kuş eklendi, 34'ten zemin dikeni çıkarıldı.
+- Zincir gerçek halkalı zincir çiziliyor, parlama efekti kaldırıldı.

@@ -260,7 +260,7 @@ class Oyun extends Phaser.Scene {
         if (PERVANE_YON[ch]) this.pervaneler.push({ yon: PERVANE_YON[ch], px, py, acik: false });
         if (DUSMAN_TIP[ch]) {
           const t = DUSMAN_TIP[ch];
-          this.dusmanlar.push({ tip: t, x: px, y: t.ucar ? py - KUS_HAVA : py, zemin: py, faz: Math.random() * 6.28, w: t.w, h: t.h, vy: 0, yon: Math.random() < 0.5 ? -1 : 1, kare: 0, sisme: 0, sonPompa: 0, olu: false });
+          this.dusmanlar.push({ tip: t, x: px, y: t.ucar ? py - KUS_HAVA : py, zemin: py, faz: Math.random() * 6.28, w: t.w, h: t.h, vy: 0, yon: bolum.dusmanYon || (Math.random() < 0.5 ? -1 : 1), kare: 0, sisme: 0, sonPompa: 0, olu: false });
         }
       }
     }
@@ -588,27 +588,20 @@ class Oyun extends Phaser.Scene {
 
   // Metal zincir: halkalar dönüşümlü yüzü/yan duran ellipsler, üstünde gezinen parlama
   zincirCiz(g, pg, b, aci, zaman) {
-    const dx = b.x - b.px, dy = b.y - b.py, uz = Math.hypot(dx, dy), n = Math.max(2, Math.floor(uz / 15));
+    const dx = b.x - b.px, dy = b.y - b.py, uz = Math.hypot(dx, dy), n = Math.max(2, Math.floor(uz / 13));
     const aa = Math.atan2(dy, dx), ca = Math.cos(aa), sa = Math.sin(aa);
-    const elips = (cx, cy, a, bb, pts = 12) => { const o = []; for (let k = 0; k < pts; k++) { const th = (k / pts) * Math.PI * 2, ex = Math.cos(th) * a, ey = Math.sin(th) * bb; o.push({ x: cx + ex * ca - ey * sa, y: cy + ex * sa + ey * ca }); } return o; };
-    const parla = Math.floor(zaman / 55) % (n + 12);
+    const elips = (cx, cy, a, bb, pts = 16) => { const o = []; for (let k = 0; k <= pts; k++) { const th = (k / pts) * Math.PI * 2, ex = Math.cos(th) * a, ey = Math.sin(th) * bb; o.push({ x: cx + ex * ca - ey * sa, y: cy + ex * sa + ey * ca }); } return o; };
+    // birbirine geçmiş halkalar: dönüşümlü geniş (yüzü dönük) ve dar (yandan görünen) halka, sadece çerçeve
     for (let i = 0; i < n; i++) {
-      const f = (i + 0.5) / n, cx = b.px + dx * f * 0.94, cy = b.py + dy * f * 0.94;
-      const yuz = i % 2 === 0, bb = yuz ? 5.6 : 2.6;
-      g.fillStyle(0x23262b, 1).fillPoints(elips(cx, cy, 9, bb), true);
-      g.fillStyle(0x8f979f, 1).fillPoints(elips(cx, cy, 7.6, Math.max(1.2, bb - 1.6)), true);
-      g.fillStyle(0xdde3ea, 0.85).fillPoints(elips(cx - sa * 0.0 - 1.2, cy - 1.2, 4.2, Math.max(0.7, bb - 3.2), 8), true);
-      const uzak = Math.abs(i - parla);
-      if (uzak < 3) { const al = uzak === 0 ? 0.95 : uzak === 1 ? 0.5 : 0.22; pg.fillStyle(0xffffff, al).fillPoints(elips(cx, cy, 8, bb - 0.5), true); }
+      const f = (i + 0.5) / n, cx = b.px + dx * f * 0.96, cy = b.py + dy * f * 0.96;
+      const yuz = i % 2 === 0, bb = yuz ? 5.2 : 2.2, a = 9;
+      const p = elips(cx, cy, a, bb);
+      g.lineStyle(yuz ? 4.2 : 3.6, 0x1d2025, 1).strokePoints(p, true, true);
+      g.lineStyle(yuz ? 2.2 : 1.8, yuz ? 0xaab2ba : 0x7d858d, 1).strokePoints(p, true, true);
     }
     // tavan bağlantısı
     g.fillStyle(0x3a3e44, 1).fillCircle(b.px, b.py, 8);
     g.fillStyle(0xaab2ba, 1).fillCircle(b.px - 1.5, b.py - 1.5, 4.5);
-    // topun parıltısı
-    const kuvvet = 0.5 + 0.5 * Math.sin(zaman / 170 + b.px), sx = b.x - 13, sy = b.y - 15, bo = 4 + 5 * kuvvet;
-    pg.lineStyle(2, 0xffffff, 0.35 + 0.55 * kuvvet);
-    pg.lineBetween(sx - bo, sy, sx + bo, sy); pg.lineBetween(sx, sy - bo, sx, sy + bo);
-    pg.fillStyle(0xffffff, 0.5 + 0.5 * kuvvet).fillCircle(sx, sy, 1.8);
   }
 
   kalkabilir(r) {
