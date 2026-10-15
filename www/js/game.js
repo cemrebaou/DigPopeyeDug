@@ -43,7 +43,7 @@ const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 9], reis_pump1: [39, 15] };
 // Boşta bekleme animasyonu zamanlaması (ms)
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
-const IDLE_SABIRSIZ_MIN = 150, IDLE_SABIRSIZ_MAX = 260;            // sabırsız pozlar (2<->3): pıt pıt pıt, ikisi de kısa ve eşit
+const AYAK_KALDIR_SURE = 110, AYAK_VURUS_ARALIK = 1000;           // sabırsız ayak vurma: ayak çok kısa kalkar, vurur, 1 sn bekler
 const IDLE_KIRPMA_ARALIK_MIN = 3500, IDLE_KIRPMA_ARALIK_MAX = 7000; // normal beklemede ara sıra çift göz kırpma
 const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: kapa-aç-kapa-aç, her kare kısa
 
@@ -1572,21 +1572,28 @@ class Oyun extends Phaser.Scene {
       r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (r.yerde) {
       // Boşta bekleme: ilk iki poz arasında aralıklarla geçiş yapar (peş peşe değil).
-      // Uzun süre kıpırdamazsa sabırsızlanıp ayağını yere vurma moduna (2-3, pıt pıt pıt) geçer.
+      // Uzun süre kıpırdamazsa sabırsızlanıp ayağını yere vurmaya başlar.
       r.idleSure = (r.idleSure || 0) + dt * 1000;
       const sabirsiz = r.idleSure > IDLE_SABIR_ESIGI;
-      if (r.idleDegisim === undefined || zaman > r.idleDegisim || r.idleSabirsizDi !== sabirsiz) {
-        r.idlePoz = r.idlePoz === 0 ? 1 : 0;
-        r.idleSabirsizDi = sabirsiz;
-        const minB = sabirsiz ? IDLE_SABIRSIZ_MIN : IDLE_BEKLEME_MIN;
-        const maxB = sabirsiz ? IDLE_SABIRSIZ_MAX : IDLE_BEKLEME_MAX;
-        r.idleDegisim = zaman + Phaser.Math.Between(minB, maxB);
-        if (sabirsiz) this.ses("ses_ayak_vur", { volume: 0.8 });
-      }
       if (sabirsiz) {
-        tex = r.idlePoz === 0 ? "reis_idle2" : "reis_idle3";
+        // Ayak vurma döngüsü: ayak çok kısa kalkar (idle3) -> yere vurur, kum adım sesi çalar (idle2)
+        // -> 1 sn bekler -> tekrar. Ses her vuruşta yeniden çalınır; böylece ses ile ayak hep aynı
+        // anda olur (uzun bir ses dosyasını döngüye alsaydık adımlar ayakla senkron kalmazdı).
+        if (!r.ayakVuruyor) { r.ayakVuruyor = true; r.ayakKalkik = true; r.ayakDegisim = zaman + AYAK_KALDIR_SURE; }
+        if (zaman > r.ayakDegisim) {
+          if (r.ayakKalkik) {
+            r.ayakKalkik = false; r.ayakDegisim = zaman + AYAK_VURUS_ARALIK;
+            this.ses("ses_ayak_vur", { volume: 0.8 });
+          } else { r.ayakKalkik = true; r.ayakDegisim = zaman + AYAK_KALDIR_SURE; }
+        }
+        tex = r.ayakKalkik ? "reis_idle3" : "reis_idle2";
         r.blinkAsama = 0; r.blinkZaman = undefined;
       } else {
+        r.ayakVuruyor = false;
+        if (r.idleDegisim === undefined || zaman > r.idleDegisim) {
+          r.idlePoz = r.idlePoz === 0 ? 1 : 0;
+          r.idleDegisim = zaman + Phaser.Math.Between(IDLE_BEKLEME_MIN, IDLE_BEKLEME_MAX);
+        }
         // Normal beklemede ara sıra çift göz kırpma: kapa-aç-kapa-aç, sonra açık devam
         if (r.blinkZaman === undefined) r.blinkZaman = zaman + Phaser.Math.Between(IDLE_KIRPMA_ARALIK_MIN, IDLE_KIRPMA_ARALIK_MAX);
         if (!r.blinkAsama && zaman > r.blinkZaman) { r.blinkAsama = 1; r.blinkDegisim = zaman + IDLE_KIRPMA_KARE_SURE; }

@@ -2,6 +2,12 @@
 
 ## Bekleyenler
 
+## v0.44 — Eğik Yürüyüş Yere Basıyor, Yeni Ayak Vurma
+- Eğik yürüyüş kareleri her biri kendi ayak tabanına hizalandı; ayak artık her karede yere değiyor (bazı karelerde 1-9 px havadaydı).
+- Uzun beklemedeki sabırsız ayak vurma yeni pozlarla değiştirildi (reis_idle2 ayak yerde, reis_idle3 ayak kalkık).
+- Ayak vurma döngüsü: ayak çok kısa (110 ms) kalkar, yere vurur ve kum adım sesi çalar, 1 sn bekler, tekrar.
+- Yeni ses (ses_ayak_vur): verilen kum adım kaydından tek ve temiz bir adım kesildi; her vuruşta çalar, ayakla tam senkron.
+
 ## v0.43 — Heykel Yerleşimi (Çerçevesiz)
 - Bölüm 26: heykel bir satır yukarı alındı, ağzı dar yarığın hemen dibinde; sadece oturduğu satır oyuk, üst kısmı yarığın yanlarındaki toprağın önünde durur. Kayanın altı sağlam.
 - Bölüm 43 / 45: duvara açılan çerçeve geri alındı; heykelin sırtı duvarın önünde görünür.
