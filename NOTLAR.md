@@ -2,6 +2,16 @@
 
 ## Bekleyenler
 
+## v0.49 — İlk 5 Bölüm Geçilebilir Hale Getirildi
+- Hata: Reis 3,5 kare boyunda; tüneller 4 kareydi. Dökülen kum tünel dibinde birikince Reis yükseliyor, kafası kırılmaz tavana takılıp ileri kazamıyordu. Tüm yeni bölümlerde tünel/oda yüksekliği en az 5 kare yapıldı.
+- Kum fiziği: haritanın altı açık (oyun dışı) yerlerde en alt satıra gelen kum artık dışarı düşüp kayboluyor (eskiden en alt satırda birikiyordu).
+- Bölüm 1: boşluğun dibinde 2 karelik kapak; altı oyun dışına kadar boş, açınca kum boşluğa dökülür.
+- Bölüm 2: ahtapot çukurunun üstündeki kırılmaz taş kaldırıldı; kum kendiliğinden çukura dökülür.
+- Bölüm 3: boşluk akışkan kumla dolu, altında kapak; açınca kum alttaki derin odaya dökülür, Reis inip toprak duvarı kazarak ahtapota ulaşır. Boşluğun duvarları kırılmaz (yanlışlıkla yukarıda tünel açılmasın). Sağdaki kumlar kaldırıldı. Oyunda doğrulandı.
+- Bölüm 4: küçük kapağın üstündeki kum kaldırıldı; katlar 5 kare.
+- Bölüm 5: alt odalar 5 kare.
+- KURAL: Bölüm tasarımında Reis'in geçeceği her tünel/oda en az 5 kare yüksek olmalı.
+
 ## v0.48 — 5 Yeni Başlangıç Bölümü, Butonlar Aşağıda
 - Başa 5 yeni bölüm eklendi (sadece kum, toprak, kaya, kapak, yengeç, ahtapot; yeni nesne yok). Eski bölümler 5 ileri kaydı (toplam 50), hepsi yeniden numaralandı.
   1 Kazı Yolu: üstteki kum tepesini kaz, boşluktan aşağı düş, sola kaz, 2 canavar.

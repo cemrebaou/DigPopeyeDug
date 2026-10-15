@@ -1249,6 +1249,11 @@ class Oyun extends Phaser.Scene {
     }
     const sagdan = (this.kare & 1) === 1;
     let hareket = 0;
+    // Haritanın altı açık (oyun dışı boşluk): en alt satıra gelen kum dışarı düşüp kaybolur.
+    // Yoksa dipsiz çukura dökülen kum en alt satırda birikip çukuru dolduruyordu.
+    for (let x = 0, i = (GY - 1) * GX; x < GX; x++, i++) {
+      if (g[i] === KUM) { g[i] = BOS; this.kirlet(i); hareket++; }
+    }
     for (let y = GY - 2; y >= 0; y--) {
       for (let k = 0; k < GX; k++) {
         const x = sagdan ? GX - 1 - k : k;
