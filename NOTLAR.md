@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.28 — Pürüzsüz Rampa & Akıcı Kum Yamaçları
+- Kum yamaçlarındaki 6 piksellik merdiven/basamak tırtıkları kaldırıldı; referans görsele uygun pürüzsüz düz rampa yüzeyi ve parlak sarı üst kontur çizgisi uygulandı.
+- Tepe zirvesi sivri üçgen kavisle bağlandı.
+- Kum akış ve dökülme fiziği optimize edildi.
+
 ## v0.27 — Akışkan Altın Kum Fiziği & Parçacık Efektleri
 - Kum rengi donuk zeytin yeşilinden canlı, sıcak altın çöl kumu tonuna çevrildi (yapay zeka / modern mobil kum oyunları hissi).
 - Kum tanelerine 3D yuvarlak taneleme efekti verildi (köşe yumuşatma ve tane grenleri).

@@ -165,7 +165,7 @@ class Oyun extends Phaser.Scene {
       const cv = document.createElement("canvas");
       cv.width = 6; cv.height = 6;
       const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#f8c547";
+      ctx.fillStyle = "#c79860";
       ctx.beginPath();
       ctx.arc(3, 3, 2.5, 0, Math.PI * 2);
       ctx.fill();
@@ -241,8 +241,9 @@ class Oyun extends Phaser.Scene {
     };
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
     const orijinal = yap(kum, (r, g, b) => renk32(r, g, b));
+
     this.src = {
-      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.25), sinir(g * 1.02), sinir(b * 0.68))), // canlı altın sarısı çöl kumu
+      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 0.85), sinir(g * 1.0), sinir(b * 1.1))), // orijinal v0.26 doğal kum tonu
       [TOPRAK]: orijinal, // sabit kalan zemin: orijinal sarı kum
       [KAYA]: orijinal,
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
@@ -916,43 +917,42 @@ class Oyun extends Phaser.Scene {
       for (let y = Math.max(0, b.y0); y <= Math.min(GY - 1, b.y1); y++)
         for (let x = Math.max(0, b.x0); x <= Math.min(GX - 1, b.x1); x++) eng[y * GX + x] = 1;
     }
-    let toplamHareket = 0;
-    // Çift adımlı akışkan kum fiziği (Sand Balls / akıcı dökülme)
-    for (let adim = 0; adim < 2; adim++) {
-      const sagdan = ((this.kare + adim) & 1) === 1;
-      let hareket = 0;
-      for (let y = GY - 2; y >= 0; y--) {
-        for (let k = 0; k < GX; k++) {
-          const x = sagdan ? GX - 1 - k : k;
-          const i = y * GX + x;
-          if (g[i] !== KUM) continue;
-          if (this.ruzgarYon[i] === 3) continue; // yukarı üfleyen rüzgarda kum havada asılı kalır
-          const a = i + GX;
-          let hedef = -1;
-          if (g[a] === BOS && !eng[a]) hedef = a;
-          else {
-            const ilk = Math.random() < 0.5 ? -1 : 1;
-            for (const s of [ilk, -ilk]) {
-              const nx = x + s;
-              if (nx < 0 || nx >= GX) continue;
-              const yan = i + s, alt = a + s;
-              if (g[alt] === BOS && !eng[alt] && (g[yan] === BOS || g[yan] === KUM)) { hedef = alt; break; }
+    const sagdan = (this.kare & 1) === 1;
+    let hareket = 0;
+    for (let y = GY - 2; y >= 0; y--) {
+      for (let k = 0; k < GX; k++) {
+        const x = sagdan ? GX - 1 - k : k;
+        const i = y * GX + x;
+        if (g[i] !== KUM) continue;
+        if (this.ruzgarYon[i] === 3) continue; // yukarı üfleyen rüzgarda kum havada asılı kalır
+        const a = i + GX;
+        let hedef = -1;
+        // Kum doğrudan düşer ve tepe oluşturacak şekilde yana kayar
+        if (g[a] === BOS && !eng[a]) {
+          hedef = a;
+        } else {
+          const ilk = Math.random() < 0.5 ? -1 : 1;
+          for (const s of [ilk, -ilk]) {
+            const nx = x + s;
+            if (nx < 0 || nx >= GX) continue;
+            const yan = i + s, alt = a + s;
+            if (g[alt] === BOS && !eng[alt] && g[yan] === BOS) {
+              hedef = alt;
+              break;
             }
           }
-          if (hedef >= 0) {
-            g[hedef] = KUM; si[hedef] = si[i];
-            g[i] = BOS;
-            this.durgun[hedef] = 0;
-            this.kirlet(i); this.kirlet(hedef);
-            hareket++;
-          } else if (si[i] !== i && ++this.durgun[i] > 20) {
-            // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
-            si[i] = i; this.kirlet(i);
-          }
+        }
+        if (hedef >= 0) {
+          g[hedef] = KUM; si[hedef] = si[i];
+          g[i] = BOS;
+          this.durgun[hedef] = 0;
+          this.kirlet(i); this.kirlet(hedef);
+          hareket++;
+        } else if (si[i] !== i && ++this.durgun[i] > 10) {
+          // durulan kum, dokuyu kendi yerinden alır: dikiş/çizgi/kare izi kalmaz
+          si[i] = i; this.kirlet(i);
         }
       }
-      toplamHareket += hareket;
-      if (hareket === 0) break;
     }
     // Rüzgar kum tanelerini savurur
     for (const p of this.pervaneler) {
@@ -973,7 +973,7 @@ class Oyun extends Phaser.Scene {
       }
     }
     // Kum akış sesi: yeterince kum aktığında (kapak açılınca, göçünce) çalar
-    this.kumSayac = (this.kumSayac || 0) * 0.93 + toplamHareket;
+    this.kumSayac = (this.kumSayac || 0) * 0.93 + hareket;
     const simdi = this.time.now;
     if (this.durum === "oyun" && this.kare > 60 && this.kumSayac > 40 && simdi - (this.sonKumSes || 0) > 1300) {
       this.sonKumSes = simdi; this.kumSayac = 0;
@@ -1017,22 +1017,39 @@ class Oyun extends Phaser.Scene {
       const ton = 1;
       const ust = bosMu(cx, cy - 1) || cy === 0, alt = bosMu(cx, cy + 1);
       const sol = bosMu(cx - 1, cy), sag = bosMu(cx + 1, cy);
+
+      // Tepe / yamaç rampa tespiti (basamak piksellerini görseldeki gibi pürüzsüz düz rampa çizgisine çevirir)
+      let rampaTipi = 0; // 0: normal, 1: sola inen yamaç, 2: sağa inen yamaç, 3: tepe zirvesi
+      if (tip === KUM && ust) {
+        if (sol && sag) rampaTipi = 3;
+        else if (sol && !sag) rampaTipi = 1;
+        else if (sag && !sol) rampaTipi = 2;
+      }
+
       for (let yy = 0; yy < C; yy++) {
         const o = hedef0 + yy * W, ko = kaynak0 + yy * W;
         let fy = ton;
         if (ust && yy < 3) fy *= UST[yy];
         if (alt && yy >= C - 3) fy *= ALTG[yy - (C - 3)];
         for (let xx = 0; xx < C; xx++) {
+          if (rampaTipi > 0) {
+            let cutoff = 0;
+            if (rampaTipi === 1) cutoff = C - 1 - xx;
+            else if (rampaTipi === 2) cutoff = xx;
+            else if (rampaTipi === 3) cutoff = xx < 3 ? 2 - xx : xx - 3;
+
+            if (yy < cutoff) {
+              px[o + xx] = mg[i] ? magaraSrc[o + xx] : 0;
+              continue;
+            } else if (yy === cutoff) {
+              px[o + xx] = carp(dz[ko + xx], 1.45);
+              continue;
+            }
+          }
+
           let f = fy;
           if (sol && xx < 2) f *= xx === 0 ? 1.14 : 1.06;
           if (sag && xx >= C - 2) f *= xx === C - 1 ? 0.7 : 0.84;
-          if (tip === KUM) {
-            const kose = (ust && sol && xx === 0 && yy === 0) ||
-                         (ust && sag && xx === C - 1 && yy === 0) ||
-                         (alt && sol && xx === 0 && yy === C - 1) ||
-                         (alt && sag && xx === C - 1 && yy === C - 1);
-            if (kose) f *= 0.68;
-          }
           px[o + xx] = f === 1 ? dz[ko + xx] : carp(dz[ko + xx], f);
         }
       }
