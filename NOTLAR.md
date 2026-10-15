@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.46 — Görseller Orijinal Saydamlıkla Yeniden Kesildi
+- Kullanıcının verdiği PNG'ler zaten saydam arka planlı; önceki kesimlerde saydamlık atılıp arka plan renge göre siliniyordu. Bu yüzden kapalı boşluklar (ör. Reis'in eli ile kemeri arası) beyaz/siyah kalıyordu.
+- Tüm kullanıcı görselleri orijinal saydamlıklarıyla yeniden kesildi (boyut ve hizalamalar aynı): reis_idle2/3, reis_egil0-4, reis_zipla, reis_zipla_in, pervane_kapali/acik, btn_sayfa_sol/sag, btn_bolum_daire, btn_bolumler, panel_bolumler.
+- KURAL: Kullanıcının PNG'lerinde saydamlık varsa her zaman onu kullan, renge göre arka plan silme.
+
 ## v0.45 — Reis Yere Basıyor
 - Ölçüldü: ayaklar zemine tam değiyordu ama kumun parlak üst kenar çizgisi yüzünden havada gibi görünüyordu. Reis yerdeyken görsel olarak 4 px zemine gömülü çizilir (REIS_YERE_BATMA); çarpışma kutusu aynı.
 - Sabırsız ayak vurmada ayak kalkış süresi 100 ms.
