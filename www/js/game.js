@@ -17,6 +17,8 @@ const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
 const REIS_BOY = 126, REIS_EGIK_BOY = 85; // hitbox yükseklikleri (ayaktan yukarı px)
 const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.85;                       // eğik yürüme hızı çarpanı
 const RUZGAR_HIZ = 110, RUZGAR_MENZIL = 84, PERVANE_OLCEK = 0.65; // rüzgar: itme hızı (px/sn), en uzun menzil (kum tanesi), pervane görsel ölçeği
+const HEYKEL_EN = 148 * PERVANE_OLCEK * 0.709; // taş heykel genişliği (görsel en/boy oranı korunur)
+const HEYKEL_AGIZ_X = 0.39, HEYKEL_AGIZ_Y = 0.23; // açık ağzın merkeze göre konumu (genişlik / yükseklik oranı)
 const PERVANE_YON = { ">": "r", "<": "l", "^": "u", "v": "d" };
 const ZIPLA_V = 590;                        // zıplama hızı (px/sn): yaklaşık 125 px yüksekliğe çıkar
 const KAYA_ITME = 0.6, KAYA_BOY = 12;       // kaya itilirken Reis hız çarpanı; kaya boyu (kum tanesi) = 2x2 harita karesi
@@ -871,7 +873,7 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Rüzgar / pervane ----------
   pervaneKur() {
-    const fw = 118 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK; // görsel boyutu
+    const fw = HEYKEL_EN, fh = 148 * PERVANE_OLCEK; // görsel boyutu
     this.pervaneler.forEach((p) => {
       const yatayMi = p.yon === "r" || p.yon === "l";
       p.cx = p.px;
@@ -901,7 +903,7 @@ class Oyun extends Phaser.Scene {
     if (this.durum !== "oyun") return;
     p.acik = !p.acik;
     if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
-      const fw = 118 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK;
+      const fw = HEYKEL_EN, fh = 148 * PERVANE_OLCEK;
       p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
       p.spr.setDisplaySize(fw, fh);
     }
@@ -945,7 +947,7 @@ class Oyun extends Phaser.Scene {
     for (const p of this.pervaneler) {
       if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
         p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
-        p.spr.setDisplaySize(118 * PERVANE_OLCEK, fh);
+        p.spr.setDisplaySize(HEYKEL_EN, fh);
       } else {
         p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
       }
@@ -956,10 +958,11 @@ class Oyun extends Phaser.Scene {
 
       // Rüzgarın çıkış noktası: doğrudan heykelin açık ağız deliğine hizalı
       let mx = p.cx, my = p.cy;
-      if (p.yon === "r") { mx = p.cx + p.on * 0.72; my = p.cy + fh * 0.16; }
-      else if (p.yon === "l") { mx = p.cx - p.on * 0.72; my = p.cy + fh * 0.16; }
-      else if (p.yon === "u") { mx = p.cx + fh * 0.16; my = p.cy - p.on * 0.72; }
-      else if (p.yon === "d") { mx = p.cx - fh * 0.16; my = p.cy + p.on * 0.72; }
+      const ax = HEYKEL_EN * HEYKEL_AGIZ_X, ay = fh * HEYKEL_AGIZ_Y;
+      if (p.yon === "r") { mx = p.cx + ax; my = p.cy + ay; }
+      else if (p.yon === "l") { mx = p.cx - ax; my = p.cy + ay; }
+      else if (p.yon === "u") { mx = p.cx + ay; my = p.cy - ax; }
+      else if (p.yon === "d") { mx = p.cx - ay; my = p.cy + ax; }
 
       const maxUz = Math.max(...p.menzil, 0);
       if (maxUz > p.on + 20) {

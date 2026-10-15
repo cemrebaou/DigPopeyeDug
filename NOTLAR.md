@@ -2,6 +2,10 @@
 
 ## Bekleyenler
 
+## v0.33 — Yeni Taş Heykel Üfleyici
+- Rüzgar veren karakter yeni taş heykel görseliyle değiştirildi: kapalıyken ağzı kapalı, açılınca ağzı açık (pervane_kapali / pervane_acik).
+- Rüzgar ağzın deliğinden çıkar; heykel en/boy oranı korunur.
+
 ## v0.32 — Sayfalı Bölüm Seçimi
 - Bölüm paneli kaydırmalı listeden 3 sütun x 4 satırlık sayfalı ızgaraya çevrildi.
 - Alt boşluğa sol/sağ ok butonları (btn_sayfa_sol / btn_sayfa_sag) ve sayfa numarası eklendi; panel oynanan bölümün sayfasıyla açılır.
