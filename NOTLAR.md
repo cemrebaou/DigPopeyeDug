@@ -2,6 +2,9 @@
 
 ## Bekleyenler
 
+## v0.35 — Rüzgar Çıkışı 3 px Daha Yukarı
+- Heykelin rüzgar çıkışı ağız deliğine tam denk gelsin diye 3 px daha yukarı alındı (toplam 6 px yukarı, 2 px geri).
+
 ## v0.34 — Rüzgar Çıkış İnce Ayarı
 - Heykelin rüzgarı ağız deliğinden tam çıksın diye 3 px yukarı, 2 px geri alındı.
 
