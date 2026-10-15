@@ -49,7 +49,7 @@ const SPRITELAR = [
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
   ...[0, 1, 2].map((i) => "octo_walk" + i),
   ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0",
-  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden", "btn_bolumler", "btn_bolum_daire", "panel_bolumler",
+  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden", "btn_bolumler", "btn_bolum_daire", "panel_bolumler", "btn_sayfa_sol", "btn_sayfa_sag",
   "bar_yesil", "bar_mor", "bar_turuncu", "panel",
   "doku_kum", "doku_tahta", "kapak_tahta", "btn_zipla"
 ];
@@ -473,100 +473,98 @@ class Oyun extends Phaser.Scene {
     kayitYaz("dpd_acilan_bolum", enYuksek);
     const toplamGosterilecek = Math.min(enYuksek, BOLUMLER.length);
 
-    // Kaydırılabilir seviye grid alanı (Scrollable Container)
-    const maskX = W / 2 - 250, maskY = panelY - 330, maskW = 500, maskH = 680;
-    const maskShape = this.make.graphics();
-    maskShape.fillStyle(0xffffff);
-    maskShape.fillRect(maskX, maskY, maskW, maskH);
-    const mask = maskShape.createGeometryMask();
-
-    const scrollContainer = this.add.container(0, 0);
-    scrollContainer.setMask(mask);
-    overlay.add(scrollContainer);
-
-    // Her satırda 3 tahta yuvarlak buton
-    const sutunSayisi = 3;
-    const butonCapi = 120;
-    const aralikX = 150;
-    const aralikY = 150;
+    // Sayfalı seviye ızgarası: 3 sütun x 4 satır, alttaki oklarla sayfa değişir
+    const sutunSayisi = 3, satirSayisi = 4, sayfaBasi = sutunSayisi * satirSayisi;
+    const butonCapi = 120, aralikX = 150, aralikY = 150;
     const baslangicX = W / 2 - aralikX;
-    const baslangicY = maskY + 75;
+    const baslangicY = panelY - 255;
+    const sayfaSayisi = Math.max(1, Math.ceil(toplamGosterilecek / sayfaBasi));
+    let sayfa = Math.min(sayfaSayisi - 1, Math.floor(Math.min(this.bolum, toplamGosterilecek - 1) / sayfaBasi));
 
-    for (let idx = 0; idx < toplamGosterilecek; idx++) {
-      const col = idx % sutunSayisi;
-      const row = Math.floor(idx / sutunSayisi);
-      const bx = baslangicX + col * aralikX;
-      const by = baslangicY + row * aralikY;
+    const izgara = this.add.container(0, 0);
+    overlay.add(izgara);
 
-      const btnItem = this.add.image(bx, by, "btn_bolum_daire");
-      btnItem.setDisplaySize(butonCapi, butonCapi).setInteractive({ useHandCursor: true });
+    const sayfaCiz = () => {
+      izgara.removeAll(true);
+      const ilk = sayfa * sayfaBasi, bitis = Math.min(toplamGosterilecek, ilk + sayfaBasi);
+      for (let idx = ilk; idx < bitis; idx++) {
+        const k = idx - ilk;
+        const bx = baslangicX + (k % sutunSayisi) * aralikX;
+        const by = baslangicY + Math.floor(k / sutunSayisi) * aralikY;
 
-      // Üzerindeki bölüm numarası
-      const noTxt = this.add.text(bx, by, (idx + 1).toString(), {
-        ...YAZI,
-        fontSize: "46px",
-        color: idx === this.bolum ? "#ffeaa7" : "#ffffff",
-        stroke: "#3d240e",
-        strokeThickness: 8
-      }).setOrigin(0.5);
+        const btnItem = this.add.image(bx, by, "btn_bolum_daire");
+        btnItem.setDisplaySize(butonCapi, butonCapi).setInteractive({ useHandCursor: true });
 
-      // Aktif oynanan bölüm vurgusu
-      if (idx === this.bolum) {
-        btnItem.setTint(0xfffae6);
-        this.tweens.add({
-          targets: btnItem,
-          scaleX: (butonCapi / btnItem.width) * 1.06,
-          scaleY: (butonCapi / btnItem.height) * 1.06,
-          yoyo: true,
-          repeat: -1,
-          duration: 600
+        // Üzerindeki bölüm numarası
+        const noTxt = this.add.text(bx, by, (idx + 1).toString(), {
+          ...YAZI,
+          fontSize: "46px",
+          color: idx === this.bolum ? "#ffeaa7" : "#ffffff",
+          stroke: "#3d240e",
+          strokeThickness: 8
+        }).setOrigin(0.5);
+
+        // Aktif oynanan bölüm vurgusu
+        if (idx === this.bolum) {
+          btnItem.setTint(0xfffae6);
+          this.tweens.add({
+            targets: btnItem,
+            scaleX: (butonCapi / btnItem.width) * 1.06,
+            scaleY: (butonCapi / btnItem.height) * 1.06,
+            yoyo: true,
+            repeat: -1,
+            duration: 600
+          });
+        }
+
+        const hedefBolum = idx;
+        btnItem.on("pointerdown", () => {
+          this.ses("ses_kapak", { volume: 0.8 });
+          this.bolumPaneliAcik = false;
+          overlay.destroy();
+          this.scene.restart({ bolum: hedefBolum, skor: 0, tur: this.tur });
         });
+
+        izgara.add(btnItem);
+        izgara.add(noTxt);
       }
-
-      const hedefBolum = idx;
-      btnItem.on("pointerdown", () => {
-        this.ses("ses_kapak", { volume: 0.8 });
-        this.bolumPaneliAcik = false;
-        overlay.destroy();
-        this.scene.restart({ bolum: hedefBolum, skor: 0, tur: this.tur });
-      });
-
-      scrollContainer.add(btnItem);
-      scrollContainer.add(noTxt);
-    }
-
-    // Dokunarak yukarı/aşağı kaydırma (Scroll gesture)
-    const toplamSatir = Math.ceil(toplamGosterilecek / sutunSayisi);
-    const toplamYukseklik = toplamSatir * aralikY;
-    const minScrollY = Math.min(0, maskH - toplamYukseklik - 30);
-    let startY = 0, scrollStartY = 0, surukleniyor = false;
-
-    bg.on("pointerdown", (pointer) => {
-      startY = pointer.y;
-      scrollStartY = scrollContainer.y;
-      surukleniyor = true;
-    });
-
-    this.input.on("pointermove", (pointer) => {
-      if (!surukleniyor || !this.bolumPaneliAcik) return;
-      const dy = pointer.y - startY;
-      let newY = scrollStartY + dy;
-      if (newY > 0) newY = newY * 0.3;
-      else if (newY < minScrollY) newY = minScrollY + (newY - minScrollY) * 0.3;
-      scrollContainer.y = newY;
-    });
-
-    const bitir = () => {
-      if (!surukleniyor) return;
-      surukleniyor = false;
-      if (scrollContainer.y > 0) {
-        this.tweens.add({ targets: scrollContainer, y: 0, duration: 250, ease: "Quad.easeOut" });
-      } else if (scrollContainer.y < minScrollY) {
-        this.tweens.add({ targets: scrollContainer, y: minScrollY, duration: 250, ease: "Quad.easeOut" });
-      }
+      sayfaTxt.setText((sayfa + 1) + " / " + sayfaSayisi);
+      solOk.setAlpha(sayfa > 0 ? 1 : 0.35);
+      sagOk.setAlpha(sayfa < sayfaSayisi - 1 ? 1 : 0.35);
     };
-    this.input.on("pointerup", bitir);
-    this.input.on("pointerupoutside", bitir);
+
+    // Alt boşlukta sayfa okları ve sayfa numarası
+    const okY = panelY + 345, okBoy = 100;
+    const okButon = (x, key, yon) => {
+      const b = this.add.image(x, okY, key).setInteractive({ useHandCursor: true });
+      const olcek = okBoy / b.width;
+      b.setScale(olcek);
+      b.on("pointerdown", () => {
+        b.setScale(olcek * 0.9);
+        const yeni = sayfa + yon;
+        if (yeni < 0 || yeni >= sayfaSayisi) return;
+        sayfa = yeni;
+        this.ses("ses_kapak", { volume: 0.5 });
+        sayfaCiz();
+      });
+      const geri = () => b.setScale(olcek);
+      b.on("pointerup", geri);
+      b.on("pointerout", geri);
+      overlay.add(b);
+      return b;
+    };
+    const solOk = okButon(W / 2 - 150, "btn_sayfa_sol", -1);
+    const sagOk = okButon(W / 2 + 150, "btn_sayfa_sag", 1);
+    const sayfaTxt = this.add.text(W / 2, okY, "", {
+      ...YAZI,
+      fontSize: "38px",
+      color: "#ffd670",
+      stroke: "#3d240e",
+      strokeThickness: 7
+    }).setOrigin(0.5);
+    overlay.add(sayfaTxt);
+
+    sayfaCiz();
   }
 
   // Resimli buton: basınca küçülür

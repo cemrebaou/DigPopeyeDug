@@ -2,6 +2,10 @@
 
 ## Bekleyenler
 
+## v0.32 — Sayfalı Bölüm Seçimi
+- Bölüm paneli kaydırmalı listeden 3 sütun x 4 satırlık sayfalı ızgaraya çevrildi.
+- Alt boşluğa sol/sağ ok butonları (btn_sayfa_sol / btn_sayfa_sag) ve sayfa numarası eklendi; panel oynanan bölümün sayfasıyla açılır.
+
 ## v0.31 — Kalıcı En Yüksek Bölüm Koruması & Heykel Üfleyici Boyutlandırması
 - Bölüm seçme menüsünde 1. seviye veya eski bir seviye seçildiğinde en yüksek ulaşılan bölümün silinmesi engellendi (`dpd_en_yuksek_bolum` koruması).
 - Kullanıcı hangi bölümü seçerse seçsin, ulaştığı en yüksek seviyeye kadar olan tüm butonlar daima açık kalır.
