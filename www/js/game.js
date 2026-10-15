@@ -893,6 +893,8 @@ class Oyun extends Phaser.Scene {
       else if (p.yon === "u") { p.mx = p.cx + ay; p.my = p.cy - ax; }
       else { p.mx = p.cx - ay; p.my = p.cy + ax; }
 
+      // Heykel zeminin (derinlik 1) ve kapakların (1.5) önünde çizilir: duvara/toprağa taşan kısmı
+      // toprağın üstünde görünür, bu yüzden haritada heykel için kocaman oyuk açmak gerekmez.
       const spr = this.add.image(p.cx, p.cy, "pervane_kapali").setDisplaySize(fw, fh).setDepth(3);
       if (p.yon === "l") spr.setFlipX(true);
       if (p.yon === "u") spr.setAngle(-90);

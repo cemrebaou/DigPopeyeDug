@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.43 — Heykel Yerleşimi (Çerçevesiz)
+- Bölüm 26: heykel bir satır yukarı alındı, ağzı dar yarığın hemen dibinde; sadece oturduğu satır oyuk, üst kısmı yarığın yanlarındaki toprağın önünde durur. Kayanın altı sağlam.
+- Bölüm 43 / 45: duvara açılan çerçeve geri alındı; heykelin sırtı duvarın önünde görünür.
+- Kural: heykel zeminden önde çizilir; haritada heykel için büyük oyuk/çerçeve açılmaz.
+
 ## v0.42 — Oyun Müziği ve Müzik Aç/Kapa
 - Arka plan müziği (ses_muzik) döngüde çalar; bölüm değişince baştan başlamaz, kesintisiz devam eder.
 - Üst menüye müzik aç/kapa butonu eklendi (btn_ses / btn_sessiz, git geçmişinden geri alındı). Sadece müziği açar/kapar, efektler etkilenmez. Tercih kaydedilir.
