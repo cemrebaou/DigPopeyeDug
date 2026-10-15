@@ -2,6 +2,10 @@
 
 ## Bekleyenler
 
+## v0.29 — Yamaçta Akıcı Yürüyüş
+- Reis yamaçtan inerken 2 kum tanesine kadar basamaklarda düşme pozuna geçmez, yere yapışarak yürür.
+- Basamak inip çıkarken Reis'in görsel yüksekliği yumuşak geçer.
+
 ## v0.28 — Pürüzsüz Rampa & Akıcı Kum Yamaçları
 - Kum yamaçlarındaki 6 piksellik merdiven/basamak tırtıkları kaldırıldı; referans görsele uygun pürüzsüz düz rampa yüzeyi ve parlak sarı üst kontur çizgisi uygulandı.
 - Tepe zirvesi sivri üçgen kavisle bağlandı.

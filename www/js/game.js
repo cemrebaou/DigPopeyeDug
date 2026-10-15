@@ -859,6 +859,18 @@ class Oyun extends Phaser.Scene {
     return false;
   }
 
+  // Küçük inişlerde (yamaç basamakları) düşmeye geçmeden yere yapışır
+  zemineYapis(e, maxPx) {
+    if (this.zeminVar(e)) return true;
+    const y0 = e.y;
+    for (let d = 1; d <= maxPx; d++) {
+      e.y = y0 + d;
+      if (this.zeminVar(e)) return true;
+    }
+    e.y = y0;
+    return false;
+  }
+
   yercekimi(e, dt) {
     if (this.zeminVar(e)) { e.vy = 0; e.yerde = true; return; }
     e.yerde = false;
@@ -1165,7 +1177,11 @@ class Oyun extends Phaser.Scene {
       r.yerde = false; r.ziplaGecen = (r.ziplaGecen || 0) + dt;
       this.yukari(r, -r.vy * dt);
       if (r.vy < 0) r.vy = Math.min(0, r.vy + YERCEKIMI * dt);
-    } else this.yercekimi(r, dt);
+    } else {
+      // yerde yürürken 2 kum tanesine kadar inişlerde düşme yok, yamaçtan normal iner
+      if (r.yerde && !r.zipliyor && r.vy === 0) this.zemineYapis(r, 2 * C);
+      this.yercekimi(r, dt);
+    }
 
     // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar  (rüzgar bunun ardından uygulanır)
     if (!r.yerde) {
@@ -1273,8 +1289,11 @@ class Oyun extends Phaser.Scene {
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
     else r.spr.setAlpha(1);
 
+    // Basamak inip çıkarken görsel yükseklik yumuşak geçer (6 px'lik sıçrama görünmez)
+    if (havada || r.gorselY === undefined || Math.abs(r.y - r.gorselY) > 3 * C) r.gorselY = r.y;
+    else r.gorselY += (r.y - r.gorselY) * Math.min(1, dt * 18);
     if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.8).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, r.y);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, r.gorselY);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
