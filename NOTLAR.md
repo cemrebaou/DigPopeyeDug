@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.38 — Bölüm Seçme Ekranı Görselleri
+- Çapalı ahşap pano (panel_bolumler) ve yuvarlak ipli tahta bölüm butonu (btn_bolum_daire) gerçek görsellerle değiştirildi; panonun en/boy oranı korunuyor.
+- Başlık, kapatma, ızgara ve oklar panonun iç parşömen alanına göre yeniden yerleştirildi.
+- Artık gerekmeyen kodla çizilen yedek bölüm görselleri silindi.
+
 ## v0.37 — Heykel Oyukları, Kaya Arka Planı, Bölüm Butonu
 - Taş heykel eski pervaneden geniş/uzun; sığmadığı oyuklar açıldı: Bölüm 26 (heykel 1 kare aşağı, etrafı 3 kare genişliğinde; üstteki dar yarık kaya düşmesin diye korundu), Bölüm 43 ve 45 (heykelin arkasındaki sol duvar 1 sütun açıldı). Tüm heykeller kontrol edildi, hepsi sığıyor.
 - Kaya bloğunun (ve kapağın) arkasına, bulunduğu yerin arka planı çizilir: açıktaysa gökyüzü, mağaradaysa mağara. Kaya kalkınca da aynı kalır. Mağaradaki kayanın köşelerinden gökyüzü sızması giderildi.

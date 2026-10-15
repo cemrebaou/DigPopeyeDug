@@ -205,7 +205,6 @@ class Oyun extends Phaser.Scene {
     this.ruzgarCizim = this.add.graphics().setDepth(6);
     this.ruzgarSay = 0;
     this.parcacikKur();
-    this.bolumGorselleriniHazirla();
 
     this.arayuz();
     this.kontroller();
@@ -376,62 +375,6 @@ class Oyun extends Phaser.Scene {
     }
   }
 
-  // Bölüm seçme görselleri. assets/ içindeki btn_bolumler, btn_bolum_daire ve panel_bolumler şu an
-  // 1x1 piksellik yer tutucu; asıl görüntü burada kodla çiziliyor. Gerçek görseller eklendiğinde
-  // (genişliği 2 pikselden büyükse) kod çizimi otomatik devre dışı kalır, bu yüzden silmedik.
-  bolumGorselleriniHazirla() {
-    // 1. Mavi kare taş menü butonu
-    const bImg = this.textures.get("btn_bolumler")?.getSourceImage();
-    if (!bImg || bImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 120; cv.height = 120;
-      const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#baa896";
-      ctx.beginPath(); ctx.roundRect(4, 4, 112, 112, 18); ctx.fill();
-      ctx.strokeStyle = "#6d5c4d"; ctx.lineWidth = 5; ctx.stroke();
-      ctx.fillStyle = "#2c436b";
-      ctx.beginPath(); ctx.roundRect(16, 16, 88, 88, 12); ctx.fill();
-      ctx.fillStyle = "#f5c542";
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          ctx.beginPath(); ctx.arc(36 + c * 24, 36 + r * 24, 6, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-      this.textures.remove("btn_bolumler");
-      this.textures.addCanvas("btn_bolumler", cv);
-    }
-
-    // 2. Tahta yuvarlak ipli bölüm butonu
-    const dImg = this.textures.get("btn_bolum_daire")?.getSourceImage();
-    if (!dImg || dImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 140; cv.height = 140;
-      const ctx = cv.getContext("2d");
-      ctx.strokeStyle = "#cbb284"; ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.arc(70, 70, 63, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.arc(70, 70, 58, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 4; ctx.stroke();
-      ctx.fillStyle = "#e3c9a4"; ctx.beginPath(); ctx.arc(70, 70, 47, 0, Math.PI * 2); ctx.fill();
-      this.textures.remove("btn_bolum_daire");
-      this.textures.addCanvas("btn_bolum_daire", cv);
-    }
-
-    // 3. Büyük dikey çapalı ahşap pano
-    const pImg = this.textures.get("panel_bolumler")?.getSourceImage();
-    if (!pImg || pImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 620; cv.height = 980;
-      const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.roundRect(10, 30, 600, 930, 22); ctx.fill();
-      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 7; ctx.stroke();
-      ctx.fillStyle = "#f2dfc4"; ctx.beginPath(); ctx.roundRect(38, 75, 544, 850, 14); ctx.fill();
-      ctx.fillStyle = "#5c3317"; ctx.beginPath(); ctx.roundRect(150, 10, 320, 50, 10); ctx.fill();
-      ctx.fillStyle = "#7f8c8d"; ctx.beginPath(); ctx.arc(310, 36, 18, 0, Math.PI * 2); ctx.fill();
-      this.textures.remove("panel_bolumler");
-      this.textures.addCanvas("panel_bolumler", cv);
-    }
-  }
-
   // ---------- Arayüz ----------
   arayuz() {
     this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
@@ -463,15 +406,16 @@ class Oyun extends Phaser.Scene {
     const bg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.65).setInteractive();
     overlay.add(bg);
 
-    // Büyük ahşap pano
-    const panelW = 600, panelH = 960;
+    // Büyük ahşap pano (çapalı). Görselin en/boy oranı korunur ki çerçeve ve çapa yamulmasın.
+    const panelH = 1000, panelW = Math.round(panelH * 0.582);
     const panelY = H / 2 - 15;
     const panel = this.add.image(W / 2, panelY, "panel_bolumler");
     panel.setDisplaySize(panelW, panelH);
     overlay.add(panel);
 
     // Başlık
-    const baslik = this.add.text(W / 2, panelY - panelH / 2 + 105, "BÖLÜMLER", {
+    // Başlık, çapa ve ipin hemen altında, parşömenin üst kısmında
+    const baslik = this.add.text(W / 2, panelY - 300, "BÖLÜMLER", {
       ...YAZI,
       fontSize: "44px",
       color: "#ffd670",
@@ -481,7 +425,7 @@ class Oyun extends Phaser.Scene {
     overlay.add(baslik);
 
     // Kapatma butonu (Sağ üst "✖")
-    const kapatBtn = this.add.text(W / 2 + panelW / 2 - 58, panelY - panelH / 2 + 65, "✖", {
+    const kapatBtn = this.add.text(W / 2 + panelW / 2 - 85, panelY - 300, "✖", {
       fontFamily: "Arial Black, Arial",
       fontSize: "40px",
       color: "#ff7675",
@@ -499,9 +443,10 @@ class Oyun extends Phaser.Scene {
 
     // Sayfalı seviye ızgarası: 3 sütun x 4 satır, alttaki oklarla sayfa değişir
     const sutunSayisi = 3, satirSayisi = 4, sayfaBasi = sutunSayisi * satirSayisi;
-    const butonCapi = 120, aralikX = 150, aralikY = 150;
+    // Ölçüler parşömenin iç alanına (çerçevenin içi) sığacak şekilde seçildi
+    const butonCapi = 116, aralikX = 146, aralikY = 145;
     const baslangicX = W / 2 - aralikX;
-    const baslangicY = panelY - 255;
+    const baslangicY = panelY - 200;
     const sayfaSayisi = Math.max(1, Math.ceil(toplamGosterilecek / sayfaBasi));
     let sayfa = Math.min(sayfaSayisi - 1, Math.floor(Math.min(this.bolum, toplamGosterilecek - 1) / sayfaBasi));
 
@@ -558,7 +503,7 @@ class Oyun extends Phaser.Scene {
     };
 
     // Alt boşlukta sayfa okları ve sayfa numarası
-    const okY = panelY + 345, okBoy = 100;
+    const okY = panelY + 352, okBoy = 100;
     const okButon = (x, key, yon) => {
       const b = this.add.image(x, okY, key).setInteractive({ useHandCursor: true });
       const olcek = okBoy / b.width;
