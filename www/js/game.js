@@ -38,6 +38,7 @@ const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran", "kaya", "ball", "saw", "spike_up", "spike_dn",
   ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => "fan" + i),
+  "pervane_kapali", "pervane_acik",
   ...[0, 1, 2, 3].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
   ...[0, 1, 2, 3].map((i) => "bird_walk" + i),
   ...[0, 1, 2, 3].map((i) => "bird_pump" + i), "bird_pop0",
@@ -48,7 +49,7 @@ const SPRITELAR = [
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
   ...[0, 1, 2].map((i) => "octo_walk" + i),
   ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0",
-  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden",
+  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden", "btn_bolumler", "btn_bolum_daire", "panel_bolumler",
   "bar_yesil", "bar_mor", "bar_turuncu", "panel",
   "doku_kum", "doku_tahta", "kapak_tahta", "btn_zipla"
 ];
@@ -153,6 +154,7 @@ class Oyun extends Phaser.Scene {
     this.ruzgarCizim = this.add.graphics().setDepth(6);
     this.ruzgarSay = 0;
     this.parcacikKur();
+    this.bolumGorselleriniHazirla();
 
     this.arayuz();
     this.kontroller();
@@ -334,22 +336,220 @@ class Oyun extends Phaser.Scene {
     }
   }
 
+  // Bölüm seçme görselleri (görseller yüklenene kadar procedural fallback hazır tutar)
+  bolumGorselleriniHazirla() {
+    // 1. Mavi kare taş menü butonu
+    const bImg = this.textures.get("btn_bolumler")?.getSourceImage();
+    if (!bImg || bImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 120; cv.height = 120;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#baa896";
+      ctx.beginPath(); ctx.roundRect(4, 4, 112, 112, 18); ctx.fill();
+      ctx.strokeStyle = "#6d5c4d"; ctx.lineWidth = 5; ctx.stroke();
+      ctx.fillStyle = "#2c436b";
+      ctx.beginPath(); ctx.roundRect(16, 16, 88, 88, 12); ctx.fill();
+      ctx.fillStyle = "#f5c542";
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          ctx.beginPath(); ctx.arc(36 + c * 24, 36 + r * 24, 6, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      this.textures.remove("btn_bolumler");
+      this.textures.addCanvas("btn_bolumler", cv);
+    }
+
+    // 2. Tahta yuvarlak ipli bölüm butonu
+    const dImg = this.textures.get("btn_bolum_daire")?.getSourceImage();
+    if (!dImg || dImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 140; cv.height = 140;
+      const ctx = cv.getContext("2d");
+      ctx.strokeStyle = "#cbb284"; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.arc(70, 70, 63, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.arc(70, 70, 58, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = "#e3c9a4"; ctx.beginPath(); ctx.arc(70, 70, 47, 0, Math.PI * 2); ctx.fill();
+      this.textures.remove("btn_bolum_daire");
+      this.textures.addCanvas("btn_bolum_daire", cv);
+    }
+
+    // 3. Büyük dikey çapalı ahşap pano
+    const pImg = this.textures.get("panel_bolumler")?.getSourceImage();
+    if (!pImg || pImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 620; cv.height = 980;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.roundRect(10, 30, 600, 930, 22); ctx.fill();
+      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 7; ctx.stroke();
+      ctx.fillStyle = "#f2dfc4"; ctx.beginPath(); ctx.roundRect(38, 75, 544, 850, 14); ctx.fill();
+      ctx.fillStyle = "#5c3317"; ctx.beginPath(); ctx.roundRect(150, 10, 320, 50, 10); ctx.fill();
+      ctx.fillStyle = "#7f8c8d"; ctx.beginPath(); ctx.arc(310, 36, 18, 0, Math.PI * 2); ctx.fill();
+      this.textures.remove("panel_bolumler");
+      this.textures.addCanvas("panel_bolumler", cv);
+    }
+  }
+
   // ---------- Arayüz ----------
   arayuz() {
     this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
-    this.skorYazi = this.add.text(W / 2 + 40, 34, "Skor: " + this.skor, { ...YAZI, fontSize: "38px", color: "#ffe066" }).setOrigin(0.5, 0).setDepth(10);
+    this.skorYazi = this.add.text(W / 2 + 25, 34, "Skor: " + this.skor, { ...YAZI, fontSize: "38px", color: "#ffe066" }).setOrigin(0.5, 0).setDepth(10);
     this.ipucu = this.add.text(W / 2, 100, BOLUMLER[this.bolum].ipucu || "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
 
-    // Yeniden başla
+    // Yeniden başla butonu
     this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
+
+    // Bölüm Seçme Menüsü (Mavi taş buton)
+    this.ikonButon(W - 56 - 94, 62, "btn_bolumler", 84, () => this.bolumSecimEkraniAc());
 
     // Tam ekran (sadece tarayıcıda; telefondaki uygulamada zaten tam ekran)
     if (!Ads.native && this.sys.game.device.fullscreen.available) {
-      this.ikonButon(W - 56 - 98, 62, "btn_tamekran", 84, () => {
+      this.ikonButon(W - 56 - 94 - 94, 62, "btn_tamekran", 84, () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen(); else this.scale.startFullscreen();
       });
     }
+  }
+
+  bolumSecimEkraniAc() {
+    if (this.bolumPaneliAcik) return;
+    this.bolumPaneliAcik = true;
+
+    const overlay = this.add.container(0, 0).setDepth(60);
+
+    // Arka plan karartması
+    const bg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.65).setInteractive();
+    overlay.add(bg);
+
+    // Büyük ahşap pano
+    const panelW = 600, panelH = 960;
+    const panelY = H / 2 - 15;
+    const panel = this.add.image(W / 2, panelY, "panel_bolumler");
+    panel.setDisplaySize(panelW, panelH);
+    overlay.add(panel);
+
+    // Başlık
+    const baslik = this.add.text(W / 2, panelY - panelH / 2 + 105, "BÖLÜMLER", {
+      ...YAZI,
+      fontSize: "44px",
+      color: "#ffd670",
+      stroke: "#3d240e",
+      strokeThickness: 8
+    }).setOrigin(0.5);
+    overlay.add(baslik);
+
+    // Kapatma butonu (Sağ üst "✖")
+    const kapatBtn = this.add.text(W / 2 + panelW / 2 - 58, panelY - panelH / 2 + 65, "✖", {
+      fontFamily: "Arial Black, Arial",
+      fontSize: "40px",
+      color: "#ff7675",
+      stroke: "#2d1606",
+      strokeThickness: 6
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    kapatBtn.on("pointerdown", () => {
+      this.bolumPaneliAcik = false;
+      overlay.destroy();
+    });
+    overlay.add(kapatBtn);
+
+    // Açılan / geçilen bölüm sayısı (Geçildikçe buton eklenir)
+    const acilanBolum = Math.max(kayitOku("dpd_acilan_bolum", 1), this.bolum + 1);
+    const toplamGosterilecek = Math.min(acilanBolum, BOLUMLER.length);
+
+    // Kaydırılabilir seviye grid alanı (Scrollable Container)
+    const maskX = W / 2 - 250, maskY = panelY - 330, maskW = 500, maskH = 680;
+    const maskShape = this.make.graphics();
+    maskShape.fillStyle(0xffffff);
+    maskShape.fillRect(maskX, maskY, maskW, maskH);
+    const mask = maskShape.createGeometryMask();
+
+    const scrollContainer = this.add.container(0, 0);
+    scrollContainer.setMask(mask);
+    overlay.add(scrollContainer);
+
+    // Her satırda 3 tahta yuvarlak buton
+    const sutunSayisi = 3;
+    const butonCapi = 120;
+    const aralikX = 150;
+    const aralikY = 150;
+    const baslangicX = W / 2 - aralikX;
+    const baslangicY = maskY + 75;
+
+    for (let idx = 0; idx < toplamGosterilecek; idx++) {
+      const col = idx % sutunSayisi;
+      const row = Math.floor(idx / sutunSayisi);
+      const bx = baslangicX + col * aralikX;
+      const by = baslangicY + row * aralikY;
+
+      const btnItem = this.add.image(bx, by, "btn_bolum_daire");
+      btnItem.setDisplaySize(butonCapi, butonCapi).setInteractive({ useHandCursor: true });
+
+      // Üzerindeki bölüm numarası
+      const noTxt = this.add.text(bx, by, (idx + 1).toString(), {
+        ...YAZI,
+        fontSize: "46px",
+        color: idx === this.bolum ? "#ffeaa7" : "#ffffff",
+        stroke: "#3d240e",
+        strokeThickness: 8
+      }).setOrigin(0.5);
+
+      // Aktif oynanan bölüm vurgusu
+      if (idx === this.bolum) {
+        btnItem.setTint(0xfffae6);
+        this.tweens.add({
+          targets: btnItem,
+          scaleX: (butonCapi / btnItem.width) * 1.06,
+          scaleY: (butonCapi / btnItem.height) * 1.06,
+          yoyo: true,
+          repeat: -1,
+          duration: 600
+        });
+      }
+
+      const hedefBolum = idx;
+      btnItem.on("pointerdown", () => {
+        this.ses("ses_kapak", { volume: 0.8 });
+        this.bolumPaneliAcik = false;
+        overlay.destroy();
+        this.scene.restart({ bolum: hedefBolum, skor: 0, tur: this.tur });
+      });
+
+      scrollContainer.add(btnItem);
+      scrollContainer.add(noTxt);
+    }
+
+    // Dokunarak yukarı/aşağı kaydırma (Scroll gesture)
+    const toplamSatir = Math.ceil(toplamGosterilecek / sutunSayisi);
+    const toplamYukseklik = toplamSatir * aralikY;
+    const minScrollY = Math.min(0, maskH - toplamYukseklik - 30);
+    let startY = 0, scrollStartY = 0, surukleniyor = false;
+
+    bg.on("pointerdown", (pointer) => {
+      startY = pointer.y;
+      scrollStartY = scrollContainer.y;
+      surukleniyor = true;
+    });
+
+    this.input.on("pointermove", (pointer) => {
+      if (!surukleniyor || !this.bolumPaneliAcik) return;
+      const dy = pointer.y - startY;
+      let newY = scrollStartY + dy;
+      if (newY > 0) newY = newY * 0.3;
+      else if (newY < minScrollY) newY = minScrollY + (newY - minScrollY) * 0.3;
+      scrollContainer.y = newY;
+    });
+
+    const bitir = () => {
+      if (!surukleniyor) return;
+      surukleniyor = false;
+      if (scrollContainer.y > 0) {
+        this.tweens.add({ targets: scrollContainer, y: 0, duration: 250, ease: "Quad.easeOut" });
+      } else if (scrollContainer.y < minScrollY) {
+        this.tweens.add({ targets: scrollContainer, y: minScrollY, duration: 250, ease: "Quad.easeOut" });
+      }
+    };
+    this.input.on("pointerup", bitir);
+    this.input.on("pointerupoutside", bitir);
   }
 
   // Resimli buton: basınca küçülür
@@ -656,16 +856,18 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Rüzgar / pervane ----------
   pervaneKur() {
-    const fw = 121 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK; // görsel boyutu (79 x 96)
+    const fw = 118 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK; // görsel boyutu
     this.pervaneler.forEach((p) => {
       const yatayMi = p.yon === "r" || p.yon === "l";
       p.cx = p.px;
       if (yatayMi) p.cy = p.py - fh / 2;                 // zemine oturur
       else if (p.yon === "u") p.cy = p.py - fw / 2;       // zeminden yukarı üfler
       else p.cy = p.py - KARE_PX + fw / 2;                // tavana asılı, aşağı üfler
-      p.yari = fh * 0.42;                                 // rüzgar bandının yarı genişliği (px)
+      p.yari = fh * 0.38;                                 // rüzgar bandının yarı genişliği (px)
       p.on = fw / 2;                                      // ön kenara uzaklık (px)
-      const spr = this.add.image(p.cx, p.cy, "fan0").setScale(PERVANE_OLCEK).setDepth(3);
+      
+      const hasHeykel = this.textures.exists("pervane_kapali");
+      const spr = this.add.image(p.cx, p.cy, hasHeykel ? (p.acik ? "pervane_acik" : "pervane_kapali") : "fan0").setScale(PERVANE_OLCEK).setDepth(3);
       if (p.yon === "l") spr.setFlipX(true);
       if (p.yon === "u") spr.setAngle(-90);
       if (p.yon === "d") spr.setAngle(90);
@@ -674,13 +876,16 @@ class Oyun extends Phaser.Scene {
       p.spr = spr;
       p.hucre = new Int32Array(0); p.menzil = [];
       p.isin = [];
-      for (let n = 0; n < 16; n++) p.isin.push({ a: Math.random() * 2 - 1, t: Math.random(), v: 0.5 + Math.random() * 0.6 });
+      for (let n = 0; n < 32; n++) p.isin.push({ a: Math.random() * 2 - 1, t: Math.random(), v: 0.6 + Math.random() * 0.8 });
     });
   }
 
   pervaneTikla(p) {
     if (this.durum !== "oyun") return;
     p.acik = !p.acik;
+    if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
+      p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
+    }
     this.ruzgarKur();
   }
 
@@ -716,28 +921,82 @@ class Oyun extends Phaser.Scene {
     if (aktif && this.ruzgarSay % (this.kayalar.length ? 1 : 8) === 0) this.ruzgarKur();
     const g = this.ruzgarCizim;
     g.clear();
+    const fh = 148 * PERVANE_OLCEK;
+
     for (const p of this.pervaneler) {
-      p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
+      if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
+        p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
+      } else {
+        p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
+      }
       if (!p.acik) continue;
+
       const dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0, dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
       const nx = dy ? 1 : 0, ny = dx ? 1 : 0; // yana doğru birim vektör
+
+      // Rüzgarın çıkış noktası: doğrudan heykelin açık ağız deliğine hizalı
+      let mx = p.cx, my = p.cy;
+      if (p.yon === "r") { mx = p.cx + p.on * 0.72; my = p.cy + fh * 0.16; }
+      else if (p.yon === "l") { mx = p.cx - p.on * 0.72; my = p.cy + fh * 0.16; }
+      else if (p.yon === "u") { mx = p.cx + fh * 0.16; my = p.cy - p.on * 0.72; }
+      else if (p.yon === "d") { mx = p.cx - fh * 0.16; my = p.cy + p.on * 0.72; }
+
+      const maxUz = Math.max(...p.menzil, 0);
+      if (maxUz > p.on + 20) {
+        // 1. Dolgun, yumuşak, yarı saydam rüzgar hüzmesi (volumetric wind beam)
+        const uLen = maxUz - p.on;
+        const w0 = 10, w1 = p.yari * 0.85;
+        const cone = [
+          { x: mx - nx * w0, y: my - ny * w0 },
+          { x: mx + dx * uLen - nx * w1, y: my + dy * uLen - ny * w1 },
+          { x: mx + dx * uLen + nx * w1, y: my + dy * uLen + ny * w1 },
+          { x: mx + nx * w0, y: my + ny * w0 }
+        ];
+        g.fillStyle(0xdff4ff, 0.08).fillPoints(cone);
+
+        // İç parlak çekirdek hüzmesi
+        const inner = [
+          { x: mx - nx * (w0 * 0.5), y: my - ny * (w0 * 0.5) },
+          { x: mx + dx * uLen - nx * (w1 * 0.45), y: my + dy * uLen - ny * (w1 * 0.45) },
+          { x: mx + dx * uLen + nx * (w1 * 0.45), y: my + dy * uLen + ny * (w1 * 0.45) },
+          { x: mx + nx * (w0 * 0.5), y: my + ny * (w0 * 0.5) }
+        ];
+        g.fillStyle(0xffffff, 0.06).fillPoints(inner);
+
+        // 2. Ağız çıkışındaki basınç halkaları (pulsing shockwaves)
+        for (let h = 0; h < 2; h++) {
+          const ph = ((zaman / 360 + h * 0.5) % 1);
+          const rRad = 4 + ph * 12;
+          const rAlfa = (1 - ph) * 0.45;
+          g.lineStyle(2.0, 0xffffff, rAlfa);
+          g.strokeCircle(mx + dx * ph * 16, my + dy * ph * 16, rRad);
+        }
+      }
+
+      // 3. Çok katmanlı blurlu hareket iplikleri (motion blur streaks)
       for (const s of p.isin) {
         s.t += dt * s.v;
-        if (s.t > 1) { s.t = 0; s.a = Math.random() * 2 - 1; s.v = 0.5 + Math.random() * 0.6; }
+        if (s.t > 1) { s.t = 0; s.a = Math.random() * 2 - 1; s.v = 0.6 + Math.random() * 0.8; }
         const bi = Math.round((s.a + 1) / 2 * (p.menzil.length - 1));
         const uz = p.menzil[bi] || 0;
         if (uz < p.on + 20) continue;
-        const bas = p.on + s.t * (uz - p.on), alfa = Math.sin(Math.PI * s.t) * 0.34;
+        const bas = s.t * (uz - p.on), alfa = Math.sin(Math.PI * s.t) * 0.42;
         const pts = [];
-        for (let j = 0; j <= 6; j++) {
-          const d = bas - 56 * j / 6;
-          if (d < p.on) continue;
-          const yan = s.a * p.yari + Math.sin(d * 0.07 + s.t * 10) * 3.5;
-          pts.push({ x: p.cx + dx * d + nx * yan, y: p.cy + dy * d + ny * yan });
+        for (let j = 0; j <= 7; j++) {
+          const d = bas - 68 * j / 7;
+          if (d < 0) continue;
+          // Hafif dalgalı ve girdaplı akış
+          const yan = s.a * (p.yari * (0.35 + 0.65 * (d / Math.max(1, uz - p.on)))) + Math.sin(d * 0.06 + s.t * 12) * 4.2;
+          pts.push({ x: mx + dx * d + nx * yan, y: my + dy * d + ny * yan });
         }
         if (pts.length < 2) continue;
-        g.lineStyle(3.2, 0xffffff, alfa).strokePoints(pts);
-        g.lineStyle(1.4, 0xd8f0ff, Math.min(1, alfa * 1.4)).strokePoints(pts);
+
+        // Dış yumuşak motion blur sisi
+        g.lineStyle(6.5, 0xc5edff, alfa * 0.28).strokePoints(pts);
+        // Orta dolgun rüzgar çizgisi
+        g.lineStyle(3.0, 0xe0f5ff, alfa * 0.65).strokePoints(pts);
+        // İç parlak çekirdek
+        g.lineStyle(1.4, 0xffffff, Math.min(1, alfa * 1.35)).strokePoints(pts);
       }
     }
   }
@@ -1419,6 +1678,8 @@ class Oyun extends Phaser.Scene {
   bolumBitti() {
     if (this.durum !== "oyun") return;
     this.durum = "kazandi";
+    const yeniAcilan = Math.max(kayitOku("dpd_acilan_bolum", 1), this.bolum + 2);
+    kayitYaz("dpd_acilan_bolum", yeniAcilan);
     if (this.bolum + 1 >= BOLUMLER.length) { kayitYaz("dpd_bolum", 0); kayitYaz("dpd_tur", this.tur + 1); }
     else kayitYaz("dpd_bolum", this.bolum + 1);
     this.ses("ses_kazandi", { volume: 0.9 });

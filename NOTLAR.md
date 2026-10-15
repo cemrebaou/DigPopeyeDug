@@ -2,6 +2,14 @@
 
 ## Bekleyenler
 
+## v0.30 — Kaydırmalı Bölüm Seçme Paneli & Gelişmiş Üfleme Rüzgarı
+- Oyun ekranına mavi kare taş bölüm menüsü butonu eklendi (sağ üst bar).
+- Büyük dikey ahşap panolu, dokunarak kaydırılabilir (scroll) bölüm seçme ekranı yapıldı.
+- Her satırda 3 adet tahta yuvarlak buton; üzerinde bölüm numarası yazar.
+- Bölüm açılma mantığı: İlk başta yalnızca 1. bölüm butonu vardır; oyuncu bölüm geçtikçe yeni buton üretilir ve kalıcı olarak (`dpd_acilan_bolum`) kaydedilir.
+- Aktif bulunulan bölüm altın ışıltılı nabız efektiyle vurgulanır.
+- Üfleme karakterinin ağız hizasına tam oturan, çok katmanlı ve blurlu/saydam akışkan rüzgar efekti (hacimsel koni, basınç dalgaları ve ipliksi akış çizgileri) eklendi.
+
 ## v0.29 — Yamaçta Akıcı Yürüyüş
 - Reis yamaçtan inerken 2 kum tanesine kadar basamaklarda düşme pozuna geçmez, yere yapışarak yürür.
 - Basamak inip çıkarken Reis'in görsel yüksekliği yumuşak geçer.
