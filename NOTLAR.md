@@ -2,6 +2,12 @@
 
 ## Bekleyenler
 
+## v0.39 — Yeni Eğilme ve Zıplama Pozları
+- Eğik yürüyüş yeni 5 karelik animasyonla değiştirildi (reis_egil0-4).
+- Zıplarken yükselme pozu (reis_zipla) ve inerken iniş pozu (reis_zipla_in) eklendi.
+- Zıplamanın inişinde artık bağırma (ses_dusme) yok; derine zıplayıp inerse iniş sesi daha tok.
+- Yürürken bir yerden düşerse eskisi gibi bağırarak düşer ve eski düşme pozu (reis_dus) kullanılır.
+
 ## v0.38 — Bölüm Seçme Ekranı Görselleri
 - Çapalı ahşap pano (panel_bolumler) ve yuvarlak ipli tahta bölüm butonu (btn_bolum_daire) gerçek görsellerle değiştirildi; panonun en/boy oranı korunuyor.
 - Başlık, kapatma, ızgara ve oklar panonun iç parşömen alanına göre yeniden yerleştirildi.

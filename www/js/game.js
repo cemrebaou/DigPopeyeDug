@@ -51,7 +51,8 @@ const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran", "kaya", "ball", "saw", "spike_up", "spike_dn",
   "pervane_kapali", "pervane_acik", // taş heykel üfleyici (ağzı kapalı / açık)
-  ...[0, 1, 2, 3].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
+  ...[0, 1, 2, 3, 4].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
+  "reis_zipla", "reis_zipla_in", // zıplarken yükselme ve iniş pozları
   ...[0, 1, 2, 3].map((i) => "bird_walk" + i),
   ...[0, 1, 2, 3].map((i) => "bird_pump" + i), "bird_pop0",
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_idle" + i),
@@ -82,7 +83,7 @@ const KARELER = {
   crab_walk: [0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
   octo_walk: [0, 1, 2].map((i) => "octo_walk" + i),
   bird_walk: [0, 1, 2, 3].map((i) => "bird_walk" + i),
-  reis_egil: [0, 1, 2, 3].map((i) => "reis_egil" + i)
+  reis_egil: [0, 1, 2, 3, 4].map((i) => "reis_egil" + i)
 };
 
 const DUSMAN_TIP = {
@@ -1446,16 +1447,18 @@ class Oyun extends Phaser.Scene {
       this.yercekimi(r, dt);
     }
 
-    // Düşme sesi: havadayken çalar, yere değince biter; iniş sesi çalar  (rüzgar bunun ardından uygulanır)
+    // Düşme sesi (bağırma): sadece yürürken bir yerden düşünce çalar. Zıplamanın inişinde bağırmaz;
+    // çünkü zıplama oyuncunun isteğiyle yapılan bir hareket, düşme ise kazara. Yere değince biter,
+    // iniş sesi çalar. (rüzgar bunun ardından uygulanır)
     if (!r.yerde) {
       if (r.zipliyor) r.ziplaGecen = (r.ziplaGecen || 0) + (r.vy < 0 ? 0 : dt);
-      if (!r.zipliyor || r.vy > 500) r.havada = (r.havada || 0) + dt;
+      else r.havada = (r.havada || 0) + dt;
       if (r.havada > 0.12 && !this.dusmeSes && this.cache.audio.exists("ses_dusme")) {
         try { this.dusmeSes = this.sound.add("ses_dusme", { volume: 0.6 }); this.dusmeSes.play(); } catch (e) { this.dusmeSes = null; }
       }
     } else {
       if ((r.havada || 0) > 0.12) { this.dusmeSesiDurdur(); this.ses("ses_dustu", { volume: 0.8 }); }
-      else if (r.zipliyor && r.ziplaGecen > 0.1) this.ses("ses_dustu", { volume: 0.5 });
+      else if (r.zipliyor && r.ziplaGecen > 0.1) this.ses("ses_dustu", { volume: r.ziplaGecen > 0.6 ? 0.8 : 0.5 }); // zıplayıp derine inerse daha tok iniş
       r.havada = 0; r.zipliyor = false;
     }
 
@@ -1478,7 +1481,7 @@ class Oyun extends Phaser.Scene {
       r.kare += dt * 10;
       const adimNo = Math.floor(r.kare / 2);
       if (adimNo !== r.sonAdim) { r.sonAdim = adimNo; this.ses("ses_adim" + Phaser.Math.Between(1, 3), { volume: 0.5 }); }
-      tex = this.kareler.reis_egil[Math.floor(r.kare) % 4];
+      tex = this.kareler.reis_egil[Math.floor(r.kare) % this.kareler.reis_egil.length];
       r.idleSure = 0; r.blinkAsama = 0; r.blinkZaman = undefined;
     } else if (yon !== 0 && r.pompa <= 0 && r.yerde) {
       r.yon = yon;
@@ -1545,8 +1548,11 @@ class Oyun extends Phaser.Scene {
     } else {
       tex = "reis_walk0";
     }
+    // Havada iki ayrı durum: zıplama (yükselirken zıplama pozu, inerken iniş pozu) ve kazara düşme
+    // (eski bağıran düşme pozu). İniş pozuna tepe noktasından biraz önce geçilir, hareket akıcı görünsün.
     const havada = !r.yerde;
-    if (havada) tex = "reis_dus";
+    const ziplamaPozu = havada && r.zipliyor;
+    if (havada) tex = ziplamaPozu ? (r.vy < -120 ? "reis_zipla" : "reis_zipla_in") : "reis_dus";
     if (r.yerde) { r.sonGuvenliX = r.x; r.sonGuvenliY = r.y; }
 
     if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
@@ -1555,8 +1561,8 @@ class Oyun extends Phaser.Scene {
     // Basamak inip çıkarken görsel yükseklik yumuşak geçer (6 px'lik sıçrama görünmez)
     if (havada || r.gorselY === undefined || Math.abs(r.y - r.gorselY) > 3 * C) r.gorselY = r.y;
     else r.gorselY += (r.y - r.gorselY) * Math.min(1, dt * 18);
-    if (havada) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.8).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, r.gorselY);
+    if (havada && !ziplamaPozu) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.8).setPosition(r.x, r.y - 58);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, havada ? r.y : r.gorselY);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;
