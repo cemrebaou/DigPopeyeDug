@@ -1,4 +1,14 @@
 // DigPopeyeDug - kum fizikli kazı oyunu
+//
+// GENEL YAPI (neden böyle?):
+// - Oyun alanı 120x144 hücrelik bir ızgara (this.g). Her hücre 6x6 piksel bir kum tanesi.
+//   Kum fiziği hücre bazında çalışır; çünkü piksel bazında fizik telefonda çok yavaş olurdu,
+//   hücre bazında ise 17 bin hücreyi her karede taramak rahatça yetişiyor.
+// - Zemin tek bir canvas dokusuna elle piksel yazılarak çizilir (kumCiz). Her hücre için ayrı
+//   sprite kullanmadık; binlerce sprite telefonda kasar. Sadece değişen ("kirli") hücreler
+//   yeniden çizilir, böylece duran sahnede çizim maliyeti neredeyse sıfır.
+// - Karakterler (Reis, düşmanlar, kaya, heykel) normal Phaser sprite'larıdır; ızgarayla
+//   çarpışmayı govde() ile hücre kutusuna çevirerek yaparlar.
 const W = 720, H = 1280;
 const C = 6;                 // bir kum tanesi = 6 piksel
 const HARITA_KARE = 6;       // haritadaki bir karakter = 6x6 kum tanesi (36px)
@@ -17,7 +27,8 @@ const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
 const REIS_BOY = 126, REIS_EGIK_BOY = 85; // hitbox yükseklikleri (ayaktan yukarı px)
 const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.85;                       // eğik yürüme hızı çarpanı
 const RUZGAR_HIZ = 110, RUZGAR_MENZIL = 84, PERVANE_OLCEK = 0.65; // rüzgar: itme hızı (px/sn), en uzun menzil (kum tanesi), pervane görsel ölçeği
-const HEYKEL_EN = 148 * PERVANE_OLCEK * 0.709; // taş heykel genişliği (görsel en/boy oranı korunur)
+const HEYKEL_BOY = 148 * PERVANE_OLCEK;          // taş heykel yüksekliği (px)
+const HEYKEL_EN = HEYKEL_BOY * 0.709;             // taş heykel genişliği (görsel en/boy oranı korunur)
 const HEYKEL_AGIZ_X = 0.39, HEYKEL_AGIZ_Y = 0.23; // açık ağzın merkeze göre konumu (genişlik / yükseklik oranı)
 const PERVANE_YON = { ">": "r", "<": "l", "^": "u", "v": "d" };
 const ZIPLA_V = 590;                        // zıplama hızı (px/sn): yaklaşık 125 px yüksekliğe çıkar
@@ -27,9 +38,9 @@ const TESTERE_R = 28, TOP_R = 26, FIRLAMA_HIZ = 340, RAY_HIZ = 80;
 const KUS_HAVA = 110;                       // kuşun hitbox alt kenarının zeminden yüksekliği (ayakta çarpar, eğikken geçer)
 const YERCEKIMI = 1400, MAX_DUSME = 700;
 const REIS_HIZ = 200, KAZMA_HIZ = 110;
-// Boşta bekleme animasyonu zamanlaması (ms)
 // Pompa görselinde hortumun çıktığı nokta (görsel pikseli): [merkezden yatay, tabandan yukarı]
 const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 9], reis_pump1: [39, 15] };
+// Boşta bekleme animasyonu zamanlaması (ms)
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
 const IDLE_SABIRSIZ_MIN = 150, IDLE_SABIRSIZ_MAX = 260;            // sabırsız pozlar (2<->3): pıt pıt pıt, ikisi de kısa ve eşit
@@ -39,8 +50,7 @@ const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
   "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran", "kaya", "ball", "saw", "spike_up", "spike_dn",
-  ...[0, 1, 2, 3, 4, 5, 6, 7].map((i) => "fan" + i),
-  "pervane_kapali", "pervane_acik",
+  "pervane_kapali", "pervane_acik", // taş heykel üfleyici (ağzı kapalı / açık)
   ...[0, 1, 2, 3].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
   ...[0, 1, 2, 3].map((i) => "bird_walk" + i),
   ...[0, 1, 2, 3].map((i) => "bird_pump" + i), "bird_pop0",
@@ -63,6 +73,18 @@ const SESLER = [
   "ses_ayak_vur"
 ];
 
+// Animasyon kare listeleri. Sabit tuttuk; her bölüm yeniden başlarken diziler yeniden üretilmesin.
+const KARELER = {
+  reis_walk: [0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
+  reis_fall: [0, 1, 2, 3].map((i) => "reis_fall" + i),
+  reis_pump: ["reis_pump0", "reis_pump1"],
+  reis_kaz: [0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
+  crab_walk: [0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
+  octo_walk: [0, 1, 2].map((i) => "octo_walk" + i),
+  bird_walk: [0, 1, 2, 3].map((i) => "bird_walk" + i),
+  reis_egil: [0, 1, 2, 3].map((i) => "reis_egil" + i)
+};
+
 const DUSMAN_TIP = {
   c: { ad: "crab", hiz: 65, w: 81, h: 63 },
   o: { ad: "octo", hiz: 48, w: 99, h: 66 },
@@ -73,6 +95,19 @@ const YAZI = { fontFamily: "Arial Black, Arial", fontStyle: "bold", color: "#fff
 
 function kayitOku(k, v) { try { const x = localStorage.getItem(k); return x === null ? v : JSON.parse(x); } catch (e) { return v; } }
 function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+// Oyuncunun ulaştığı en yüksek bölüm (1'den başlar). Eskiden aynı hesap 3 yerde tekrar ediyordu;
+// tek fonksiyona aldık. Eski sürümlerin kayıt anahtarları (dpd_acilan_bolum, dpd_bolum) da okunur,
+// böylece güncelleme gelince kimsenin ilerlemesi kaybolmaz. Kayıt sadece yükselir, asla düşmez.
+function enYuksekBolum(enAz = 1) {
+  const deger = Math.max(enAz, kayitOku("dpd_en_yuksek_bolum", 1), kayitOku("dpd_acilan_bolum", 1), kayitOku("dpd_bolum", 0) + 1);
+  kayitYaz("dpd_en_yuksek_bolum", deger);
+  return deger;
+}
+
+// Zemin dokuları (her malzemenin ekran boyutunda piksel kaynağı). Bir kere hesaplanır ve saklanır;
+// çünkü 720x864 pikselin her bölümde yeniden işlenmesi yeniden başlatmada takılmaya yol açıyordu.
+let DOKU_ONBELLEK = null;
 
 // RGBA (little-endian) -> Uint32
 const renk32 = (r, g, b, a = 255) => ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
@@ -95,15 +130,8 @@ class Oyun extends Phaser.Scene {
     this.tur = data && data.tur !== undefined ? data.tur : kayitOku("dpd_tur", 0);
     this.hizCarpan = 1 + 0.25 * this.tur;
 
-    // Kullanıcının ulaştığı en yüksek bölümü kalıcı koru (1. seviye seçilse bile kaybolmaz)
-    const enYuksek = Math.max(
-      kayitOku("dpd_en_yuksek_bolum", 1),
-      kayitOku("dpd_acilan_bolum", 1),
-      kayitOku("dpd_bolum", 0) + 1,
-      this.bolum + 1
-    );
-    kayitYaz("dpd_en_yuksek_bolum", enYuksek);
-    kayitYaz("dpd_acilan_bolum", enYuksek);
+    // Ulaşılan en yüksek bölüm kalıcı korunur (eski bir bölüm seçilse bile kaybolmaz)
+    enYuksekBolum(this.bolum + 1);
   }
 
   preload() {
@@ -126,7 +154,17 @@ class Oyun extends Phaser.Scene {
     } catch (e) {}
   }
 
+  // Bu sahnenin kendi ürettiği dokular (zemin, alt kaya, kapak tahtaları). Eskiden her yeniden
+  // başlatmada "zemin"+Date.now() gibi yeni anahtarla üretilip hiç silinmiyordu; her bölümde
+  // birkaç MB bellek birikiyordu. Artık takip edilip bir sonraki create()'te siliniyor.
+  geciciDoku(key) { (this.geciciDokular || (this.geciciDokular = [])).push(key); return key; }
+  geciciDokulariSil() {
+    for (const k of this.geciciDokular || []) if (this.textures.exists(k)) this.textures.remove(k);
+    this.geciciDokular = [];
+  }
+
   create() {
+    this.geciciDokulariSil(); // önceki bölümün sprite'ları zaten yok edildi, dokuları da boşaltılır
     if (this.dusmeSes) { try { this.dusmeSes.stop(); this.dusmeSes.destroy(); } catch (e) {} }
     this.dusmeSes = null; this.kumSayac = 0; this.sonKumSes = 0; this.sonKazmaSes = 0;
     this.durum = "oyun";
@@ -135,14 +173,15 @@ class Oyun extends Phaser.Scene {
     this.devamHakki = true;
     this.dokunulmaz = 0;
 
-    this.animasyonlar();
+    this.kareler = KARELER;
     this.arkaPlan();
     this.haritaYukle(BOLUMLER[this.bolum]);
     this.dokulariHazirla();
     this.altKaya();
 
-    // Zemin, ekran çözünürlüğünde (1:1) çizilir; büyütme yok, bulanıklık yok
-    this.kumTex = this.textures.createCanvas("zemin" + Date.now(), W, ALAN_H);
+    // Zemin, ekran çözünürlüğünde (1:1) çizilir; büyütme yok, bulanıklık yok.
+    // Piksel dizisi (Uint32Array) doğrudan ImageData'nın belleğini kullanır: renk yazmak tek atama.
+    this.kumTex = this.textures.createCanvas(this.geciciDoku("zemin" + Date.now()), W, ALAN_H);
     this.add.image(0, OY, this.kumTex.key).setOrigin(0).setDepth(1);
     this.imgData = this.kumTex.context.createImageData(W, ALAN_H);
     this.piksel = new Uint32Array(this.imgData.data.buffer);
@@ -166,7 +205,6 @@ class Oyun extends Phaser.Scene {
     this.ruzgarCizim = this.add.graphics().setDepth(6);
     this.ruzgarSay = 0;
     this.parcacikKur();
-    this.bolumGorselleriniHazirla();
 
     this.arayuz();
     this.kontroller();
@@ -215,29 +253,16 @@ class Oyun extends Phaser.Scene {
     } catch (e) {}
   }
 
-  animasyonlar() {
-    this.kareler = {
-      reis_walk: [0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
-      reis_fall: [0, 1, 2, 3].map((i) => "reis_fall" + i),
-      reis_pump: ["reis_pump0", "reis_pump1"],
-      reis_kaz: [0, 1, 2, 3, 4, 5].map((i) => "reis_kaz" + i),
-      crab_walk: [0, 1, 2, 3, 4].map((i) => "crab_walk" + i),
-      octo_walk: [0, 1, 2].map((i) => "octo_walk" + i),
-      bird_walk: [0, 1, 2, 3].map((i) => "bird_walk" + i),
-      reis_egil: [0, 1, 2, 3].map((i) => "reis_egil" + i)
-    };
-  }
-
   arkaPlan() {
     const g = this.add.graphics().setDepth(0);
     g.fillGradientStyle(0x5bb8f0, 0x5bb8f0, 0xbfe9ff, 0xbfe9ff, 1);
     g.fillRect(0, 0, W, ALT);
-    // Alt kontrol bandı: tahta
   }
 
   // ---------- Dokular ----------
   // Her malzeme için ekran boyutunda bir piksel kaynağı hazırlanır
   dokulariHazirla() {
+    if (DOKU_ONBELLEK) { this.src = DOKU_ONBELLEK; return; }
     const doku = (key) => {
       const img = this.textures.get(key).getSourceImage();
       const cv = document.createElement("canvas");
@@ -263,6 +288,7 @@ class Oyun extends Phaser.Scene {
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
       magara: yap(kum, (r, g, b) => renk32(sinir(r * 0.24), sinir(g * 0.16), sinir(b * 0.12)))
     };
+    DOKU_ONBELLEK = this.src;
   }
 
   // Butonların arkası: oyun alanındaki gri kaya kesintisiz aşağı devam eder
@@ -273,7 +299,7 @@ class Oyun extends Phaser.Scene {
     const cx = cv.getContext("2d");
     const bas = -(ALAN_H % img.height);
     for (let y = bas; y < yuk; y += img.height) for (let x = 0; x < W; x += img.width) cx.drawImage(img, x, y);
-    const key = "altkaya" + Date.now();
+    const key = this.geciciDoku("altkaya" + Date.now());
     this.textures.addCanvas(key, cv);
     this.add.image(0, ALT, key).setOrigin(0).setDepth(0);
   }
@@ -348,60 +374,6 @@ class Oyun extends Phaser.Scene {
     }
   }
 
-  // Bölüm seçme görselleri (görseller yüklenene kadar procedural fallback hazır tutar)
-  bolumGorselleriniHazirla() {
-    // 1. Mavi kare taş menü butonu
-    const bImg = this.textures.get("btn_bolumler")?.getSourceImage();
-    if (!bImg || bImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 120; cv.height = 120;
-      const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#baa896";
-      ctx.beginPath(); ctx.roundRect(4, 4, 112, 112, 18); ctx.fill();
-      ctx.strokeStyle = "#6d5c4d"; ctx.lineWidth = 5; ctx.stroke();
-      ctx.fillStyle = "#2c436b";
-      ctx.beginPath(); ctx.roundRect(16, 16, 88, 88, 12); ctx.fill();
-      ctx.fillStyle = "#f5c542";
-      for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-          ctx.beginPath(); ctx.arc(36 + c * 24, 36 + r * 24, 6, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-      this.textures.remove("btn_bolumler");
-      this.textures.addCanvas("btn_bolumler", cv);
-    }
-
-    // 2. Tahta yuvarlak ipli bölüm butonu
-    const dImg = this.textures.get("btn_bolum_daire")?.getSourceImage();
-    if (!dImg || dImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 140; cv.height = 140;
-      const ctx = cv.getContext("2d");
-      ctx.strokeStyle = "#cbb284"; ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.arc(70, 70, 63, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.arc(70, 70, 58, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 4; ctx.stroke();
-      ctx.fillStyle = "#e3c9a4"; ctx.beginPath(); ctx.arc(70, 70, 47, 0, Math.PI * 2); ctx.fill();
-      this.textures.remove("btn_bolum_daire");
-      this.textures.addCanvas("btn_bolum_daire", cv);
-    }
-
-    // 3. Büyük dikey çapalı ahşap pano
-    const pImg = this.textures.get("panel_bolumler")?.getSourceImage();
-    if (!pImg || pImg.width <= 2) {
-      const cv = document.createElement("canvas");
-      cv.width = 620; cv.height = 980;
-      const ctx = cv.getContext("2d");
-      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.roundRect(10, 30, 600, 930, 22); ctx.fill();
-      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 7; ctx.stroke();
-      ctx.fillStyle = "#f2dfc4"; ctx.beginPath(); ctx.roundRect(38, 75, 544, 850, 14); ctx.fill();
-      ctx.fillStyle = "#5c3317"; ctx.beginPath(); ctx.roundRect(150, 10, 320, 50, 10); ctx.fill();
-      ctx.fillStyle = "#7f8c8d"; ctx.beginPath(); ctx.arc(310, 36, 18, 0, Math.PI * 2); ctx.fill();
-      this.textures.remove("panel_bolumler");
-      this.textures.addCanvas("panel_bolumler", cv);
-    }
-  }
-
   // ---------- Arayüz ----------
   arayuz() {
     this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
@@ -464,16 +436,8 @@ class Oyun extends Phaser.Scene {
     });
     overlay.add(kapatBtn);
 
-    // Açılan / geçilen bölüm sayısı (Kullanıcının geldiği en yüksek seviye asla kaybolmaz)
-    const enYuksek = Math.max(
-      kayitOku("dpd_en_yuksek_bolum", 1),
-      kayitOku("dpd_acilan_bolum", 1),
-      kayitOku("dpd_bolum", 0) + 1,
-      this.bolum + 1
-    );
-    kayitYaz("dpd_en_yuksek_bolum", enYuksek);
-    kayitYaz("dpd_acilan_bolum", enYuksek);
-    const toplamGosterilecek = Math.min(enYuksek, BOLUMLER.length);
+    // Sadece açılmış bölümler gösterilir (ulaşılan en yüksek bölüme kadar)
+    const toplamGosterilecek = Math.min(enYuksekBolum(this.bolum + 1), BOLUMLER.length);
 
     // Sayfalı seviye ızgarası: 3 sütun x 4 satır, alttaki oklarla sayfa değişir
     const sutunSayisi = 3, satirSayisi = 4, sayfaBasi = sutunSayisi * satirSayisi;
@@ -706,12 +670,11 @@ class Oyun extends Phaser.Scene {
       if (k.gy > GY + 2) { if (k.spr) { k.spr.destroy(); k.spr = null; } continue; }
       // rüzgar: kayanın hava alan yüzeyindeki hücreye bakılır (kayanın kendisi ışını durdurur)
       const ym = k.gy + (k.h >> 1), xm = k.gx + (k.w >> 1);
-      const rz = (x, y) => (x < 0 || x >= GX || y < 0 || y >= GY ? 0 : this.ruzgarYon[y * GX + x]);
       let yukari = false;
-      if (rz(k.gx - 1, ym) === 1) k.rx += RUZGAR_HIZ * 0.7 * dt;
-      else if (rz(k.gx + k.w, ym) === 2) k.rx -= RUZGAR_HIZ * 0.7 * dt;
+      if (this.ruzgarAt(k.gx - 1, ym) === 1) k.rx += RUZGAR_HIZ * 0.7 * dt;
+      else if (this.ruzgarAt(k.gx + k.w, ym) === 2) k.rx -= RUZGAR_HIZ * 0.7 * dt;
       else k.rx = 0;
-      if (rz(xm, k.gy + k.h) === 3) { yukari = true; k.ry += 85 * dt; } else k.ry = 0;
+      if (this.ruzgarAt(xm, k.gy + k.h) === 3) { yukari = true; k.ry += 85 * dt; } else k.ry = 0;
       while (Math.abs(k.rx) >= C) { const s = Math.sign(k.rx); if (!this.kayaKay(k, s, 0, false)) { k.rx = 0; break; } k.rx -= s * C; }
       if (yukari) { k.vy = 0; k.dy = 0; while (k.ry >= C) { if (!this.kayaKay(k, 0, -1, false)) { k.ry = 0; break; } k.ry -= C; } }
       else {
@@ -733,7 +696,7 @@ class Oyun extends Phaser.Scene {
           } else k.dev = 0;
         }
       }
-      // görsel: hücre konumuna yumuşak yaklaş
+      // görsel: kaya hücre ızgarasına oturur (yarım hücrede durursa kum ile arasında boşluk görünür)
       k.sx = k.gx * C; k.sy = OY + k.gy * C;
       k.spr.setPosition(k.sx, k.sy);
     }
@@ -760,7 +723,6 @@ class Oyun extends Phaser.Scene {
       }
     });
     this.zincirG = this.add.graphics().setDepth(3.9);
-    this.parlamaG = this.add.graphics().setDepth(4.2);
   }
 
   testereFirlat(t) {
@@ -833,8 +795,8 @@ class Oyun extends Phaser.Scene {
       if (t.durum !== "bekle" && t.durum !== "bitti") this.daireVurus(t.x, t.y, TESTERE_R, t.mod === "firlat");
     }
     // Sallanan toplar
-    const g = this.zincirG, pg = this.parlamaG;
-    g.clear(); pg.clear();
+    const g = this.zincirG;
+    g.clear();
     for (const b of this.toplar) {
       b.t += dt;
       const hedef = b.acik ? SALINIM_ACI : 0;
@@ -843,12 +805,12 @@ class Oyun extends Phaser.Scene {
       b.x = b.px + b.uz * Math.sin(aci); b.y = b.py + b.uz * Math.cos(aci);
       b.spr.setPosition(b.x, b.y).setRotation(aci * 0.4);
       if (b.amp > 0.15) this.daireVurus(b.x, b.y, TOP_R);
-      this.zincirCiz(g, pg, b, aci, zaman);
+      this.zincirCiz(g, b);
     }
   }
 
-  // Metal zincir: halkalar dönüşümlü yüzü/yan duran ellipsler, üstünde gezinen parlama
-  zincirCiz(g, pg, b, aci, zaman) {
+  // Metal zincir: halkalar dönüşümlü yüzü/yan duran elipsler (sprite yerine çizim: zincir boyu bölüme göre değişiyor)
+  zincirCiz(g, b) {
     const dx = b.x - b.px, dy = b.y - b.py, uz = Math.hypot(dx, dy), n = Math.max(2, Math.floor(uz / 13));
     const aa = Math.atan2(dy, dx), ca = Math.cos(aa), sa = Math.sin(aa);
     const elips = (cx, cy, a, bb, pts = 16) => { const o = []; for (let k = 0; k <= pts; k++) { const th = (k / pts) * Math.PI * 2, ex = Math.cos(th) * a, ey = Math.sin(th) * bb; o.push({ x: cx + ex * ca - ey * sa, y: cy + ex * sa + ey * ca }); } return o; };
@@ -871,22 +833,28 @@ class Oyun extends Phaser.Scene {
     return true;
   }
 
-  // ---------- Rüzgar / pervane ----------
+  // ---------- Rüzgar / taş heykel ----------
+  // Heykel sabit durduğu için yönü ve ağız noktası burada bir kez hesaplanır. Eskiden bunlar
+  // ve heykelin dokusu her karede yeniden ayarlanıyordu; artık doku sadece açılıp kapanınca değişir.
   pervaneKur() {
-    const fw = HEYKEL_EN, fh = 148 * PERVANE_OLCEK; // görsel boyutu
+    const fw = HEYKEL_EN, fh = HEYKEL_BOY;
+    const ax = fw * HEYKEL_AGIZ_X - 2, ay = fh * HEYKEL_AGIZ_Y - 6; // ağız deliğine ince ayar: 2 px geri, 6 px yukarı
     this.pervaneler.forEach((p) => {
-      const yatayMi = p.yon === "r" || p.yon === "l";
+      p.dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0;
+      p.dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
       p.cx = p.px;
-      if (yatayMi) p.cy = p.py - fh / 2;                 // zemine oturur
+      if (p.dx) p.cy = p.py - fh / 2;                     // zemine oturur
       else if (p.yon === "u") p.cy = p.py - fw / 2;       // zeminden yukarı üfler
       else p.cy = p.py - KARE_PX + fw / 2;                // tavana asılı, aşağı üfler
       p.yari = fh * 0.38;                                 // rüzgar bandının yarı genişliği (px)
       p.on = fw / 2;                                      // ön kenara uzaklık (px)
-      
-      const hasHeykel = this.textures.exists("pervane_kapali");
-      const spr = this.add.image(p.cx, p.cy, hasHeykel ? (p.acik ? "pervane_acik" : "pervane_kapali") : "fan0").setDepth(3);
-      if (hasHeykel) spr.setDisplaySize(fw, fh);
-      else spr.setScale(PERVANE_OLCEK);
+      // Ağız noktası: sağa bakan heykelde (ax, ay); diğer yönlerde aynı nokta döndürülür
+      if (p.yon === "r") { p.mx = p.cx + ax; p.my = p.cy + ay; }
+      else if (p.yon === "l") { p.mx = p.cx - ax; p.my = p.cy + ay; }
+      else if (p.yon === "u") { p.mx = p.cx + ay; p.my = p.cy - ax; }
+      else { p.mx = p.cx - ay; p.my = p.cy + ax; }
+
+      const spr = this.add.image(p.cx, p.cy, "pervane_kapali").setDisplaySize(fw, fh).setDepth(3);
       if (p.yon === "l") spr.setFlipX(true);
       if (p.yon === "u") spr.setAngle(-90);
       if (p.yon === "d") spr.setAngle(90);
@@ -902,11 +870,7 @@ class Oyun extends Phaser.Scene {
   pervaneTikla(p) {
     if (this.durum !== "oyun") return;
     p.acik = !p.acik;
-    if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
-      const fw = HEYKEL_EN, fh = 148 * PERVANE_OLCEK;
-      p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
-      p.spr.setDisplaySize(fw, fh);
-    }
+    p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali").setDisplaySize(HEYKEL_EN, HEYKEL_BOY);
     this.ruzgarKur();
   }
 
@@ -918,7 +882,7 @@ class Oyun extends Phaser.Scene {
       p.hucre = new Int32Array(0); p.menzil = [];
       if (!p.acik) continue;
       const gx0 = Math.floor(p.cx / C), gy0 = Math.floor((p.cy - OY) / C), bh = Math.floor(p.yari / C);
-      const dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0, dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
+      const dx = p.dx, dy = p.dy;
       p.adim = dx + dy * GX;
       const liste = [];
       for (let o = -bh; o <= bh; o++) {
@@ -939,30 +903,18 @@ class Oyun extends Phaser.Scene {
     if (!this.pervaneler.length) return;
     this.ruzgarSay++;
     const aktif = this.pervaneler.some((p) => p.acik);
+    // Rüzgar bölgesi (önündeki engellere göre kısalan ışınlar) her 8 karede bir yeniden hesaplanır;
+    // kum yavaş değiştiği için bu yeterli. Bölümde hareketli kaya varsa her karede: kaya hızlı
+    // kayıp rüzgarı kesebiliyor.
     if (aktif && this.ruzgarSay % (this.kayalar.length ? 1 : 8) === 0) this.ruzgarKur();
     const g = this.ruzgarCizim;
     g.clear();
-    const fh = 148 * PERVANE_OLCEK;
+    if (!aktif) return;
 
     for (const p of this.pervaneler) {
-      if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
-        p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
-        p.spr.setDisplaySize(HEYKEL_EN, fh);
-      } else {
-        p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
-      }
       if (!p.acik) continue;
-
-      const dx = p.yon === "r" ? 1 : p.yon === "l" ? -1 : 0, dy = p.yon === "d" ? 1 : p.yon === "u" ? -1 : 0;
+      const dx = p.dx, dy = p.dy, mx = p.mx, my = p.my; // rüzgar heykelin ağız deliğinden çıkar
       const nx = dy ? 1 : 0, ny = dx ? 1 : 0; // yana doğru birim vektör
-
-      // Rüzgarın çıkış noktası: doğrudan heykelin açık ağız deliğine hizalı
-      let mx = p.cx, my = p.cy;
-      const ax = HEYKEL_EN * HEYKEL_AGIZ_X - 2, ay = fh * HEYKEL_AGIZ_Y - 6; // ağız deliğine ince ayar: 2 px geri, 6 px yukarı
-      if (p.yon === "r") { mx = p.cx + ax; my = p.cy + ay; }
-      else if (p.yon === "l") { mx = p.cx - ax; my = p.cy + ay; }
-      else if (p.yon === "u") { mx = p.cx + ay; my = p.cy - ax; }
-      else if (p.yon === "d") { mx = p.cx - ay; my = p.cy + ax; }
 
       const maxUz = Math.max(...p.menzil, 0);
       if (maxUz > p.on + 20) {
@@ -1024,6 +976,9 @@ class Oyun extends Phaser.Scene {
     }
   }
 
+  // Hücredeki rüzgar yönü (ızgara dışı = rüzgar yok)
+  ruzgarAt(x, y) { return x < 0 || x >= GX || y < 0 || y >= GY ? 0 : this.ruzgarYon[y * GX + x]; }
+
   // Varlığın merkezindeki rüzgar: 0 yok, 1 sağ, 2 sol, 3 yukarı, 4 aşağı
   ruzgarKuvvet(e) {
     const cx = Math.floor(e.x / C), cy = Math.floor((e.y - e.h / 2 - OY) / C);
@@ -1065,7 +1020,7 @@ class Oyun extends Phaser.Scene {
         for (const n of [x > 0 ? j - 1 : -1, x < GX - 1 ? j + 1 : -1, j - GX, j + GX]) if (n >= 0 && n < GX * GY && !gor[n] && this.g[n] === KAPAK) { gor[n] = 1; yig.push(n); }
       }
       const w = (x1 - x0 + 1) * C, h = (y1 - y0 + 1) * C, b = Math.max(3, Math.round(SB * h / SH));
-      const key = "kapak" + Date.now() + "_" + i, cv = this.textures.createCanvas(key, w, h), cx = cv.context;
+      const key = this.geciciDoku("kapak" + Date.now() + "_" + i), cv = this.textures.createCanvas(key, w, h), cx = cv.context;
       const p = (sx, sy, sw, sh, dx, dy, dw, dh) => cx.drawImage(src, sx, sy, sw, sh, dx, dy, dw, dh);
       p(0, 0, SB, SB, 0, 0, b, b); p(SW - SB, 0, SB, SB, w - b, 0, b, b);
       p(0, SH - SB, SB, SB, 0, h - b, b, b); p(SW - SB, SH - SB, SB, SB, w - b, h - b, b, b);
@@ -1089,7 +1044,14 @@ class Oyun extends Phaser.Scene {
       yigin.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
     }
     if (n) {
-      this.kapaklar = this.kapaklar.filter((k) => { if (this.g[k.i] === KAPAK) return true; k.spr.destroy(); return false; });
+      // açılan kapağın sprite'ı ve dokusu hemen silinir (bellekte boşuna durmasın)
+      this.kapaklar = this.kapaklar.filter((k) => {
+        if (this.g[k.i] === KAPAK) return true;
+        const key = k.spr.texture.key;
+        k.spr.destroy();
+        if (this.textures.exists(key)) this.textures.remove(key);
+        return false;
+      });
       this.kapakDegisti = true; this.cameras.main.shake(120, 0.004); this.ses("ses_kapak", { volume: 0.8 }); }
   }
 
@@ -1112,7 +1074,9 @@ class Oyun extends Phaser.Scene {
     return false;
   }
 
-  // Değişen hücreyi ve komşularını yeniden çizilecek olarak işaretle
+  // Değişen hücreyi ve komşularını yeniden çizilecek olarak işaretle.
+  // Komşular da işaretlenir; çünkü bir hücrenin parlak üst kenarı / gölgeli alt kenarı komşusunun
+  // dolu ya da boş olmasına bağlı. Sadece hücrenin kendisini çizseydik eski gölgeler ekranda kalırdı.
   kirlet(i) {
     const k = this.kirli;
     k[i] = 1;
@@ -1141,7 +1105,8 @@ class Oyun extends Phaser.Scene {
     return false;
   }
 
-  // Küçük inişlerde (yamaç basamakları) düşmeye geçmeden yere yapışır
+  // Küçük inişlerde (yamaç basamakları) düşmeye geçmeden yere yapışır. Yoksa yamaçtan inerken
+  // her 6 px'lik basamakta bir kare "havada" sayılıp düşme pozu ve sesi tetikleniyordu.
   zemineYapis(e, maxPx) {
     if (this.zeminVar(e)) return true;
     const y0 = e.y;
@@ -1183,7 +1148,8 @@ class Oyun extends Phaser.Scene {
         else { engelSatir = Math.max(engelSatir, y); engelUst = Math.min(engelUst, y); }
       }
       if (engelSatir >= 0) {
-        // basamak: sadece en alttaki 2 kare engelse yukarı çık
+        // Basamak: sadece ayak hizasındaki en alt 2 hücre engelse karakter üstüne çıkar.
+        // Böylece kum yamacına takılmadan tırmanır ama gerçek duvar (daha yüksek engel) onu durdurur.
         if (!(e.tip && e.tip.ucar) && engelSatir >= b.y1 - 1 && engelSatir <= b.y1 && engelUst >= b.y1 - 1) {
           const tir = b.y1 - engelSatir + 1;
           let bos = true;
@@ -1203,6 +1169,9 @@ class Oyun extends Phaser.Scene {
   }
 
   // ---------- Kum fiziği ----------
+  // Klasik "düşen kum" hücre otomatı: alttan yukarı taranır ki bir tane aynı karede iki kez düşmesin.
+  // Tarama yönü her karede sağ/sol değişir; tek yönde tarasaydık kum hep bir tarafa yığılırdı.
+  // Reis'in gövdesi "engel" sayılır: kum karakterin içine akmaz, üstüne birikir.
   kumAdim() {
     const g = this.g, si = this.srcI, eng = this.engel;
     eng.fill(0);
@@ -1225,15 +1194,15 @@ class Oyun extends Phaser.Scene {
         if (g[a] === BOS && !eng[a]) {
           hedef = a;
         } else {
-          const ilk = Math.random() < 0.5 ? -1 : 1;
-          for (const s of [ilk, -ilk]) {
+          // Önce rastgele bir yana, olmazsa öbür yana kayar. Yön rastgele; hep aynı yöne kaysa tepeler
+          // yamuk birikir. (Eskiden burada her tane için [ilk, -ilk] dizisi üretiliyordu; bu döngü her
+          // karede binlerce kez döndüğü için çöp toplayıcıyı yoruyordu, iki adımlı döngüye çevrildi.)
+          let s = Math.random() < 0.5 ? -1 : 1;
+          for (let deneme = 0; deneme < 2; deneme++, s = -s) {
             const nx = x + s;
             if (nx < 0 || nx >= GX) continue;
-            const yan = i + s, alt = a + s;
-            if (g[alt] === BOS && !eng[alt] && g[yan] === BOS) {
-              hedef = alt;
-              break;
-            }
+            const alt = a + s;
+            if (g[alt] === BOS && !eng[alt] && g[i + s] === BOS) { hedef = alt; break; }
           }
         }
         if (hedef >= 0) {
@@ -1243,7 +1212,8 @@ class Oyun extends Phaser.Scene {
           this.kirlet(i); this.kirlet(hedef);
           hareket++;
         } else if (si[i] !== i && ++this.durgun[i] > 10) {
-          // durulan kum, dokuyu kendi yerinden alır: dikiş/çizgi/kare izi kalmaz
+          // Düşen tane dokusunu yanında taşır (si), yoksa akarken kum deseni kayıp titrerdi.
+          // Durulunca dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/kare izi kalmaz.
           si[i] = i; this.kirlet(i);
         }
       }
@@ -1308,7 +1278,6 @@ class Oyun extends Phaser.Scene {
       const s = tip === KUM ? si[i] : i;
       const kaynak0 = ((s / GX) | 0) * C * W + (s % GX) * C;
       const dz = src[tip];
-      const ton = 1;
       const ust = bosMu(cx, cy - 1) || cy === 0, alt = bosMu(cx, cy + 1);
       const sol = bosMu(cx - 1, cy), sag = bosMu(cx + 1, cy);
 
@@ -1322,7 +1291,7 @@ class Oyun extends Phaser.Scene {
 
       for (let yy = 0; yy < C; yy++) {
         const o = hedef0 + yy * W, ko = kaynak0 + yy * W;
-        let fy = ton;
+        let fy = 1;
         if (ust && yy < 3) fy *= UST[yy];
         if (alt && yy >= C - 3) fy *= ALTG[yy - (C - 3)];
         for (let xx = 0; xx < C; xx++) {
@@ -1406,6 +1375,8 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Döngü ----------
   update(zaman) {
+    // dt en fazla 0,05 sn: telefon bir an takılırsa (bildirim, arka plan) karakterler duvarın
+    // içinden geçecek kadar büyük bir adım atmasın.
     const simdi = performance.now();
     const dt = Math.min(this.sonZaman ? (simdi - this.sonZaman) / 1000 : 0.016, 0.05);
     this.sonZaman = simdi;
@@ -1425,7 +1396,8 @@ class Oyun extends Phaser.Scene {
     this.kapakVurgu(zaman);
   }
 
-  // Kapak kenarları: sadece kapak değişince yeniden çizilir, yanıp sönme alpha ile
+  // Kapak kenarları: çizgiler sadece kapak değişince yeniden çizilir; yanıp sönme sadece alpha ile
+  // yapılır. Her karede yeniden çizmek yerine bu yol çok daha ucuz.
   kapakVurgu(zaman) {
     const g = this.kapakCizim;
     g.setAlpha(0.5 + 0.4 * Math.sin(zaman / 250));
@@ -1701,13 +1673,7 @@ class Oyun extends Phaser.Scene {
   bolumBitti() {
     if (this.durum !== "oyun") return;
     this.durum = "kazandi";
-    const yeniAcilan = Math.max(
-      kayitOku("dpd_en_yuksek_bolum", 1),
-      kayitOku("dpd_acilan_bolum", 1),
-      this.bolum + 2
-    );
-    kayitYaz("dpd_en_yuksek_bolum", yeniAcilan);
-    kayitYaz("dpd_acilan_bolum", yeniAcilan);
+    enYuksekBolum(this.bolum + 2); // sonraki bölümün kilidi açılır
 
     // Eski bölüm tekrar oynanıyorsa en son kalınan yüksek ana kayıt düşürülmesin
     const mevcutKayitli = kayitOku("dpd_bolum", 0);

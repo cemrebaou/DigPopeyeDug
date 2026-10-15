@@ -2,6 +2,18 @@
 
 ## Bekleyenler
 
+## v0.36 — Kod Revizyonu, Optimizasyon ve Temizlik
+- Kullanılmayan görseller silindi: btn_durdur, btn_ev, btn_oyna, btn_ses, btn_sessiz, fan0-7 (eski pervane), model_1..5 ve ufleyici_modeller (heykel seçimi bitti).
+- Oyunla ilgisi olmayan araç sayfaları www/ içinden silindi (APK'ya giriyordu): arkaplan-silici, bolum-paneli-yukle, heykeli-yukle, pervane-modelleri. Gerekirse git geçmişinden geri alınabilir.
+- Tüm PNG'ler kayıpsız sıkıştırıldı (görüntü birebir aynı): ~4,6 MB → ~4,2 MB.
+- Bellek sızıntısı giderildi: her bölüm başında üretilen zemin / alt kaya / kapak dokuları artık siliniyor (eskiden her yeniden başlatmada birikiyordu). Açılan kapağın dokusu da hemen silinir.
+- Zemin dokuları bir kez hesaplanıp saklanıyor: bölüm geçişleri hızlandı.
+- Heykel: yön ve ağız noktası bir kez hesaplanıyor; doku sadece açılıp kapanınca değişiyor (eskiden her kare).
+- Kum fiziği sıcak döngüsünde her tane için dizi üretimi kaldırıldı (çöp toplayıcı takılmaları azalır).
+- En yüksek bölüm hesabı 3 yerden tek fonksiyona (enYuksekBolum) alındı; eski kayıtlar korunuyor.
+- Ölü kod silindi: kullanılmayan parlama katmanı, eski fan yedeği, yedek çizim bölüm görselleri, animasyon listesi her bölümde yeniden kurulmuyor.
+- Kodun kritik yerlerine "neden böyle yaptık" açıklamaları eklendi.
+
 ## v0.35 — Rüzgar Çıkışı 3 px Daha Yukarı
 - Heykelin rüzgar çıkışı ağız deliğine tam denk gelsin diye 3 px daha yukarı alındı (toplam 6 px yukarı, 2 px geri).
 
@@ -79,7 +91,7 @@
 - Butonlar sıkıştırıldı: sol, sağ, eğil, pompa (170/170/170/180 px).
 
 ## v0.16 — Rüzgar / pervane (bölüm 16-20)
-- Haritada `>` `<` `^` `v` = pervane (sağa/sola/yukarı/aşağı). Başta kapalı, dokununca açılır/kapanır. Sprite: `fan0-7` (dönüş kareleri). Kapalıyken gri tonlu ve duruyor.
+- Haritada `>` `<` `^` `v` = pervane (sağa/sola/yukarı/aşağı). Başta kapalı, dokununca açılır/kapanır. Görsel: taş heykel (`pervane_kapali` ağzı kapalı / `pervane_acik` ağzı açık), rüzgar ağzından çıkar.
 - Rüzgar bölgesi: pervane merkezinden başlayan ışınlar (en çok 84 kum tanesi), kaya/toprak/kapağa çarpınca durur, kum rüzgarı durdurmaz. Bant yüksekliği pervane boyu (~96 px); pervanenin yüksekliği hangi varlıkların etkileneceğini belirler (zemindeki pervane yürüyenleri iter, kuş etkilenmez; yüksek pervane kuşu iter).
 - Etki: Reis/yengeç/ahtapot yatayda 110 px/sn itilir, yukarı rüzgarda 200 px/sn süzülür (yana dönebilir), aşağı rüzgarda düşüş hızlanır, kuş aşağı rüzgarda alçalır. Kum taneleri savrulur (yukarı rüzgarda havada asılı kalır).
 - Haritanın altı artık açık: çukurdan (24. satıra kadar açık sütun) düşen ölür (düşman +150 puan).
