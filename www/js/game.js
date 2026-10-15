@@ -92,6 +92,16 @@ class Oyun extends Phaser.Scene {
     // Tur: bütün bölümler bitince baştan başlanır, her turda hızlar %25 artar (100, 125, 150, 175...)
     this.tur = data && data.tur !== undefined ? data.tur : kayitOku("dpd_tur", 0);
     this.hizCarpan = 1 + 0.25 * this.tur;
+
+    // Kullanıcının ulaştığı en yüksek bölümü kalıcı koru (1. seviye seçilse bile kaybolmaz)
+    const enYuksek = Math.max(
+      kayitOku("dpd_en_yuksek_bolum", 1),
+      kayitOku("dpd_acilan_bolum", 1),
+      kayitOku("dpd_bolum", 0) + 1,
+      this.bolum + 1
+    );
+    kayitYaz("dpd_en_yuksek_bolum", enYuksek);
+    kayitYaz("dpd_acilan_bolum", enYuksek);
   }
 
   preload() {
@@ -452,9 +462,16 @@ class Oyun extends Phaser.Scene {
     });
     overlay.add(kapatBtn);
 
-    // Açılan / geçilen bölüm sayısı (Geçildikçe buton eklenir)
-    const acilanBolum = Math.max(kayitOku("dpd_acilan_bolum", 1), this.bolum + 1);
-    const toplamGosterilecek = Math.min(acilanBolum, BOLUMLER.length);
+    // Açılan / geçilen bölüm sayısı (Kullanıcının geldiği en yüksek seviye asla kaybolmaz)
+    const enYuksek = Math.max(
+      kayitOku("dpd_en_yuksek_bolum", 1),
+      kayitOku("dpd_acilan_bolum", 1),
+      kayitOku("dpd_bolum", 0) + 1,
+      this.bolum + 1
+    );
+    kayitYaz("dpd_en_yuksek_bolum", enYuksek);
+    kayitYaz("dpd_acilan_bolum", enYuksek);
+    const toplamGosterilecek = Math.min(enYuksek, BOLUMLER.length);
 
     // Kaydırılabilir seviye grid alanı (Scrollable Container)
     const maskX = W / 2 - 250, maskY = panelY - 330, maskW = 500, maskH = 680;
@@ -867,7 +884,9 @@ class Oyun extends Phaser.Scene {
       p.on = fw / 2;                                      // ön kenara uzaklık (px)
       
       const hasHeykel = this.textures.exists("pervane_kapali");
-      const spr = this.add.image(p.cx, p.cy, hasHeykel ? (p.acik ? "pervane_acik" : "pervane_kapali") : "fan0").setScale(PERVANE_OLCEK).setDepth(3);
+      const spr = this.add.image(p.cx, p.cy, hasHeykel ? (p.acik ? "pervane_acik" : "pervane_kapali") : "fan0").setDepth(3);
+      if (hasHeykel) spr.setDisplaySize(fw, fh);
+      else spr.setScale(PERVANE_OLCEK);
       if (p.yon === "l") spr.setFlipX(true);
       if (p.yon === "u") spr.setAngle(-90);
       if (p.yon === "d") spr.setAngle(90);
@@ -884,7 +903,9 @@ class Oyun extends Phaser.Scene {
     if (this.durum !== "oyun") return;
     p.acik = !p.acik;
     if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
+      const fw = 118 * PERVANE_OLCEK, fh = 148 * PERVANE_OLCEK;
       p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
+      p.spr.setDisplaySize(fw, fh);
     }
     this.ruzgarKur();
   }
@@ -926,6 +947,7 @@ class Oyun extends Phaser.Scene {
     for (const p of this.pervaneler) {
       if (this.textures.exists("pervane_acik") && this.textures.exists("pervane_kapali")) {
         p.spr.setTexture(p.acik ? "pervane_acik" : "pervane_kapali");
+        p.spr.setDisplaySize(118 * PERVANE_OLCEK, fh);
       } else {
         p.spr.setTexture("fan" + (p.acik ? Math.floor(zaman / 45) % 8 : 0));
       }
@@ -1678,10 +1700,24 @@ class Oyun extends Phaser.Scene {
   bolumBitti() {
     if (this.durum !== "oyun") return;
     this.durum = "kazandi";
-    const yeniAcilan = Math.max(kayitOku("dpd_acilan_bolum", 1), this.bolum + 2);
+    const yeniAcilan = Math.max(
+      kayitOku("dpd_en_yuksek_bolum", 1),
+      kayitOku("dpd_acilan_bolum", 1),
+      this.bolum + 2
+    );
+    kayitYaz("dpd_en_yuksek_bolum", yeniAcilan);
     kayitYaz("dpd_acilan_bolum", yeniAcilan);
-    if (this.bolum + 1 >= BOLUMLER.length) { kayitYaz("dpd_bolum", 0); kayitYaz("dpd_tur", this.tur + 1); }
-    else kayitYaz("dpd_bolum", this.bolum + 1);
+
+    // Eski bölüm tekrar oynanıyorsa en son kalınan yüksek ana kayıt düşürülmesin
+    const mevcutKayitli = kayitOku("dpd_bolum", 0);
+    if (this.bolum >= mevcutKayitli) {
+      if (this.bolum + 1 >= BOLUMLER.length) {
+        kayitYaz("dpd_bolum", 0);
+        kayitYaz("dpd_tur", this.tur + 1);
+      } else {
+        kayitYaz("dpd_bolum", this.bolum + 1);
+      }
+    }
     this.ses("ses_kazandi", { volume: 0.9 });
     this.time.delayedCall(700, () => this.bitisEkrani(true));
   }

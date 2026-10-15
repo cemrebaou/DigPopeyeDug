@@ -2,6 +2,13 @@
 
 ## Bekleyenler
 
+## v0.31 — Kalıcı En Yüksek Bölüm Koruması & Heykel Üfleyici Boyutlandırması
+- Bölüm seçme menüsünde 1. seviye veya eski bir seviye seçildiğinde en yüksek ulaşılan bölümün silinmesi engellendi (`dpd_en_yuksek_bolum` koruması).
+- Kullanıcı hangi bölümü seçerse seçsin, ulaştığı en yüksek seviyeye kadar olan tüm butonlar daima açık kalır.
+- Eski seviyeler tekrar oynanıp kazanıldığında en yüksek bölüm kaydı ezilmez.
+- Heykel üfleyici görseli için sabit hücre ölçeklemesi (`setDisplaySize`) eklendi, yüksek çözünürlüklü görsellerin ekranı taşması engellendi.
+- Heykel yükleme aracına (`heykeli-yukle.html`) doğrudan panodan yapıştırma (Ctrl+V) ve GitHub'a otomatik push entegrasyonu eklendi.
+
 ## v0.30 — Kaydırmalı Bölüm Seçme Paneli & Gelişmiş Üfleme Rüzgarı
 - Oyun ekranına mavi kare taş bölüm menüsü butonu eklendi (sağ üst bar).
 - Büyük dikey ahşap panolu, dokunarak kaydırılabilir (scroll) bölüm seçme ekranı yapıldı.

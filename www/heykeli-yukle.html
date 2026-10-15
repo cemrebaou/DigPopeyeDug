@@ -103,6 +103,17 @@
       dropZone.style.borderColor = '#e67e22';
       if (e.dataTransfer.files.length) isle(e.dataTransfer.files[0]);
     });
+    window.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          isle(blob);
+          break;
+        }
+      }
+    });
+
     fileInput.addEventListener('change', (e) => {
       if (e.target.files.length) isle(e.target.files[0]);
     });
