@@ -2,6 +2,16 @@
 
 ## Bekleyenler
 
+## v0.48 — 5 Yeni Başlangıç Bölümü, Butonlar Aşağıda
+- Başa 5 yeni bölüm eklendi (sadece kum, toprak, kaya, kapak, yengeç, ahtapot; yeni nesne yok). Eski bölümler 5 ileri kaydı (toplam 50), hepsi yeniden numaralandı.
+  1 Kazı Yolu: üstteki kum tepesini kaz, boşluktan aşağı düş, sola kaz, 2 canavar.
+  2 Kum Seli: tahta kapağın üstünde büyük kum deposu; açınca kum aşağıyı doldurur, alttaki yarıktan yandaki çukura akar.
+  3 Uzun Atlayış: 3 karelik ölümcül boşluğun üstünden zıpla, sonra kum kazıp aşağı in.
+  4 Kum Merdiveni: kapaktan in, sola kaz, ikinci kapağı açıp kumla birlikte aşağı düş.
+  5 İki Kapak: iki kum deposu, iki kapak; aradaki toprak duvarı kazarak geç.
+- Kontrol butonları sürüm yazısının hemen üstüne indirildi (KONTROL_Y 1096 -> 1143), zıpla da birlikte indi.
+- Not: kayıtlı ilerleme sıra numarasıyla tutuluyor; oyun henüz test modunda olduğu için kayıt kaydırması yapılmadı.
+
 ## v0.47 — Yeni Zıplama ve İniş Pozları
 - reis_zipla (yükselirken) ve reis_zipla_in (inerken) yeni görsellerle değiştirildi; orijinal saydamlık korundu, ikisi aynı ölçekte.
 

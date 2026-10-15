@@ -19,7 +19,9 @@ const GY = SATIR * HARITA_KARE; // 144
 const OY = 130;              // oyun alanının ekrandaki üst kenarı
 const ALAN_H = GY * C;       // 864
 const ALT = OY + ALAN_H;     // 994
-const KONTROL_Y = 1096;      // butonların ortası (altındaki 150px banner reklam için boş)
+// Kontrol butonlarının ortası. En büyük buton (pompa, ~189 px) sağ alttaki sürüm yazısının hemen
+// üstünde biter, yazıya değmez. (Eskiden 1096'daydı; alttaki 150 px banner reklam için boş bırakılmıştı.)
+const KONTROL_Y = 1143;
 
 const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4, TAS = 5; // TAS = itilebilen kaya bloğu (hareket eder)
 
@@ -595,7 +597,7 @@ class Oyun extends Phaser.Scene {
     this.ikonButon(265, KONTROL_Y, "btn_sag", 170, () => (this.tuslar.sag = true), () => (this.tuslar.sag = false));
     this.egilBtn = this.ikonButon(439, KONTROL_Y, "btn_egil", 170, () => this.egilTikla());
     this.ikonButon(618, KONTROL_Y, "btn_pompa", 180, () => this.pompala());
-    this.ikonButon(618, 926, "btn_zipla", 120, () => this.zipla()).setAlpha(0.92); // zıpla
+    this.ikonButon(618, KONTROL_Y - 170, "btn_zipla", 120, () => this.zipla()).setAlpha(0.92); // zıpla: pompanın hemen üstünde
     this.add.text(W - 10, H - 8, (window.OYUN_CONFIG && OYUN_CONFIG.surum) || "v0.01", { fontFamily: "Arial", fontSize: "22px", color: "#ffffff", stroke: "#3b2412", strokeThickness: 4 }).setOrigin(1, 1).setDepth(30);
 
     // Kapaklara dokunma

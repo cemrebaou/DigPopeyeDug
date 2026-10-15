@@ -11,7 +11,7 @@
 //   b  uçan kuş (eğilerek altından geç)
 //   > < ^ v  pervane (sağa/sola/yukarı/aşağı rüzgar)
 //   T  itilebilen kaya (2x2 kare: iki satır x iki sütun T)
-//   A W  yer / tavan dikeni   X N Y Z  testere   S P  sallanan top   (ayrıntı: 31. bölümün üstündeki not)
+//   A W  yer / tavan dikeni   X N Y Z  testere   S P  sallanan top   (ayrıntı: 36. bölümün üstündeki not)
 // Eksik satırlar otomatik kaya ile doldurulur.
 
 const HAVA = "....................";
@@ -20,6 +20,120 @@ const ZEMIN = "####################";
 window.BOLUMLER = [
   {
     ad: "Bölüm 1",
+    ipucu: "Kumu kaz, boşluktan aşağı atla, sola kaz!",
+    harita: [
+      "....................",
+      ".....dssssssssd.....",
+      ".....dssssssssd.....",
+      ".R...dssssssssd.....",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "################..##",
+      "#......sssssssss..##",
+      "#......sssssssss..##",
+      "#......sssssssss..##",
+      "#.c..o.sssssssss..##",
+      "####################"
+    ]
+  },
+  {
+    ad: "Bölüm 2",
+    ipucu: "Kapağa dokun, kum aşağıyı doldursun!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      ".R..................",
+      "dddd#ssssssssss#dddd",
+      "dddd#ssssssssss#dddd",
+      "dddd#ssssssssss#dddd",
+      "dddd#ssssssssss#dddd",
+      "#####kkkkkkkkkk#####",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#.......c..........#",
+      "#################..#",
+      "#############......#",
+      "#############......#",
+      "#############......#",
+      "#############.o....#",
+      "####################"
+    ]
+  },
+  {
+    ad: "Bölüm 3",
+    ipucu: "Boşluğun üstünden zıpla!",
+    harita: [
+      "....................",
+      "..............dsss..",
+      "..............dsss..",
+      ".R...c........dsss..",
+      "dddddddd...ddddddd..",
+      "dddddddd...ddddddd..",
+      "dddddddd...ddddddd..",
+      "dddddddd...#######..",
+      "dddddddd...#...sss..",
+      "dddddddd...#...sss..",
+      "dddddddd...#...sss..",
+      "dddddddd...#.o.sss..",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########",
+      "dddddddd...#########"
+    ]
+  },
+  {
+    ad: "Bölüm 4",
+    ipucu: "Kapağın üstüne gel, dokun ve aşağı in!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      ".R..................",
+      "dddddddddddddddkkddd",
+      "#ss....sssss......d#",
+      "#ss....sssss......d#",
+      "#ss....sssss......d#",
+      "#ss.c..sssss......d#",
+      "#kk#################",
+      "#.......ssss.......#",
+      "#.......ssss.......#",
+      "#.......ssss.......#",
+      "#.......ssss....o..#",
+      "####################"
+    ]
+  },
+  {
+    ad: "Bölüm 5",
+    ipucu: "İki kapağı da aç, sonra aşağı inip kaz!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      ".R..................",
+      "dddd#ssss#dd#ssss#dd",
+      "dddd#ssss#dd#ssss#dd",
+      "dddd#ssss#dd#ssss#dd",
+      "#####kkkk####kkkk###",
+      "#.........d........#",
+      "#.........d........#",
+      "#.........d........#",
+      "#...c.....d.....o..#",
+      "####################"
+    ]
+  },
+  {
+    ad: "Bölüm 6",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -41,7 +155,7 @@ window.BOLUMLER = [
     ]
   },
   {
-    ad: "Bölüm 2",
+    ad: "Bölüm 7",
     harita: [
       HAVA, HAVA, HAVA,
       "...................R",
@@ -57,7 +171,7 @@ window.BOLUMLER = [
     ]
   },
   {
-    ad: "Bölüm 3",
+    ad: "Bölüm 8",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -85,7 +199,7 @@ window.BOLUMLER = [
 
 window.BOLUMLER.push(
   {
-    ad: "Bölüm 4",
+    ad: "Bölüm 9",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -106,7 +220,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 5",
+    ad: "Bölüm 10",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -122,7 +236,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 6",
+    ad: "Bölüm 11",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -138,7 +252,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 7",
+    ad: "Bölüm 12",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -164,7 +278,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 8",
+    ad: "Bölüm 13",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -185,7 +299,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 9",
+    ad: "Bölüm 14",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -201,7 +315,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 10",
+    ad: "Bölüm 15",
     harita: [
       HAVA, HAVA, HAVA,
       "...................R",
@@ -229,7 +343,7 @@ window.BOLUMLER.push(
 // kuş giremez, eğilen Reis girer (tünelde ayağa kalkılamaz, eğikken kazılmaz).
 window.BOLUMLER.push(
   {
-    ad: "Bölüm 11",
+    ad: "Bölüm 16",
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
@@ -246,7 +360,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 12",
+    ad: "Bölüm 17",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -268,7 +382,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 13",
+    ad: "Bölüm 18",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -285,7 +399,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 14",
+    ad: "Bölüm 19",
     harita: [
       HAVA, HAVA, HAVA,
       ".................R..",
@@ -302,7 +416,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 15",
+    ad: "Bölüm 20",
     harita: [
       HAVA, HAVA, HAVA,
       "R...................",
@@ -331,7 +445,7 @@ window.BOLUMLER.push(
 // zemindeki pervane yürüyenleri (Reis, yengeç, ahtapot) ve kumu iter, kuş daha yukarıdan uçtuğu için etkilenmez.
 window.BOLUMLER.push(
   {
-    ad: "Bölüm 16",
+    ad: "Bölüm 21",
     ipucu: "Pervaneye dokun, rüzgar essin!",
     dusmanYon: -1,
     harita: [
@@ -360,7 +474,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 17",
+    ad: "Bölüm 22",
     ipucu: "Pervanenin üstüne dur, yukarı süzül!",
     harita: [
       HAVA, HAVA, HAVA,
@@ -379,7 +493,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 18",
+    ad: "Bölüm 23",
     ipucu: "Pervane kumu savurur, çukura döker!",
     harita: [
       HAVA, HAVA, HAVA,
@@ -397,7 +511,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 19",
+    ad: "Bölüm 24",
     ipucu: "Kapak + rüzgar + kuş: dikkat!",
     harita: [
       HAVA, HAVA, HAVA,
@@ -415,7 +529,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 20",
+    ad: "Bölüm 25",
     ipucu: "Hepsini birden kullan!",
     dusmanYon: -1,
     harita: [
@@ -452,7 +566,7 @@ window.BOLUMLER.push(
 // Zıpla: sağdaki yukarı ok butonu (PC: yukarı ok). Yaklaşık 3,5 kare yüksek, 4 kare uzağa atlar.
 window.BOLUMLER.push(
   {
-    ad: "Bölüm 21",
+    ad: "Bölüm 26",
     ipucu: "Taşı it, düşmanın üstüne düşür!",
     harita: [
       HAVA, HAVA,
@@ -469,7 +583,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 22",
+    ad: "Bölüm 27",
     ipucu: "Taş toprağa sıkışır: zıpla, önce kaz!",
     harita: [
       HAVA, HAVA,
@@ -486,7 +600,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 23",
+    ad: "Bölüm 28",
     ipucu: "Taşı sür, düşmanları ez! Sonra zıpla.",
     harita: [
       HAVA, HAVA,
@@ -498,7 +612,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 24",
+    ad: "Bölüm 29",
     ipucu: "Kuş altından geçerken taşı düşür!",
     harita: [
       HAVA, HAVA,
@@ -516,7 +630,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 25",
+    ad: "Bölüm 30",
     ipucu: "Pervane taşı iter. Sonra kapat!",
     harita: [
       HAVA, HAVA,
@@ -533,7 +647,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 26",
+    ad: "Bölüm 31",
     ipucu: "Taşa çık, pervaneyi aç!",
     harita: [
       HAVA, HAVA, HAVA,
@@ -551,7 +665,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 27",
+    ad: "Bölüm 32",
     ipucu: "Taşı duvara it, merdiven yap!",
     harita: [
       HAVA, HAVA, HAVA, HAVA, HAVA,
@@ -564,7 +678,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 28",
+    ad: "Bölüm 33",
     ipucu: "Direği aşmak için taşı kullan!",
     harita: [
       HAVA, HAVA, HAVA, HAVA, HAVA,
@@ -581,7 +695,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 29",
+    ad: "Bölüm 34",
     ipucu: "İki taş, iki çukur. Toprağa dikkat!",
     harita: [
       HAVA, HAVA,
@@ -598,7 +712,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 30",
+    ad: "Bölüm 35",
     ipucu: "Köprü kur, kapağı aç, hepsini temizle!",
     harita: [
       HAVA, HAVA,
@@ -622,7 +736,7 @@ window.BOLUMLER.push(
 // S sürekli sallanan dikenli top, P dokununca sallanan top (durağan top zararsız). Zincir boyu bölümün zincir alanı (kare).
 window.BOLUMLER.push(
   {
-    ad: "Bölüm 31",
+    ad: "Bölüm 36",
     ipucu: "Dikene basma, zıpla!",
     harita: [
       "....................",
@@ -635,7 +749,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 32",
+    ad: "Bölüm 37",
     ipucu: "Taşı çukura it: dikenler örtülür!",
     harita: [
       "....................",
@@ -648,7 +762,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 33",
+    ad: "Bölüm 38",
     ipucu: "Kapağı aç: kum dikenleri örter!",
     harita: [
       "####################",
@@ -668,7 +782,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 34",
+    ad: "Bölüm 39",
     ipucu: "Tavan dikenlerinin altından eğilerek geç!",
     harita: [
       ".....#####..........",
@@ -680,7 +794,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 35",
+    ad: "Bölüm 40",
     ipucu: "Taşla ve kumla iki çukuru da kapat!",
     harita: [
       "####################",
@@ -700,7 +814,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 36",
+    ad: "Bölüm 41",
     ipucu: "Testereye dokun, fırlasın!",
     harita: [
       "....................",
@@ -718,7 +832,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 37",
+    ad: "Bölüm 42",
     ipucu: "Testereye dokun, sonra platforma kaç!",
     harita: [
       "####################",
@@ -733,7 +847,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 38",
+    ad: "Bölüm 43",
     ipucu: "Raydaki testere gelince üstünden zıpla!",
     harita: [
       "####################",
@@ -748,7 +862,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 39",
+    ad: "Bölüm 44",
     ipucu: "Havadaki testereye eğil, yerdekine zıpla!",
     harita: [
       "####################",
@@ -763,7 +877,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 40",
+    ad: "Bölüm 45",
     ipucu: "Kapağı aç, testereyi fırlat!",
     harita: [
       "....................",
@@ -781,7 +895,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 41",
+    ad: "Bölüm 46",
     ipucu: "Topa dokun, sallansın!",
     zincir: 3.8,
     harita: [
@@ -801,7 +915,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 42",
+    ad: "Bölüm 47",
     ipucu: "Eğil: sallanan topun altından geç!",
     zincir: 4,
     harita: [
@@ -818,7 +932,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 43",
+    ad: "Bölüm 48",
     ipucu: "Pervane düşmanı topun önüne üfler!",
     zincir: 3.8,
     harita: [
@@ -838,7 +952,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 44",
+    ad: "Bölüm 49",
     ipucu: "Eğil, zıpla, sonra topu salla!",
     zincir: 3.8,
     harita: [
@@ -860,7 +974,7 @@ window.BOLUMLER.push(
     ]
   },
   {
-    ad: "Bölüm 45",
+    ad: "Bölüm 50",
     ipucu: "Büyük final: hepsini birden kullan!",
     zincir: 3.8,
     harita: [
