@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.37 — Heykel Oyukları, Kaya Arka Planı, Bölüm Butonu
+- Taş heykel eski pervaneden geniş/uzun; sığmadığı oyuklar açıldı: Bölüm 26 (heykel 1 kare aşağı, etrafı 3 kare genişliğinde; üstteki dar yarık kaya düşmesin diye korundu), Bölüm 43 ve 45 (heykelin arkasındaki sol duvar 1 sütun açıldı). Tüm heykeller kontrol edildi, hepsi sığıyor.
+- Kaya bloğunun (ve kapağın) arkasına, bulunduğu yerin arka planı çizilir: açıktaysa gökyüzü, mağaradaysa mağara. Kaya kalkınca da aynı kalır. Mağaradaki kayanın köşelerinden gökyüzü sızması giderildi.
+- Bölüm seçme butonu (btn_bolumler) gerçek görselle değiştirildi (mavi taş, sarı noktalı ızgara).
+
 ## v0.36 — Kod Revizyonu, Optimizasyon ve Temizlik
 - Kullanılmayan görseller silindi: btn_durdur, btn_ev, btn_oyna, btn_ses, btn_sessiz, fan0-7 (eski pervane), model_1..5 ve ufleyici_modeller (heykel seçimi bitti).
 - Oyunla ilgisi olmayan araç sayfaları www/ içinden silindi (APK'ya giriyordu): arkaplan-silici, bolum-paneli-yukle, heykeli-yukle, pervane-modelleri. Gerekirse git geçmişinden geri alınabilir.

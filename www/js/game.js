@@ -369,7 +369,8 @@ class Oyun extends Phaser.Scene {
     for (let x = 0; x < GX; x++) {
       let yer = false;
       for (let y = 0; y < GY; y++) {
-        if (this.g[y * GX + x] !== BOS && this.g[y * GX + x] !== TAS) yer = true; // kaya mağara sayılmaz (arkasında gölge izi kalmasın)
+        // Kaya bloğu (TAS) mağara saymaz: hareket eden bir nesne. Açıktaki kaya kalkınca arkası gökyüzü olur, mağara izi kalmaz.
+        if (this.g[y * GX + x] !== BOS && this.g[y * GX + x] !== TAS) yer = true;
         if (yer) this.magara[y * GX + x] = 1;
       }
     }
@@ -1331,7 +1332,13 @@ class Oyun extends Phaser.Scene {
         }
         continue;
       }
-      if (tip === TAS || tip === KAPAK) { for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = 0; } continue; }
+      // Kaya bloğu ve kapak kendi sprite'larıyla çizilir; zemine onların ARKASINDA ne varsa o çizilir.
+      // Mağaradaysa mağara dokusu, açıktaysa saydam (gökyüzü görünür). Eskiden hep saydam bırakılıyordu;
+      // mağaradaki kayanın yuvarlak köşelerinden gökyüzü sızıyordu. Kaya kalkınca da aynı arka plan kalır.
+      if (tip === TAS || tip === KAPAK) {
+        for (let yy = 0; yy < C; yy++) { const o = hedef0 + yy * W; for (let xx = 0; xx < C; xx++) px[o + xx] = mg[i] ? magaraSrc[o + xx] : 0; }
+        continue;
+      }
       const s = tip === KUM ? si[i] : i;
       const kaynak0 = ((s / GX) | 0) * C * W + (s % GX) * C;
       const dz = src[tip];
