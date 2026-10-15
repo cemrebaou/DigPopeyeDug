@@ -205,6 +205,7 @@ class Oyun extends Phaser.Scene {
     this.ruzgarCizim = this.add.graphics().setDepth(6);
     this.ruzgarSay = 0;
     this.parcacikKur();
+    this.bolumGorselleriniHazirla();
 
     this.arayuz();
     this.kontroller();
@@ -371,6 +372,62 @@ class Oyun extends Phaser.Scene {
         if (this.g[y * GX + x] !== BOS && this.g[y * GX + x] !== TAS) yer = true; // kaya mağara sayılmaz (arkasında gölge izi kalmasın)
         if (yer) this.magara[y * GX + x] = 1;
       }
+    }
+  }
+
+  // Bölüm seçme görselleri. assets/ içindeki btn_bolumler, btn_bolum_daire ve panel_bolumler şu an
+  // 1x1 piksellik yer tutucu; asıl görüntü burada kodla çiziliyor. Gerçek görseller eklendiğinde
+  // (genişliği 2 pikselden büyükse) kod çizimi otomatik devre dışı kalır, bu yüzden silmedik.
+  bolumGorselleriniHazirla() {
+    // 1. Mavi kare taş menü butonu
+    const bImg = this.textures.get("btn_bolumler")?.getSourceImage();
+    if (!bImg || bImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 120; cv.height = 120;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#baa896";
+      ctx.beginPath(); ctx.roundRect(4, 4, 112, 112, 18); ctx.fill();
+      ctx.strokeStyle = "#6d5c4d"; ctx.lineWidth = 5; ctx.stroke();
+      ctx.fillStyle = "#2c436b";
+      ctx.beginPath(); ctx.roundRect(16, 16, 88, 88, 12); ctx.fill();
+      ctx.fillStyle = "#f5c542";
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          ctx.beginPath(); ctx.arc(36 + c * 24, 36 + r * 24, 6, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      this.textures.remove("btn_bolumler");
+      this.textures.addCanvas("btn_bolumler", cv);
+    }
+
+    // 2. Tahta yuvarlak ipli bölüm butonu
+    const dImg = this.textures.get("btn_bolum_daire")?.getSourceImage();
+    if (!dImg || dImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 140; cv.height = 140;
+      const ctx = cv.getContext("2d");
+      ctx.strokeStyle = "#cbb284"; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.arc(70, 70, 63, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.arc(70, 70, 58, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = "#e3c9a4"; ctx.beginPath(); ctx.arc(70, 70, 47, 0, Math.PI * 2); ctx.fill();
+      this.textures.remove("btn_bolum_daire");
+      this.textures.addCanvas("btn_bolum_daire", cv);
+    }
+
+    // 3. Büyük dikey çapalı ahşap pano
+    const pImg = this.textures.get("panel_bolumler")?.getSourceImage();
+    if (!pImg || pImg.width <= 2) {
+      const cv = document.createElement("canvas");
+      cv.width = 620; cv.height = 980;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#8a5329"; ctx.beginPath(); ctx.roundRect(10, 30, 600, 930, 22); ctx.fill();
+      ctx.strokeStyle = "#4d2b12"; ctx.lineWidth = 7; ctx.stroke();
+      ctx.fillStyle = "#f2dfc4"; ctx.beginPath(); ctx.roundRect(38, 75, 544, 850, 14); ctx.fill();
+      ctx.fillStyle = "#5c3317"; ctx.beginPath(); ctx.roundRect(150, 10, 320, 50, 10); ctx.fill();
+      ctx.fillStyle = "#7f8c8d"; ctx.beginPath(); ctx.arc(310, 36, 18, 0, Math.PI * 2); ctx.fill();
+      this.textures.remove("panel_bolumler");
+      this.textures.addCanvas("panel_bolumler", cv);
     }
   }
 

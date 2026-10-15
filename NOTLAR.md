@@ -11,7 +11,7 @@
 - Heykel: yön ve ağız noktası bir kez hesaplanıyor; doku sadece açılıp kapanınca değişiyor (eskiden her kare).
 - Kum fiziği sıcak döngüsünde her tane için dizi üretimi kaldırıldı (çöp toplayıcı takılmaları azalır).
 - En yüksek bölüm hesabı 3 yerden tek fonksiyona (enYuksekBolum) alındı; eski kayıtlar korunuyor.
-- Ölü kod silindi: kullanılmayan parlama katmanı, eski fan yedeği, yedek çizim bölüm görselleri, animasyon listesi her bölümde yeniden kurulmuyor.
+- Ölü kod silindi: kullanılmayan parlama katmanı, eski fan yedeği; animasyon listesi her bölümde yeniden kurulmuyor. (Bölüm paneli görselleri hâlâ 1x1 yer tutucu olduğu için kodla çizim korundu.)
 - Kodun kritik yerlerine "neden böyle yaptık" açıklamaları eklendi.
 
 ## v0.35 — Rüzgar Çıkışı 3 px Daha Yukarı
