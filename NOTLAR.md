@@ -2,6 +2,11 @@
 
 ## Bekleyenler
 
+## v0.42 — Oyun Müziği ve Müzik Aç/Kapa
+- Arka plan müziği (ses_muzik) döngüde çalar; bölüm değişince baştan başlamaz, kesintisiz devam eder.
+- Üst menüye müzik aç/kapa butonu eklendi (btn_ses / btn_sessiz, git geçmişinden geri alındı). Sadece müziği açar/kapar, efektler etkilenmez. Tercih kaydedilir.
+- Sağ üstte 4 butona yer açmak için bölüm adı ve skor sol üstte alt alta alındı; ipucu yazısı biraz aşağı indi.
+
 ## v0.41 — Yeni Üfleme Sesi
 - Heykel üfleme sesi (ses_ruzgar) yeni rüzgar sesiyle değiştirildi; 28 sn'lik kesintisiz döngü, mono 80 kbps.
 

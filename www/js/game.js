@@ -62,6 +62,7 @@ const SPRITELAR = [
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
   ...[0, 1, 2].map((i) => "octo_walk" + i),
   ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0",
+  "btn_ses", "btn_sessiz", // müzik açık / kapalı
   "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden", "btn_bolumler", "btn_bolum_daire", "panel_bolumler", "btn_sayfa_sol", "btn_sayfa_sag",
   "bar_yesil", "bar_mor", "bar_turuncu", "panel",
   "doku_kum", "doku_tahta", "kapak_tahta", "btn_zipla"
@@ -71,8 +72,14 @@ const SESLER = [
   "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
   "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
   "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi",
-  "ses_ayak_vur", "ses_ruzgar"
+  "ses_ayak_vur", "ses_ruzgar", "ses_muzik"
 ];
+
+// Arka plan müziği. Sahne dışında (dosya seviyesinde) tutulur; çünkü her bölüm yeniden başlarken
+// sahne baştan kurulur ama müziğin baştan başlamasını değil, kesintisiz devam etmesini istiyoruz.
+const MUZIK_SES = 0.35;
+let MUZIK = null;
+const muzikAcikMi = () => kayitOku("dpd_muzik", true); // varsayılan: açık
 
 // Animasyon kare listeleri. Sabit tuttuk; her bölüm yeniden başlarken diziler yeniden üretilmesin.
 const KARELER = {
@@ -211,6 +218,7 @@ class Oyun extends Phaser.Scene {
 
     this.arayuz();
     this.kontroller();
+    this.muzikBaslat();
     this.tumunuKirlet();
     this.kumCiz();
   }
@@ -380,9 +388,11 @@ class Oyun extends Phaser.Scene {
 
   // ---------- Arayüz ----------
   arayuz() {
-    this.add.text(24, 34, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "38px" }).setDepth(10);
-    this.skorYazi = this.add.text(W / 2 + 25, 34, "Skor: " + this.skor, { ...YAZI, fontSize: "38px", color: "#ffe066" }).setOrigin(0.5, 0).setDepth(10);
-    this.ipucu = this.add.text(W / 2, 100, BOLUMLER[this.bolum].ipucu || "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
+    // Bölüm adı ve skor sol üstte alt alta: sağ üstte 3-4 buton yan yana durabilsin diye ortadaki
+    // skor sola alındı (ortada kalsaydı müzik / tam ekran butonu skorun üstüne biniyordu).
+    this.add.text(24, 16, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "32px", strokeThickness: 7 }).setDepth(10);
+    this.skorYazi = this.add.text(24, 56, "Skor: " + this.skor, { ...YAZI, fontSize: "32px", color: "#ffe066", strokeThickness: 7 }).setDepth(10);
+    this.ipucu = this.add.text(W / 2, 110, BOLUMLER[this.bolum].ipucu || "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
 
     // Yeniden başla butonu
@@ -391,12 +401,35 @@ class Oyun extends Phaser.Scene {
     // Bölüm Seçme Menüsü (Mavi taş buton)
     this.ikonButon(W - 56 - 94, 62, "btn_bolumler", 84, () => this.bolumSecimEkraniAc());
 
+    // Müzik aç / kapa (sadece müziği etkiler; efekt sesleri çalmaya devam eder)
+    this.muzikBtn = this.ikonButon(W - 56 - 94 * 2, 62, muzikAcikMi() ? "btn_ses" : "btn_sessiz", 84, () => this.muzikDegistir());
+
     // Tam ekran (sadece tarayıcıda; telefondaki uygulamada zaten tam ekran)
     if (!Ads.native && this.sys.game.device.fullscreen.available) {
-      this.ikonButon(W - 56 - 94 - 94, 62, "btn_tamekran", 84, () => {
+      this.ikonButon(W - 56 - 94 * 3, 62, "btn_tamekran", 84, () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen(); else this.scale.startFullscreen();
       });
     }
+  }
+
+  // Müzik: tercih açıksa ve zaten çalmıyorsa başlatır. Tarayıcı, kullanıcı ekrana dokunmadan ses
+  // çalmaya izin vermez; ses kilitliyse ilk dokunuşta (unlocked) başlar.
+  muzikBaslat() {
+    if (!muzikAcikMi() || !this.cache.audio.exists("ses_muzik")) return;
+    if (MUZIK && MUZIK.isPlaying) return;
+    if (this.sound.locked) { this.sound.once("unlocked", () => this.muzikBaslat()); return; }
+    try {
+      if (!MUZIK) MUZIK = this.sound.add("ses_muzik", { loop: true, volume: MUZIK_SES });
+      MUZIK.play();
+    } catch (e) {}
+  }
+
+  muzikDegistir() {
+    const acik = !muzikAcikMi();
+    kayitYaz("dpd_muzik", acik); // tercih kaydedilir, oyun yeniden açılınca hatırlanır
+    if (acik) this.muzikBaslat();
+    else if (MUZIK) { try { MUZIK.stop(); } catch (e) {} }
+    this.muzikBtn.setTexture(acik ? "btn_ses" : "btn_sessiz");
   }
 
   bolumSecimEkraniAc() {
