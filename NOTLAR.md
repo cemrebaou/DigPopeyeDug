@@ -2,6 +2,10 @@
 
 ## Bekleyenler
 
+## v0.40 — Heykel Üfleme Sesi
+- Taş heykel açıkken rüzgar sesi (ses_ruzgar) döngüde çalar; kapanınca, ölünce ya da bölüm bitince yumuşakça kısılıp durur. Birden çok heykel açıksa tek ses çalar.
+- Ses dosyası kesintisiz döngü olacak şekilde hazırlandı (sonu başına yumuşak geçişle bağlandı), mono 96 kbps: ~73 KB.
+
 ## v0.39 — Yeni Eğilme ve Zıplama Pozları
 - Eğik yürüyüş yeni 5 karelik animasyonla değiştirildi (reis_egil0-4).
 - Zıplarken yükselme pozu (reis_zipla) ve inerken iniş pozu (reis_zipla_in) eklendi.

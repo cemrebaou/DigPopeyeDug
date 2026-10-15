@@ -71,7 +71,7 @@ const SESLER = [
   "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
   "ses_kum_kazma", "ses_kapak", "ses_adim1", "ses_adim2", "ses_adim3",
   "ses_dusme", "ses_dustu", "ses_kum_dokul", "ses_kum_dok", "ses_olme", "ses_kazandi",
-  "ses_ayak_vur"
+  "ses_ayak_vur", "ses_ruzgar"
 ];
 
 // Animasyon kare listeleri. Sabit tuttuk; her bölüm yeniden başlarken diziler yeniden üretilmesin.
@@ -167,6 +167,8 @@ class Oyun extends Phaser.Scene {
   create() {
     this.geciciDokulariSil(); // önceki bölümün sprite'ları zaten yok edildi, dokuları da boşaltılır
     if (this.dusmeSes) { try { this.dusmeSes.stop(); this.dusmeSes.destroy(); } catch (e) {} }
+    if (this.ruzgarSes) { try { this.ruzgarSes.stop(); this.ruzgarSes.destroy(); } catch (e) {} }
+    this.ruzgarSes = null;
     this.dusmeSes = null; this.kumSayac = 0; this.sonKumSes = 0; this.sonKazmaSes = 0;
     this.durum = "oyun";
     this.kare = 0;
@@ -903,10 +905,30 @@ class Oyun extends Phaser.Scene {
     }
   }
 
+  // Taş heykel üfleme sesi: en az bir heykel açıkken döngüde çalar, hepsi kapanınca (ya da oyun
+  // bitince) yumuşakça kısılıp durur. Birden çok heykel açık olsa da tek ses çalar; üst üste
+  // binen aynı ses hem gürültü yapar hem boşuna işlemci harcar.
+  ruzgarSesiAyarla(acik) {
+    if (acik) {
+      if (this.ruzgarSes || !this.cache.audio.exists("ses_ruzgar")) return;
+      try {
+        const s = this.sound.add("ses_ruzgar", { loop: true, volume: 0 });
+        s.play();
+        this.tweens.add({ targets: s, volume: 0.45, duration: 300 }); // ani başlamasın, hafifçe açılsın
+        this.ruzgarSes = s;
+      } catch (e) { this.ruzgarSes = null; }
+    } else if (this.ruzgarSes) {
+      const s = this.ruzgarSes;
+      this.ruzgarSes = null;
+      try { this.tweens.add({ targets: s, volume: 0, duration: 250, onComplete: () => { try { s.stop(); s.destroy(); } catch (e) {} } }); } catch (e) {}
+    }
+  }
+
   ruzgarGuncelle(dt, zaman) {
     if (!this.pervaneler.length) return;
     this.ruzgarSay++;
     const aktif = this.pervaneler.some((p) => p.acik);
+    this.ruzgarSesiAyarla(aktif && this.durum === "oyun");
     // Rüzgar bölgesi (önündeki engellere göre kısalan ışınlar) her 8 karede bir yeniden hesaplanır;
     // kum yavaş değiştiği için bu yeterli. Bölümde hareketli kaya varsa her karede: kaya hızlı
     // kayıp rüzgarı kesebiliyor.
