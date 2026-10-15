@@ -1078,7 +1078,7 @@ class Oyun extends Phaser.Scene {
     if (r.olu) {
       r.kare += dt * 10;
       r.y += r.vy * dt; r.vy += YERCEKIMI * 0.5 * dt;
-      r.spr.setTexture(this.kareler.reis_fall[Math.floor(r.kare) % 4]).setPosition(r.x, r.y);
+      r.spr.setTexture(this.kareler.reis_fall[Math.floor(r.kare) % 4]).setScale(REIS_OLCEK * 1.1).setPosition(r.x, r.y);
       return;
     }
     r.h = r.egik ? REIS_EGIK_BOY : REIS_BOY;
