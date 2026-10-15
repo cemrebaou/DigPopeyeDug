@@ -2,6 +2,9 @@
 
 ## Bekleyenler
 
+## v0.34 — Rüzgar Çıkış İnce Ayarı
+- Heykelin rüzgarı ağız deliğinden tam çıksın diye 3 px yukarı, 2 px geri alındı.
+
 ## v0.33 — Yeni Taş Heykel Üfleyici
 - Rüzgar veren karakter yeni taş heykel görseliyle değiştirildi: kapalıyken ağzı kapalı, açılınca ağzı açık (pervane_kapali / pervane_acik).
 - Rüzgar ağzın deliğinden çıkar; heykel en/boy oranı korunur.

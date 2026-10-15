@@ -958,7 +958,7 @@ class Oyun extends Phaser.Scene {
 
       // Rüzgarın çıkış noktası: doğrudan heykelin açık ağız deliğine hizalı
       let mx = p.cx, my = p.cy;
-      const ax = HEYKEL_EN * HEYKEL_AGIZ_X, ay = fh * HEYKEL_AGIZ_Y;
+      const ax = HEYKEL_EN * HEYKEL_AGIZ_X - 2, ay = fh * HEYKEL_AGIZ_Y - 3; // ağız deliğine ince ayar: 2 px geri, 3 px yukarı
       if (p.yon === "r") { mx = p.cx + ax; my = p.cy + ay; }
       else if (p.yon === "l") { mx = p.cx - ax; my = p.cy + ay; }
       else if (p.yon === "u") { mx = p.cx + ay; my = p.cy - ax; }
