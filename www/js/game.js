@@ -152,11 +152,53 @@ class Oyun extends Phaser.Scene {
     this.pervaneKur();
     this.ruzgarCizim = this.add.graphics().setDepth(6);
     this.ruzgarSay = 0;
+    this.parcacikKur();
 
     this.arayuz();
     this.kontroller();
     this.tumunuKirlet();
     this.kumCiz();
+  }
+
+  parcacikKur() {
+    if (!this.textures.exists("p_kum")) {
+      const cv = document.createElement("canvas");
+      cv.width = 6; cv.height = 6;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#f8c547";
+      ctx.beginPath();
+      ctx.arc(3, 3, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      this.textures.addCanvas("p_kum", cv);
+    }
+    if (!this.textures.exists("p_pop")) {
+      const cv = document.createElement("canvas");
+      cv.width = 8; cv.height = 8;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      this.textures.addCanvas("p_pop", cv);
+    }
+    try {
+      this.kumParcacik = this.add.particles(0, 0, "p_kum", {
+        speed: { min: 40, max: 130 },
+        scale: { start: 1, end: 0.2 },
+        alpha: { start: 0.9, end: 0 },
+        lifespan: { min: 200, max: 400 },
+        gravityY: 500,
+        emitting: false
+      }).setDepth(14);
+      this.popParcacik = this.add.particles(0, 0, "p_pop", {
+        speed: { min: 90, max: 260 },
+        scale: { start: 1.3, end: 0.2 },
+        alpha: { start: 1, end: 0 },
+        lifespan: { min: 350, max: 600 },
+        gravityY: 450,
+        emitting: false
+      }).setDepth(14);
+    } catch (e) {}
   }
 
   animasyonlar() {
@@ -200,7 +242,7 @@ class Oyun extends Phaser.Scene {
     const sinir = (v) => (v > 255 ? 255 : v < 0 ? 0 : v) | 0;
     const orijinal = yap(kum, (r, g, b) => renk32(r, g, b));
     this.src = {
-      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 0.85), sinir(g * 1.0), sinir(b * 1.1))), // dökülecek kum: zeytin yeşili
+      [KUM]: yap(kum, (r, g, b) => renk32(sinir(r * 1.25), sinir(g * 1.02), sinir(b * 0.68))), // canlı altın sarısı çöl kumu
       [TOPRAK]: orijinal, // sabit kalan zemin: orijinal sarı kum
       [KAYA]: orijinal,
       [KAPAK]: yap(tahta, (r, g, b) => renk32(sinir(r * 1.45), sinir(g * 1.2), sinir(b * 0.95))),
@@ -874,37 +916,43 @@ class Oyun extends Phaser.Scene {
       for (let y = Math.max(0, b.y0); y <= Math.min(GY - 1, b.y1); y++)
         for (let x = Math.max(0, b.x0); x <= Math.min(GX - 1, b.x1); x++) eng[y * GX + x] = 1;
     }
-    const sagdan = (this.kare & 1) === 1;
-    let hareket = 0;
-    for (let y = GY - 2; y >= 0; y--) {
-      for (let k = 0; k < GX; k++) {
-        const x = sagdan ? GX - 1 - k : k;
-        const i = y * GX + x;
-        if (g[i] !== KUM) continue;
-        if (this.ruzgarYon[i] === 3) continue; // yukarı üfleyen rüzgarda kum havada asılı kalır
-        const a = i + GX;
-        let hedef = -1;
-        if (g[a] === BOS && !eng[a]) hedef = a;
-        else {
-          const ilk = Math.random() < 0.5 ? -1 : 1;
-          for (const s of [ilk, -ilk]) {
-            const nx = x + s;
-            if (nx < 0 || nx >= GX) continue;
-            const yan = i + s, alt = a + s;
-            if (g[alt] === BOS && !eng[alt] && g[yan] === BOS) { hedef = alt; break; }
+    let toplamHareket = 0;
+    // Çift adımlı akışkan kum fiziği (Sand Balls / akıcı dökülme)
+    for (let adim = 0; adim < 2; adim++) {
+      const sagdan = ((this.kare + adim) & 1) === 1;
+      let hareket = 0;
+      for (let y = GY - 2; y >= 0; y--) {
+        for (let k = 0; k < GX; k++) {
+          const x = sagdan ? GX - 1 - k : k;
+          const i = y * GX + x;
+          if (g[i] !== KUM) continue;
+          if (this.ruzgarYon[i] === 3) continue; // yukarı üfleyen rüzgarda kum havada asılı kalır
+          const a = i + GX;
+          let hedef = -1;
+          if (g[a] === BOS && !eng[a]) hedef = a;
+          else {
+            const ilk = Math.random() < 0.5 ? -1 : 1;
+            for (const s of [ilk, -ilk]) {
+              const nx = x + s;
+              if (nx < 0 || nx >= GX) continue;
+              const yan = i + s, alt = a + s;
+              if (g[alt] === BOS && !eng[alt] && (g[yan] === BOS || g[yan] === KUM)) { hedef = alt; break; }
+            }
+          }
+          if (hedef >= 0) {
+            g[hedef] = KUM; si[hedef] = si[i];
+            g[i] = BOS;
+            this.durgun[hedef] = 0;
+            this.kirlet(i); this.kirlet(hedef);
+            hareket++;
+          } else if (si[i] !== i && ++this.durgun[i] > 20) {
+            // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
+            si[i] = i; this.kirlet(i);
           }
         }
-        if (hedef >= 0) {
-          g[hedef] = KUM; si[hedef] = si[i];
-          g[i] = BOS;
-          this.durgun[hedef] = 0;
-          this.kirlet(i); this.kirlet(hedef);
-          hareket++;
-        } else if (si[i] !== i && ++this.durgun[i] > 20) {
-          // durulan kum, dokuyu kendi yerinden alır: yan yana taneler arasında dikiş/çizgi kalmaz
-          si[i] = i; this.kirlet(i);
-        }
       }
+      toplamHareket += hareket;
+      if (hareket === 0) break;
     }
     // Rüzgar kum tanelerini savurur
     for (const p of this.pervaneler) {
@@ -925,7 +973,7 @@ class Oyun extends Phaser.Scene {
       }
     }
     // Kum akış sesi: yeterince kum aktığında (kapak açılınca, göçünce) çalar
-    this.kumSayac = (this.kumSayac || 0) * 0.93 + hareket;
+    this.kumSayac = (this.kumSayac || 0) * 0.93 + toplamHareket;
     const simdi = this.time.now;
     if (this.durum === "oyun" && this.kare > 60 && this.kumSayac > 40 && simdi - (this.sonKumSes || 0) > 1300) {
       this.sonKumSes = simdi; this.kumSayac = 0;
@@ -978,6 +1026,13 @@ class Oyun extends Phaser.Scene {
           let f = fy;
           if (sol && xx < 2) f *= xx === 0 ? 1.14 : 1.06;
           if (sag && xx >= C - 2) f *= xx === C - 1 ? 0.7 : 0.84;
+          if (tip === KUM) {
+            const kose = (ust && sol && xx === 0 && yy === 0) ||
+                         (ust && sag && xx === C - 1 && yy === 0) ||
+                         (alt && sol && xx === 0 && yy === C - 1) ||
+                         (alt && sag && xx === C - 1 && yy === C - 1);
+            if (kose) f *= 0.68;
+          }
           px[o + xx] = f === 1 ? dz[ko + xx] : carp(dz[ko + xx], f);
         }
       }
@@ -1022,6 +1077,11 @@ class Oyun extends Phaser.Scene {
     // patlama, şişmiş gövdenin ortasında olsun (yarım karakter boyu yukarıda)
     d.spr.setTexture(d.tip.ad + "_pop0").setOrigin(0.5, 0.5).setY(d.tip.ucar ? d.y - d.h / 2 : d.y - (d.tip.ad === "octo" ? 58 : 70));
     this.tweens.add({ targets: d.spr, alpha: 0, scale: DUSMAN_OLCEK * 1.3, duration: 600, delay: 150, onComplete: () => d.spr.destroy() });
+    if (this.popParcacik) {
+      const renk = d.tip.ad === "crab" ? 0xee5253 : d.tip.ad === "octo" ? 0x9b59b6 : 0x0abde3;
+      this.popParcacik.setParticleTint(renk);
+      this.popParcacik.emitParticleAt(d.x, d.tip.ucar ? d.y - d.h / 2 : d.y - 35, 20);
+    }
     this.puanEkle(puan, d.x, d.y - d.h);
     this.cameras.main.shake(100, 0.005);
   }
@@ -1130,6 +1190,10 @@ class Oyun extends Phaser.Scene {
       const sonuc = kk ? this.kayaIt(r, kk, yon, hizx) : this.yatay(r, hizx, true); // kayayı iterken kazma yok
       r.kazdi = sonuc.kazdi;
       if (r.kazdi) r.kazZaman = zaman;
+      if (r.kazdi && this.kumParcacik && zaman - (this.sonKumPartik || 0) > 80) {
+        this.sonKumPartik = zaman;
+        this.kumParcacik.emitParticleAt(r.x + yon * 18, r.y - 20, 2);
+      }
       if (r.kazdi && zaman - (this.sonKazmaSes || 0) > 420) {
         this.sonKazmaSes = zaman;
         this.ses("ses_kum_kazma", { volume: 0.7, detune: Phaser.Math.Between(-120, 120) });

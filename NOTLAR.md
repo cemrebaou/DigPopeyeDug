@@ -2,6 +2,13 @@
 
 ## Bekleyenler
 
+## v0.27 — Akışkan Altın Kum Fiziği & Parçacık Efektleri
+- Kum rengi donuk zeytin yeşilinden canlı, sıcak altın çöl kumu tonuna çevrildi (yapay zeka / modern mobil kum oyunları hissi).
+- Kum tanelerine 3D yuvarlak taneleme efekti verildi (köşe yumuşatma ve tane grenleri).
+- Kum akış fiziği çift adımlı akışkan hıza yükseltildi; eğimlerden su gibi kesintisiz ve akıcı dökülüyor.
+- Reis kum/toprak kazdığında kazılan yöne doğru sıçrayan kum zerrecikleri ve toz parçacıkları eklendi.
+- Düşman patladığında etrafa saçılan renkli patlama parçacıkları eklendi.
+
 ## Yapılanlar (önizlemede, GitHub'a henüz gönderilmedi)
 - Yeniden başla butonu (sağ üst, yeşil). Bölümü baştaki skorla yeniden başlatır.
 - Arayüz ikonları: oklar, pompa, yeniden başla, bitiş paneli ve butonlar yeni görsellerle.
