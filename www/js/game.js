@@ -25,6 +25,10 @@ const BOS = 0, KUM = 1, KAYA = 2, KAPAK = 3, TOPRAK = 4, TAS = 5; // TAS = itile
 
 const REIS_OLCEK = 0.585, DUSMAN_OLCEK = 0.63;
 const REIS_BOY = 126, REIS_EGIK_BOY = 85; // hitbox yükseklikleri (ayaktan yukarı px)
+// Reis yerdeyken görseli zemine bu kadar gömülü çizilir (sadece görüntü, çarpışma değişmez).
+// Kumun üst kenarı parlak bir çizgi olarak çizildiği için ayak tam çizginin üstünde dururken
+// havada asılı gibi görünüyordu; birkaç piksel gömünce yere basıyormuş gibi durur.
+const REIS_YERE_BATMA = 4;
 const EGIK_HIZ = 0.8, EGIK_OLCEK = 0.85;                       // eğik yürüme hızı çarpanı
 const RUZGAR_HIZ = 110, RUZGAR_MENZIL = 84, PERVANE_OLCEK = 0.65; // rüzgar: itme hızı (px/sn), en uzun menzil (kum tanesi), pervane görsel ölçeği
 const HEYKEL_BOY = 148 * PERVANE_OLCEK;          // taş heykel yüksekliği (px)
@@ -43,7 +47,7 @@ const POMPA_HORTUM_CIKIS = { reis_pump0: [37, 9], reis_pump1: [39, 15] };
 // Boşta bekleme animasyonu zamanlaması (ms)
 const IDLE_BEKLEME_MIN = 1400, IDLE_BEKLEME_MAX = 2800;           // poz 0<->1 arası bekleme
 const IDLE_SABIR_ESIGI = 9000;                                     // bu kadar hareketsiz kalınca sabırsızlanır
-const AYAK_KALDIR_SURE = 110, AYAK_VURUS_ARALIK = 1000;           // sabırsız ayak vurma: ayak çok kısa kalkar, vurur, 1 sn bekler
+const AYAK_KALDIR_SURE = 100, AYAK_VURUS_ARALIK = 1000;           // sabırsız ayak vurma: ayak çok kısa kalkar, vurur, 1 sn bekler
 const IDLE_KIRPMA_ARALIK_MIN = 3500, IDLE_KIRPMA_ARALIK_MAX = 7000; // normal beklemede ara sıra çift göz kırpma
 const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: kapa-aç-kapa-aç, her kare kısa
 
@@ -1626,7 +1630,7 @@ class Oyun extends Phaser.Scene {
     if (havada || r.gorselY === undefined || Math.abs(r.y - r.gorselY) > 3 * C) r.gorselY = r.y;
     else r.gorselY += (r.y - r.gorselY) * Math.min(1, dt * 18);
     if (havada && !ziplamaPozu) r.spr.setOrigin(0.5, 0.5).setTexture(tex).setFlipX(r.yon > 0).setScale(REIS_OLCEK * 0.8).setPosition(r.x, r.y - 58);
-    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, havada ? r.y : r.gorselY);
+    else r.spr.setOrigin(0.5, 1).setTexture(tex).setFlipX(r.yon < 0).setScale(tex.startsWith("reis_egil") ? REIS_OLCEK * EGIK_OLCEK : REIS_OLCEK).setPosition(r.x, havada ? r.y : r.gorselY + REIS_YERE_BATMA);
 
     // Pompa hortumu: pompanın alt ucundan çıkar, yerde kıvrılarak düşmana gider
     const h = this.pompaHedef;

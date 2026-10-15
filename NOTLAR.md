@@ -2,6 +2,10 @@
 
 ## Bekleyenler
 
+## v0.45 — Reis Yere Basıyor
+- Ölçüldü: ayaklar zemine tam değiyordu ama kumun parlak üst kenar çizgisi yüzünden havada gibi görünüyordu. Reis yerdeyken görsel olarak 4 px zemine gömülü çizilir (REIS_YERE_BATMA); çarpışma kutusu aynı.
+- Sabırsız ayak vurmada ayak kalkış süresi 100 ms.
+
 ## v0.44 — Eğik Yürüyüş Yere Basıyor, Yeni Ayak Vurma
 - Eğik yürüyüş kareleri her biri kendi ayak tabanına hizalandı; ayak artık her karede yere değiyor (bazı karelerde 1-9 px havadaydı).
 - Uzun beklemedeki sabırsız ayak vurma yeni pozlarla değiştirildi (reis_idle2 ayak yerde, reis_idle3 ayak kalkık).
