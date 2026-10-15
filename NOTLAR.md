@@ -2,6 +2,9 @@
 
 ## Bekleyenler
 
+## v0.41 — Yeni Üfleme Sesi
+- Heykel üfleme sesi (ses_ruzgar) yeni rüzgar sesiyle değiştirildi; 28 sn'lik kesintisiz döngü, mono 80 kbps.
+
 ## v0.40 — Heykel Üfleme Sesi
 - Taş heykel açıkken rüzgar sesi (ses_ruzgar) döngüde çalar; kapanınca, ölünce ya da bölüm bitince yumuşakça kısılıp durur. Birden çok heykel açıksa tek ses çalar.
 - Ses dosyası kesintisiz döngü olacak şekilde hazırlandı (sonu başına yumuşak geçişle bağlandı), mono 96 kbps: ~73 KB.
