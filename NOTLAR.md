@@ -206,3 +206,18 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - 22: toprak engel çukurun hemen yanına alındı. 32: çukur 6 geniş (atlanamaz, kaya şart).
 - 34, 35, 42, 44, 45: ahtapot alanı genişletildi (çıkıntının sağı 5-6 kare). 35'e kuş eklendi, 34'ten zemin dikeni çıkarıldı.
 - Zincir gerçek halkalı zincir çiziliyor, parlama efekti kaldırıldı.
+
+## v0.52 — Mobil sürüm: canlar, reklamlar, dil, 3 durumlu ses
+- Bölüm 1 ile 12 yer değiştirdi (12 artık 1. bölüm: sadece kazma + düşman; kumlu/kapaklı eski 1 artık 12).
+- **Can sistemi**: 3 can (`config.js > canSayisi`), `dpd_can` ile kalıcı. Ölünce 1 can gider, bölüm hemen baştan başlar. Canlar bitince "Game Over": **Watch Ad, Continue** (ödüllü reklam → kalınan bölümden tam canla devam) ya da **Start Over** (1. bölüm, tam can). Canlar bitmişken uygulama kapatılırsa sonraki açılışta baştan başlanır. Canlar bölümler arasında yenilenmez (istenirse `bolumBitti`'de `dpd_can`'ı CAN_MAX yap).
+- Kalp görselleri: `ui_can_dolu`, `ui_can_bos`. Eski ölüm paneli / "Tekrar Dene" / ölünce reklamla yerinde dirilme (`dirilt`, `devamHakki`, `dokunulmaz`) kaldırıldı.
+- **Reklamlar** (`ads.js`, ID'ler `config.js`'te; `testModu: true` iken Google test reklamları gelir, YAYINDA false yap):
+  - Ödüllü: sadece canlar bitince "Watch Ad, Continue".
+  - Geçiş (interstitial): her 10 bölüm geçişinde 1 ("Next Level"e basınca; sayaç `dpd_gecis_say`).
+  - Açılış (app open): uygulama açılınca ve arka plandan (≥2 sn) dönünce. Başka bir reklam kapanınca (3 sn içinde) tetiklenmez.
+  - Banner kaldırıldı (kimlik de yok, oyun reklamla boğulmasın).
+- Bölüm seçme butonu ve tam ekran butonu **pasif**: kod duruyor, `config.js > ozellik.bolumSecimi / tamEkran` true yapılınca geri gelir. Kapalıyken görselleri yüklenmez.
+- **Dil**: varsayılan İngilizce; sağ üstteki bayrak (TR/EN) düğmesi yazıları anında değiştirir, `dpd_dil` ile kaydedilir. Metinler `game.js` başındaki `METIN`, bölüm ipuçları `levels.js` içinde `ipucu: { tr, en }`. Bölüm adı artık sıra numarasından üretilir ("Level N" / "Bölüm N").
+- **Ses düğmesi 3 durumlu** (`dpd_ses`): 0 hepsi açık (`btn_ses`) → 1 müzik kapalı (`btn_muzik_kapali`) → 2 tüm sesler kapalı (`btn_sessiz`).
+- Görseller: `ui_can_*`, `btn_dil_tr/en`, `btn_muzik_kapali` (kullanıcının orijinal alfasıyla kesildi).
+- Reklam entegrasyonunda temizlenenler: banner kodu/ID'si, `Ads.oyunBitti`, ölünce yerinde diriltme. Sonraya kalan olası temizlik: eski kayıt anahtarları (`dpd_acilan_bolum`, `dpd_muzik`), `enYuksekBolum` (sadece bölüm seçme paneli kullanıyor).

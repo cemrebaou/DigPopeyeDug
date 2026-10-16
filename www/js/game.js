@@ -55,7 +55,7 @@ const IDLE_KIRPMA_KARE_SURE = 110;                                  // kırpma: 
 
 const SPRITELAR = [
   ...[0, 1, 2, 3, 4, 5].map((i) => "reis_walk" + i),
-  "reis_pump0", "reis_pump1", "reis_dus", "btn_tamekran", "kaya", "ball", "saw", "spike_up", "spike_dn",
+  "reis_pump0", "reis_pump1", "reis_dus", "kaya", "ball", "saw", "spike_up", "spike_dn",
   "pervane_kapali", "pervane_acik", // taş heykel üfleyici (ağzı kapalı / açık)
   ...[0, 1, 2, 3, 4].map((i) => "reis_egil" + i), "btn_egil", "btn_kalk",
   "reis_zipla", "reis_zipla_in", // zıplarken yükselme ve iniş pozları
@@ -68,11 +68,20 @@ const SPRITELAR = [
   ...[0, 1, 2, 3].map((i) => "crab_pump" + i), "crab_pop0",
   ...[0, 1, 2].map((i) => "octo_walk" + i),
   ...[0, 1, 2, 3].map((i) => "octo_pump" + i), "octo_pop0",
-  "btn_ses", "btn_sessiz", // müzik açık / kapalı
-  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden", "btn_bolumler", "btn_bolum_daire", "panel_bolumler", "btn_sayfa_sol", "btn_sayfa_sag",
+  "btn_ses", "btn_muzik_kapali", "btn_sessiz", // ses düğmesi: hepsi açık / müzik kapalı / hepsi kapalı
+  "ui_can_dolu", "ui_can_bos", "btn_dil_tr", "btn_dil_en", // can kalpleri ve dil bayrakları
+  "btn_sol", "btn_sag", "btn_pompa", "btn_yeniden",
   "bar_yesil", "bar_mor", "bar_turuncu", "panel",
   "doku_kum", "doku_tahta", "kapak_tahta", "btn_zipla"
 ];
+
+// Pasif özellikler (config.js > ozellik): kapalıysa görselleri hiç yüklenmez.
+const OZ = window.OYUN_CONFIG.ozellik || {};
+const SPRITELAR_PASIF = [
+  ...(OZ.bolumSecimi ? ["btn_bolumler", "btn_bolum_daire", "panel_bolumler", "btn_sayfa_sol", "btn_sayfa_sag"] : []),
+  ...(OZ.tamEkran ? ["btn_tamekran"] : [])
+];
+const CAN_MAX = window.OYUN_CONFIG.canSayisi || 3;
 
 const SESLER = [
   "ses_pompa", "ses_sisme", "ses_sonme", "ses_yengec_pop", "ses_ahtapot_pop",
@@ -85,7 +94,11 @@ const SESLER = [
 // sahne baştan kurulur ama müziğin baştan başlamasını değil, kesintisiz devam etmesini istiyoruz.
 const MUZIK_SES = 0.35;
 let MUZIK = null;
-const muzikAcikMi = () => kayitOku("dpd_muzik", true); // varsayılan: açık
+// Ses düğmesi 3 durumlu: 0 = hepsi açık, 1 = sadece müzik kapalı, 2 = tüm sesler kapalı.
+// Eski sürümdeki "dpd_muzik" tercihi de okunur (müzik kapalıydıysa durum 1 olur).
+const SES_IKON = ["btn_ses", "btn_muzik_kapali", "btn_sessiz"];
+const sesDurumu = () => { const v = kayitOku("dpd_ses", null); return v !== null ? v : (kayitOku("dpd_muzik", true) ? 0 : 1); };
+const muzikAcikMi = () => sesDurumu() === 0;
 
 // Animasyon kare listeleri. Sabit tuttuk; her bölüm yeniden başlarken diziler yeniden üretilmesin.
 const KARELER = {
@@ -106,6 +119,17 @@ const DUSMAN_TIP = {
 };
 
 const YAZI = { fontFamily: "Arial Black, Arial", fontStyle: "bold", color: "#ffffff", stroke: "#3b2412", strokeThickness: 8 };
+
+// Dil: varsayılan İngilizce, bayrak düğmesiyle Türkçe'ye geçilir. Seçim kaydedilir.
+const METIN = {
+  en: { level: "Level", score: "Score", hint: "Tap the hatches to open them!", levels: "LEVELS", done: "Level Complete!", over: "Game Over",
+        next: "Next Level", harder: "Restart, Harder!", ad: "Watch Ad, Continue", startOver: "Start Over" },
+  tr: { level: "Bölüm", score: "Skor", hint: "Kapaklara dokun, açılsın!", levels: "BÖLÜMLER", done: "Bölüm Tamam!", over: "Oyun Bitti",
+        next: "Sonraki Bölüm", harder: "Daha Zor Baştan Başla", ad: "Reklam izle, devam et", startOver: "Baştan Başla" }
+};
+let DIL = kayitOku("dpd_dil", "en");
+if (!METIN[DIL]) DIL = "en";
+const metin = (k) => METIN[DIL][k];
 
 function kayitOku(k, v) { try { const x = localStorage.getItem(k); return x === null ? v : JSON.parse(x); } catch (e) { return v; } }
 function kayitYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -144,18 +168,26 @@ class Oyun extends Phaser.Scene {
     this.tur = data && data.tur !== undefined ? data.tur : kayitOku("dpd_tur", 0);
     this.hizCarpan = 1 + 0.25 * this.tur;
 
+    // Canlar kalıcı tutulur (uygulama kapanıp açılsa da). Canlar bitmişken uygulama kapatıldıysa
+    // oyuncu pes etmiş sayılır: baştan başlar.
+    this.can = kayitOku("dpd_can", CAN_MAX);
+    if (this.can <= 0) {
+      this.can = CAN_MAX; kayitYaz("dpd_can", this.can);
+      if (!(data && data.bolum !== undefined)) { this.bolum = 0; kayitYaz("dpd_bolum", 0); }
+    }
+
     // Ulaşılan en yüksek bölüm kalıcı korunur (eski bir bölüm seçilse bile kaybolmaz)
     enYuksekBolum(this.bolum + 1);
   }
 
   preload() {
-    SPRITELAR.forEach((k) => this.load.image(k, "assets/" + k + ".png"));
+    [...SPRITELAR, ...SPRITELAR_PASIF].forEach((k) => this.load.image(k, "assets/" + k + ".png"));
     SESLER.forEach((k) => this.load.audio(k, "assets/ses/" + k + ".mp3"));
   }
 
   // Ses çal (dosya yoksa ya da tarayıcı engellerse sessizce geç)
   ses(key, ayar) {
-    try { if (this.cache.audio.exists(key)) this.sound.play(key, ayar); } catch (e) {}
+    try { if (sesDurumu() < 2 && this.cache.audio.exists(key)) this.sound.play(key, ayar); } catch (e) {}
   }
 
   // Düşme sesi: sadece havadayken çalar, yere değince kısa sürede kısılıp durur
@@ -186,8 +218,6 @@ class Oyun extends Phaser.Scene {
     this.durum = "oyun";
     this.kare = 0;
     this.tuslar = { sol: false, sag: false };
-    this.devamHakki = true;
-    this.dokunulmaz = 0;
 
     this.kareler = KARELER;
     this.arkaPlan();
@@ -224,7 +254,7 @@ class Oyun extends Phaser.Scene {
 
     this.arayuz();
     this.kontroller();
-    this.muzikBaslat();
+    this.sesUygula();
     this.tumunuKirlet();
     this.kumCiz();
   }
@@ -393,28 +423,53 @@ class Oyun extends Phaser.Scene {
   }
 
   // ---------- Arayüz ----------
+  skorMetni() { return metin("score") + ": " + this.skor; }
+  bolumMetni() { return metin("level") + " " + (this.bolum + 1); }
+  ipucuMetni() { const h = BOLUMLER[this.bolum].ipucu; return h ? h[DIL] : metin("hint"); }
+
   arayuz() {
-    // Bölüm adı ve skor sol üstte alt alta: sağ üstte 3-4 buton yan yana durabilsin diye ortadaki
-    // skor sola alındı (ortada kalsaydı müzik / tam ekran butonu skorun üstüne biniyordu).
-    this.add.text(24, 16, BOLUMLER[this.bolum].ad, { ...YAZI, fontSize: "32px", strokeThickness: 7 }).setDepth(10);
-    this.skorYazi = this.add.text(24, 56, "Skor: " + this.skor, { ...YAZI, fontSize: "32px", color: "#ffe066", strokeThickness: 7 }).setDepth(10);
-    this.ipucu = this.add.text(W / 2, 110, BOLUMLER[this.bolum].ipucu || "Kapaklara dokun, açılsın!", { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
+    // Bölüm ve skor sol üstte alt alta, canlar ortada, sağ üstte butonlar (yeniden, ses, dil).
+    this.bolumYazi = this.add.text(24, 16, this.bolumMetni(), { ...YAZI, fontSize: "32px", strokeThickness: 7 }).setDepth(10);
+    this.skorYazi = this.add.text(24, 56, this.skorMetni(), { ...YAZI, fontSize: "32px", color: "#ffe066", strokeThickness: 7 }).setDepth(10);
+    this.ipucu = this.add.text(W / 2, 110, this.ipucuMetni(), { ...YAZI, fontSize: "26px", color: "#fff3c4", strokeThickness: 6 }).setOrigin(0.5).setDepth(10);
     this.tweens.add({ targets: this.ipucu, alpha: 0, delay: 4000, duration: 800 });
 
-    // Yeniden başla butonu
-    this.ikonButon(W - 56, 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
+    // Canlar (dolu / boş kalp)
+    this.kalpler = [0, 1, 2].slice(0, CAN_MAX).map((i) =>
+      this.add.image(300 + i * 54, 62, i < this.can ? "ui_can_dolu" : "ui_can_bos").setDisplaySize(50, 46).setDepth(10));
 
-    // Bölüm Seçme Menüsü (Mavi taş buton)
-    this.ikonButon(W - 56 - 94, 62, "btn_bolumler", 84, () => this.bolumSecimEkraniAc());
+    // Sağdan sola butonlar
+    let bx = W - 56;
+    const yer = () => { const x = bx; bx -= 94; return x; };
+    this.ikonButon(yer(), 62, "btn_yeniden", 84, () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur }));
+    this.muzikBtn = this.ikonButon(yer(), 62, SES_IKON[sesDurumu()], 84, () => this.sesDegistir());
+    this.dilBtn = this.ikonButon(yer(), 62, "btn_dil_" + DIL, 84, () => this.dilDegistir());
 
-    // Müzik aç / kapa (sadece müziği etkiler; efekt sesleri çalmaya devam eder)
-    this.muzikBtn = this.ikonButon(W - 56 - 94 * 2, 62, muzikAcikMi() ? "btn_ses" : "btn_sessiz", 84, () => this.muzikDegistir());
-
-    // Tam ekran (sadece tarayıcıda; telefondaki uygulamada zaten tam ekran)
-    if (!Ads.native && this.sys.game.device.fullscreen.available) {
-      this.ikonButon(W - 56 - 94 * 3, 62, "btn_tamekran", 84, () => {
+    // Pasif özellikler (config.js > ozellik)
+    if (OZ.bolumSecimi) this.ikonButon(yer(), 62, "btn_bolumler", 84, () => this.bolumSecimEkraniAc());
+    if (OZ.tamEkran && !Ads.native && this.sys.game.device.fullscreen.available) {
+      this.ikonButon(yer(), 62, "btn_tamekran", 84, () => {
         if (this.scale.isFullscreen) this.scale.stopFullscreen(); else this.scale.startFullscreen();
       });
+    }
+  }
+
+  // Dil değişince ekrandaki yazılar yerinde güncellenir; oyun yeniden başlamaz.
+  dilDegistir() {
+    DIL = DIL === "tr" ? "en" : "tr";
+    kayitYaz("dpd_dil", DIL);
+    this.dilBtn.setTexture("btn_dil_" + DIL);
+    this.bolumYazi.setText(this.bolumMetni());
+    this.skorYazi.setText(this.skorMetni());
+    this.ipucu.setText(this.ipucuMetni());
+  }
+
+  // Kalp göstergesini güncelle; kaybedilen kalp kısa bir "pop" yapar
+  kalpGuncelle(kaybedilen) {
+    this.kalpler.forEach((k, i) => k.setTexture(i < this.can ? "ui_can_dolu" : "ui_can_bos"));
+    if (kaybedilen !== undefined && this.kalpler[kaybedilen]) {
+      const k = this.kalpler[kaybedilen];
+      this.tweens.add({ targets: k, scaleX: k.scaleX * 1.5, scaleY: k.scaleY * 1.5, yoyo: true, duration: 180, repeat: 1 });
     }
   }
 
@@ -430,12 +485,20 @@ class Oyun extends Phaser.Scene {
     } catch (e) {}
   }
 
-  muzikDegistir() {
-    const acik = !muzikAcikMi();
-    kayitYaz("dpd_muzik", acik); // tercih kaydedilir, oyun yeniden açılınca hatırlanır
-    if (acik) this.muzikBaslat();
+  // Ses düğmesine basınca sırayla: hepsi açık -> müzik kapalı -> hepsi kapalı -> hepsi açık
+  sesDegistir() {
+    kayitYaz("dpd_ses", (sesDurumu() + 1) % 3);
+    this.sesUygula();
+    this.muzikBtn.setTexture(SES_IKON[sesDurumu()]);
+  }
+
+  // Kayıtlı ses durumunu uygular: durum 2'de bütün sesler (efekt, rüzgar, müzik) susar.
+  sesUygula() {
+    const d = sesDurumu();
+    this.sound.mute = d === 2; // + ses() ve döngü sesleri durum 2'de zaten hiç çalmaz (mute bazı tarayıcılarda geç uygulanır)
+    if (d === 2) { if (this.ruzgarSes) this.ruzgarSesiAyarla(false); this.dusmeSesiDurdur(); }
+    if (d === 0) this.muzikBaslat();
     else if (MUZIK) { try { MUZIK.stop(); } catch (e) {} }
-    this.muzikBtn.setTexture(acik ? "btn_ses" : "btn_sessiz");
   }
 
   bolumSecimEkraniAc() {
@@ -457,7 +520,7 @@ class Oyun extends Phaser.Scene {
 
     // Başlık
     // Başlık, çapa ve ipin hemen altında, parşömenin üst kısmında
-    const baslik = this.add.text(W / 2, panelY - 300, "BÖLÜMLER", {
+    const baslik = this.add.text(W / 2, panelY - 300, metin("levels"), {
       ...YAZI,
       fontSize: "44px",
       color: "#ffd670",
@@ -685,7 +748,7 @@ class Oyun extends Phaser.Scene {
     if (uste && sy < 0) { const bb = this.govde(r, 0, -C); for (let x = bb.x0; x <= bb.x1; x++) if (this.katiMi(x, bb.y0)) return false; } // üstündeki Reis tavana sıkışmasın
     if (!r.olu && !reisItiyor && !uste) {
       const ox = Math.min(nx1, r.x + r.w / 2) - Math.max(nx0, r.x - r.w / 2), oy = Math.min(ny1, r.y) - Math.max(ny0, r.y - r.h);
-      if (ox > 2 && oy > 2) { if (sy > 0) { if (this.dokunulmaz <= 0) this.olum(); } else return false; }
+      if (ox > 2 && oy > 2) { if (sy > 0) this.olum(); else return false; }
     }
     // yeni hücreler
     if (sx) { const ex = sx > 0 ? k.gx : k.gx + k.w - 1, yx = sx > 0 ? k.gx + k.w : k.gx - 1; for (let y = k.gy; y < k.gy + k.h; y++) { this.g[y * GX + ex] = BOS; this.kirlet(y * GX + ex); this.g[y * GX + yx] = TAS; this.kirlet(y * GX + yx); } }
@@ -782,7 +845,7 @@ class Oyun extends Phaser.Scene {
     if (b.acik) b.t = 0;
   }
 
-  reisOldur() { if (!this.reis.olu && this.dokunulmaz <= 0) this.olum(); }
+  reisOldur() { if (!this.reis.olu) this.olum(); }
 
   // Daire (cx,cy,rad) ile kutu kesişiyor mu
   daireKutu(cx, cy, rad, x0, y0, x1, y1) {
@@ -951,7 +1014,7 @@ class Oyun extends Phaser.Scene {
   // binen aynı ses hem gürültü yapar hem boşuna işlemci harcar.
   ruzgarSesiAyarla(acik) {
     if (acik) {
-      if (this.ruzgarSes || !this.cache.audio.exists("ses_ruzgar")) return;
+      if (this.ruzgarSes || sesDurumu() === 2 || !this.cache.audio.exists("ses_ruzgar")) return;
       try {
         const s = this.sound.add("ses_ruzgar", { loop: true, volume: 0 });
         s.play();
@@ -1446,7 +1509,7 @@ class Oyun extends Phaser.Scene {
 
   puanEkle(p, x, y) {
     this.skor += p;
-    this.skorYazi.setText("Skor: " + this.skor);
+    this.skorYazi.setText(this.skorMetni());
     const t = this.add.text(x, y, "+" + p, { ...YAZI, fontSize: "38px", color: "#ffe066", strokeThickness: 7 }).setOrigin(0.5).setDepth(15);
     this.tweens.add({ targets: t, y: y - 70, alpha: 0, duration: 900, onComplete: () => t.destroy() });
   }
@@ -1522,7 +1585,7 @@ class Oyun extends Phaser.Scene {
       if (r.zipliyor) r.ziplaGecen = (r.ziplaGecen || 0) + (r.vy < 0 ? 0 : dt);
       else r.havada = (r.havada || 0) + dt;
       if (r.havada > 0.12 && !this.dusmeSes && this.cache.audio.exists("ses_dusme")) {
-        try { this.dusmeSes = this.sound.add("ses_dusme", { volume: 0.6 }); this.dusmeSes.play(); } catch (e) { this.dusmeSes = null; }
+        try { if (sesDurumu() === 2) throw 0; this.dusmeSes = this.sound.add("ses_dusme", { volume: 0.6 }); this.dusmeSes.play(); } catch (e) { this.dusmeSes = null; }
       }
     } else {
       if ((r.havada || 0) > 0.12) { this.dusmeSesiDurdur(); this.ses("ses_dustu", { volume: 0.8 }); }
@@ -1628,10 +1691,6 @@ class Oyun extends Phaser.Scene {
     const havada = !r.yerde;
     const ziplamaPozu = havada && r.zipliyor;
     if (havada) tex = ziplamaPozu ? (r.vy < -120 ? "reis_zipla" : "reis_zipla_in") : "reis_dus";
-    if (r.yerde) { r.sonGuvenliX = r.x; r.sonGuvenliY = r.y; }
-
-    if (this.dokunulmaz > 0) { this.dokunulmaz -= dt; r.spr.setAlpha(Math.floor(zaman / 100) % 2 ? 0.4 : 1); }
-    else r.spr.setAlpha(1);
 
     // Basamak inip çıkarken görsel yükseklik yumuşak geçer (6 px'lik sıçrama görünmez)
     if (havada || r.gorselY === undefined || Math.abs(r.y - r.gorselY) > 3 * C) r.gorselY = r.y;
@@ -1735,17 +1794,15 @@ class Oyun extends Phaser.Scene {
   kontrolEt() {
     const r = this.reis;
     if (r.y > ALT + 50) return this.olum();
-    if (this.dokunulmaz <= 0) {
-      for (const d of this.dusmanlar) {
-        if (d.olu || d.sisme > 0) continue;
-        if (d.tip.ucar) {
-          // kuş: ayakta kafaya çarpar, eğikken altından geçilir
-          const oy = Math.min(d.y, r.y) - Math.max(d.y - d.h, r.y - r.h);
-          if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 14 && oy > 6) return this.olum();
-          continue;
-        }
-        if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 18 && Math.abs((d.y - d.h / 2) - (r.y - r.h / 2)) < (d.h + r.h) / 2 - 15) return this.olum();
+    for (const d of this.dusmanlar) {
+      if (d.olu || d.sisme > 0) continue;
+      if (d.tip.ucar) {
+        // kuş: ayakta kafaya çarpar, eğikken altından geçilir
+        const oy = Math.min(d.y, r.y) - Math.max(d.y - d.h, r.y - r.h);
+        if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 14 && oy > 6) return this.olum();
+        continue;
       }
+      if (Math.abs(d.x - r.x) < (d.w + r.w) / 2 - 18 && Math.abs((d.y - d.h / 2) - (r.y - r.h / 2)) < (d.h + r.h) / 2 - 15) return this.olum();
     }
     if (this.dusmanlar.every((d) => d.olu)) this.bolumBitti();
   }
@@ -1757,7 +1814,14 @@ class Oyun extends Phaser.Scene {
     this.reis.vy = -400;
     this.dusmeSesiDurdur();
     this.ses("ses_olme", { volume: 0.9 });
-    this.time.delayedCall(1200, () => this.bitisEkrani(false));
+    // Bir can gider. Can kalmışsa bölüm hemen baştan başlar, kalmamışsa oyun bitti ekranı gelir.
+    this.can = Math.max(0, this.can - 1);
+    kayitYaz("dpd_can", this.can);
+    this.kalpGuncelle(this.can);
+    this.time.delayedCall(1200, () => {
+      if (this.can > 0) this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur });
+      else this.bitisEkrani(false);
+    });
   }
 
   bolumBitti() {
@@ -1780,30 +1844,39 @@ class Oyun extends Phaser.Scene {
   }
 
   bitisEkrani(kazandi) {
-    Ads.oyunBitti();
     const grup = this.add.container(0, 0).setDepth(50);
     grup.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.6).setInteractive());
     const panel = this.add.image(W / 2, 430, "panel");
     panel.setScale(640 / panel.width);
     grup.add(panel);
-    grup.add(this.add.text(W / 2, 370, kazandi ? "Bölüm Tamam!" : "Yakalandın!", { ...YAZI, fontSize: "64px" }).setOrigin(0.5));
-    grup.add(this.add.text(W / 2, 470, "Skor: " + this.skor, { ...YAZI, fontSize: "48px", color: "#ffe066" }).setOrigin(0.5));
+    grup.add(this.add.text(W / 2, 370, kazandi ? metin("done") : metin("over"), { ...YAZI, fontSize: "64px" }).setOrigin(0.5));
+    grup.add(this.add.text(W / 2, 470, this.skorMetni(), { ...YAZI, fontSize: "48px", color: "#ffe066" }).setOrigin(0.5));
 
+    let mesgul = false; // reklam beklenirken ikinci kez basılmasın
     if (kazandi) {
       const son = this.bolum + 1 >= BOLUMLER.length;
-      grup.add(this.barButon(W / 2, 820, "bar_yesil", son ? "Daha Zor Baştan Başla" : "Sonraki Bölüm", () =>
-        this.scene.restart({ bolum: son ? 0 : this.bolum + 1, skor: this.skor, tur: son ? this.tur + 1 : this.tur })));
+      grup.add(this.barButon(W / 2, 820, "bar_yesil", son ? metin("harder") : metin("next"), async () => {
+        if (mesgul) return;
+        mesgul = true;
+        await Ads.bolumGecti(); // her 10 bölümde bir geçiş reklamı; reklam kapanınca devam
+        this.scene.restart({ bolum: son ? 0 : this.bolum + 1, skor: this.skor, tur: son ? this.tur + 1 : this.tur });
+      }));
     } else {
-      grup.add(this.barButon(W / 2, 820, "bar_yesil", "Tekrar Dene", () => this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur })));
-      if (this.devamHakki) {
-        grup.add(this.barButon(W / 2, 1000, "bar_mor", "Reklam izle, devam et", async () => {
-          const izlendi = await Ads.odulluIzle();
-          if (!izlendi) return;
-          this.devamHakki = false;
-          grup.destroy();
-          this.dirilt();
-        }));
-      }
+      // Canlar bitti: reklam izleyip kalınan bölümden tam canla devam et, ya da en baştan başla
+      grup.add(this.barButon(W / 2, 820, "bar_mor", metin("ad"), async () => {
+        if (mesgul) return;
+        mesgul = true;
+        const izlendi = await Ads.odulluIzle();
+        mesgul = false;
+        if (!izlendi) return;
+        kayitYaz("dpd_can", CAN_MAX);
+        this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur });
+      }));
+      grup.add(this.barButon(W / 2, 1000, "bar_yesil", metin("startOver"), () => {
+        kayitYaz("dpd_can", CAN_MAX);
+        kayitYaz("dpd_bolum", 0);
+        this.scene.restart({ bolum: 0, skor: 0, tur: this.tur });
+      }));
     }
   }
 
@@ -1819,14 +1892,6 @@ class Oyun extends Phaser.Scene {
     arka.on("pointerup", () => { c.setScale(1); tik(); });
     c.add([arka, t]);
     return c;
-  }
-
-  dirilt() {
-    const r = this.reis;
-    r.olu = false; r.vy = 0;
-    if (r.y > ALT || !this.zeminVar(r)) { r.y = r.sonGuvenliY || OY + 120; r.x = r.sonGuvenliX || 60; }
-    this.dokunulmaz = 2.5;
-    this.durum = "oyun";
   }
 }
 
