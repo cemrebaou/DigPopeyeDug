@@ -233,3 +233,8 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - Telefonda ekran oyun alanından uzunsa üstte ve altta boş (koyu) bantlar kalıyor. Çözüm: üst boşluğu gökyüzü, alt boşluğu kum dokusuyla doldur (her türlü boş alan bununla dolsun).
 - İsteğe bağlı: telefon ekranına göre otomatik ayar; gökyüzü eklenince Score / mute / can / butonlar gibi üst arayüz yukarı (üst bantta) alınsın. Zorunlu değil, yukarıdaki doldurma zorunlu.
 - Uygulama simgesi (launcher icon) henüz yok; kullanıcı kare PNG gönderecek, derlemeye bağlanacak.
+
+## v0.55 — Simge, açılış görseli, imzalı AAB
+- Simge: `android-res/mipmap-*` (kullanıcının PNG'sinden; adaptif ön plan %70 ölçek, arka plan #8D3F18). `scripts/hazirla.js android` bunları `cap add android`'den sonra projenin `res` klasörüne kopyalar.
+- Açılış görseli: eski Android'de `android-res/drawable/splash.png` (tüm yoğunluk klasörlerine kopyalanır); Android 12+ sistem sadece simgeyi gösterir. Oyun içinde ayrıca `www/assets/acilis.jpg` ilk açılışta ≥1,8 sn gösterilir (index.html `#acilis`, game.js create).
+- İmzalı AAB: GitHub Secrets'ta `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` olunca workflow `oyun-yayin.aab` üretir (Releases > son). Anahtar bu oyuna özel (alias `digpopeyedug`, 10000 gün). Anahtar dosyası ve şifre repoda DEĞİL; kullanıcıda saklanıyor. Play App Signing açık tutulmalı.

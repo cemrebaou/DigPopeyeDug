@@ -61,5 +61,25 @@ if (adim === "android") {
   }
   fs.writeFileSync(gradle, g);
 
+  // Simge ve açılış görseli: android-res/ içindeki hazır dosyalar projenin res klasörüne kopyalanır.
+  // Açılış görseli (drawable/splash.png) şablondaki bütün yoğunluk klasörlerine konur, yoksa bazılarında varsayılan görsel kalır.
+  const res = path.join(app, "src/main/res");
+  const kaynak = path.join(kok, "android-res");
+  const kopyala = (k, h) => { fs.mkdirSync(path.dirname(h), { recursive: true }); fs.copyFileSync(k, h); };
+  const gez = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? gez(path.join(d, e.name)) : [path.join(d, e.name)]);
+  for (const f of gez(kaynak)) {
+    const goreli = path.relative(kaynak, f);
+    if (goreli === path.join("drawable", "splash.png")) continue;
+    kopyala(f, path.join(res, goreli));
+  }
+  for (const d of fs.readdirSync(res)) {
+    if (d.startsWith("drawable") && fs.existsSync(path.join(res, d, "splash.png"))) kopyala(path.join(kaynak, "drawable", "splash.png"), path.join(res, d, "splash.png"));
+  }
+  // Android 12+ sistem açılış ekranı sadece simgeyi gösterir; arka plan rengi simgeyle uyumlu olsun
+  const stil = path.join(res, "values/styles.xml");
+  let st = fs.readFileSync(stil, "utf8");
+  if (!st.includes("windowSplashScreenBackground")) st = st.replace('<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">', '<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">\n        <item name="windowSplashScreenBackground">#8D3F18</item>');
+  fs.writeFileSync(stil, st);
+
   console.log("Android ayarlandı. AdMob:", admobId, "sürüm:", no);
 }

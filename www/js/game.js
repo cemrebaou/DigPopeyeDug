@@ -257,6 +257,10 @@ class Oyun extends Phaser.Scene {
     this.sesUygula();
     this.tumunuKirlet();
     this.kumCiz();
+
+    // Açılış görselini en az 1,8 sn göster, sonra kaldır (sadece ilk açılışta; sonra eleman yok)
+    const acilis = document.getElementById("acilis");
+    if (acilis) setTimeout(() => { acilis.style.opacity = "0"; setTimeout(() => acilis.remove(), 600); }, Math.max(0, 1800 - performance.now()));
   }
 
   parcacikKur() {
