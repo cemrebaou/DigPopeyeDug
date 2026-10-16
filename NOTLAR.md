@@ -2,6 +2,14 @@
 
 ## Bekleyenler
 
+## v0.51 — 4 Yeni Zor Sıralama Bölümü (52-55)
+Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
+- 52 Rüzgar Sırası: heykel kayayı kapalı kapağın üstünden sağdaki kuyuya üfler (yengeci ezer). Kapak önce açılırsa kaya aşağı düşer, yengeç ölmez. Rüzgar açıkken yürüyen Reis kuyuya savrulup sıkışır. Alt odada iniş yeri 1 kare yüksek tümsek (düşmanlar çıkamaz).
+- 53 Taş Köprü: kayayı köprü kapağının ucuna it, kayanın üstüne çık, karşıya in, sonra köprüyü aç (kaya yengeci ezer). Köprü erken açılırsa Reis karşıya geçemez; kaya fazla itilirse aşağı iner.
+- 54 Testere Sığınağı: kayayı sola, testere tarafındaki deliğe it -> derin çukura gir -> eğil -> kapıyı aç -> testere. Ayakta kalırsan testere keser; kaya çukura itilirse saklanacak yer kalmaz; testere kayaya çarparsa biter.
+- 55 Rüzgar Asansörü: kayayı yarığın üstüne it -> heykeli aç (kaya tavana çıkıp dikenleri kapatır) -> kuyuya gir, rüzgar kaldırır -> sağdaki koridora çık -> kapıyı aç. Asansördeyken heykel kapatılırsa kaya Reis'in üstüne düşer.
+- Fizik notları (bölüm tasarımı için): Reis 2 karelik kayanın üstünden tek zıplamada geçemez ama üstüne çıkabilir (en az 7 kare yüksek odada). Kaya heykelin tam üstüne oturursa rüzgarı keser; heykel zemin altındaki yuvaya konup rüzgar tek karelik yarıktan verilmeli. Rüzgar menzili 14 kare.
+
 ## v0.50 — Bölüm 51: Sıralama Bulmacası (Zor)
 - Yeni son bölüm. Reis kapalı odada; her şey dokunarak çözülür. 3 düşman, 3 kapak, 1 kaya, 1 fırlayan testere.
 - Doğru sıra: kaya kapağı (kaya kuyuya düşüp alttaki yengeci ezer) -> testere (tüneldeki ahtapotu keser) -> alt kapak -> üst kapak (kum aşağıdaki yengeci gömer).

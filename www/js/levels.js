@@ -1053,3 +1053,138 @@ window.BOLUMLER.push(
     ]
   }
 );
+
+// 52. BÖLÜM: Rüzgar Sırası. Kaya, kapalı kapağın üstünden geçip sağdaki kuyuya düşmeli (yengeci ezer).
+//  Kapak açıkken kaya itilirse kaya aşağı düşer, yengeç ölmez. Rüzgar açıkken yürüyen Reis kuyuya savrulur.
+//  Doğru sıra: heykeli aç (kaya kuyuya) -> heykeli kapat -> kapağın üstüne yürü -> kapağı aç, in, iki düşmanı pompala.
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 52",
+    ipucu: "Önce rüzgar mı, kapak mı? Sıra önemli!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      ".....TT.............",
+      ".R.>.TT.............",
+      "ddddddddddkkddd..ddd",
+      "##########..##...###",
+      "##########..##...###",
+      "##########..##...###",
+      "##########..##...###",
+      "##########..##.c.###",
+      "##########..########",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#.c.....#####.o....#",
+      "####################"
+    ]
+  }
+);
+
+// 53. BÖLÜM: Taş Köprü. Kaya köprü kapağının üstünde. Reis kayayı köprünün ucuna kadar itip üstüne zıplamalı,
+//  kayanın üstünden yürüyüp karşıya inmeli (2 karelik kayanın üstünden tek zıplamada geçilemez),
+//  sonra köprüyü açmalı (kaya düşüp aşağıdaki yengeci ezer). Köprü erken açılırsa Reis karşıya geçemez.
+//  Kaya köprüden fazla itilirse aşağı iner, yengeç ölmez.
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 53",
+    ipucu: "Köprüden geçmeden açma, kayayı fazla itme!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "......TT............",
+      ".R....TT............",
+      "dddddkkkkkd..ddddddd",
+      "#####.....#.......##",
+      "#####.....#.......##",
+      "#####.....#.......##",
+      "#####.....#.......##",
+      "#####..c..#...AA.o##",
+      "####################"
+    ]
+  }
+);
+
+// 54. BÖLÜM: Testere Sığınağı. Testere tüneli süpürür; Reis'i de keser.
+//  Doğru sıra: kayayı SOLA itip soldaki deliğe düşür (testerenin yolu açılır) -> sağdaki derin çukura gir -> eğil
+//  -> kapıyı (kapak) aç -> testereyi at. Kaya sağdaki çukura itilirse saklanacak yer kalmaz; testere kayaya çarparsa biter;
+//  kapı erken açılırsa düşmanlar Reis'e gelir; ayakta durursa testere Reis'i keser.
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 54",
+    ipucu: "Taşı doğru deliğe it, çukura saklan, eğil, sonra testere!",
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      "..R.................",
+      "dddddddd..dddddddddd",
+      "########..##########",
+      "########..##########",
+      "########..##########",
+      "########..##########",
+      "#.............k....#",
+      "#.............k....#",
+      "#.............k....#",
+      "#....TT.......k....#",
+      "#Y...TT.......k.c.o#",
+      "###..######..#######",
+      "###..######..#######",
+      "###########..#######",
+      "####################"
+    ]
+  }
+);
+
+// 55. BÖLÜM: Rüzgar Asansörü. Heykel yukarı üfler: Reis'i ve kayayı kaldırır. Kuyunun tepesinde tavan dikenleri var.
+//  Heykel zeminin altındaki yuvada; rüzgar tek karelik yarıktan çıkar (kaya heykelin üstüne otursa rüzgarı kapatırdı;
+//  rüzgar menzili 14 kare olduğu için kuyu kısa tutuldu).
+//  Doğru sıra: kayayı sola, yarığın üstüne it -> heykeli aç (kaya tavana çıkar, dikenleri kapatır) -> kuyuya gir
+//  (rüzgar Reis'i kayanın altına kadar kaldırır) -> sağa, üst koridora çık (rüzgar kuyunun sağ yarısından çıkar, çıkış o tarafta) -> kapıyı aç, düşmanları pompala.
+//  Heykel Reis kuyudayken kapatılırsa kaya üstüne düşer. Kapı erken açılırsa düşmanlar rüzgarla kuyuya girer.
+//  Kaya olmasa Reis tavan dikenlerine çarpardı (kaya hep yarığa itildiği için dikenler kayayı çıkarmanın sebebi).
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 55",
+    ipucu: "Asansörden önce tavandaki dikenleri kapat!",
+    harita: [
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "######WW############",
+      "######..############",
+      "######.......k....##",
+      "######.......k....##",
+      "######.......k....##",
+      "######.......k.o.c##",
+      "######..############",
+      "######..############",
+      "######............##",
+      "######............##",
+      "######............##",
+      "######.....TT.....##",
+      "######.....TT...R.##",
+      "#######.############",
+      "#######^############",
+      "####################"
+    ]
+  }
+);
