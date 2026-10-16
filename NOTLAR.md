@@ -228,3 +228,8 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 
 ## v0.54
 - Kalpler sola kaydırıldı (bayrakla arası, bayrak-ses düğmesi arası kadar).
+
+## Yapılacaklar (kullanıcı notu, 2026-10-17)
+- Telefonda ekran oyun alanından uzunsa üstte ve altta boş (koyu) bantlar kalıyor. Çözüm: üst boşluğu gökyüzü, alt boşluğu kum dokusuyla doldur (her türlü boş alan bununla dolsun).
+- İsteğe bağlı: telefon ekranına göre otomatik ayar; gökyüzü eklenince Score / mute / can / butonlar gibi üst arayüz yukarı (üst bantta) alınsın. Zorunlu değil, yukarıdaki doldurma zorunlu.
+- Uygulama simgesi (launcher icon) henüz yok; kullanıcı kare PNG gönderecek, derlemeye bağlanacak.
