@@ -445,7 +445,7 @@ class Oyun extends Phaser.Scene {
 
     // Canlar (dolu / boş kalp)
     this.kalpler = [0, 1, 2].slice(0, CAN_MAX).map((i) =>
-      this.add.image(300 + i * 54, 62, i < this.can ? "ui_can_dolu" : "ui_can_bos").setDisplaySize(50, 46).setDepth(10));
+      this.add.image(292 + i * 54, 62, i < this.can ? "ui_can_dolu" : "ui_can_bos").setDisplaySize(50, 46).setDepth(10));
 
     // Sağdan sola butonlar
     let bx = W - 56;
