@@ -380,7 +380,16 @@ class Oyun extends Phaser.Scene {
           this.srcI[i] = i;
         }
         const px = c * KARE_PX + KARE_PX / 2, py = OY + (r + 1) * KARE_PX;
-        if (ch === "R") this.reis = { x: px, y: py, w: 45, h: REIS_BOY, egik: false, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
+        let rx = px;
+        if (ch === "R") {
+          // Reis hitbox'ı (45 px) bir haritalık kareden (36 px) geniştir. Yanında duvar/kum/toprak varsa
+          // karenin ortasında doğarsa duvarın içine birkaç piksel girer ve zıplayamaz. Bu yüzden duvardan
+          // uzaklaştırılır (haritanın kenarı da duvar sayılır).
+          const kati = (k) => k === undefined || "#dskT".includes(k);
+          if (kati(s[c - 1]) && !kati(s[c + 1])) rx = c * KARE_PX + 25;
+          else if (kati(s[c + 1]) && !kati(s[c - 1])) rx = c * KARE_PX + KARE_PX - 25;
+        }
+        if (ch === "R") this.reis = { x: rx, y: py, w: 45, h: REIS_BOY, egik: false, vy: 0, yon: px > W / 2 ? -1 : 1, yerde: false, kare: 0, pompa: 0, olu: false };
         const tepe = OY + r * KARE_PX, taban = tepe + KARE_PX;
         if (ch === "A") this.dikenler.push({ tip: "yer", x: px, y0: taban - 48, y1: taban, gx: c * HARITA_KARE, gy: r * HARITA_KARE, aktif: true });
         if (ch === "W") this.dikenler.push({ tip: "tavan", x: px, y0: tepe, y1: tepe + 38, gx: c * HARITA_KARE, gy: r * HARITA_KARE, aktif: true });

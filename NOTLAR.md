@@ -221,3 +221,7 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - **Ses düğmesi 3 durumlu** (`dpd_ses`): 0 hepsi açık (`btn_ses`) → 1 müzik kapalı (`btn_muzik_kapali`) → 2 tüm sesler kapalı (`btn_sessiz`).
 - Görseller: `ui_can_*`, `btn_dil_tr/en`, `btn_muzik_kapali` (kullanıcının orijinal alfasıyla kesildi).
 - Reklam entegrasyonunda temizlenenler: banner kodu/ID'si, `Ads.oyunBitti`, ölünce yerinde diriltme. Sonraya kalan olası temizlik: eski kayıt anahtarları (`dpd_acilan_bolum`, `dpd_muzik`), `enYuksekBolum` (sadece bölüm seçme paneli kullanıyor).
+
+## v0.53
+- Bölüm 3: yengeç Reis'ten uzağa (sağ tarafa, 16. sütun) alındı.
+- Reis doğuş konumu: yanında duvar/kum/toprak (ya da harita kenarı) varsa 36 px'lik karenin ortasında değil, duvardan uzağa doğar. Neden: Reis hitbox'ı 45 px, harita karesi 36 px; ortada doğunca duvarın içine ~4 px giriyor ve zıplayamıyordu (bölüm 42-49'da görüldü: sol duvara bitişik başlayan bölümler).

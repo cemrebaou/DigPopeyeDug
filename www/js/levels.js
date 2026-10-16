@@ -75,7 +75,7 @@ window.BOLUMLER = [
       "....................",
       "....................",
       "....................",
-      ".R...c..............",
+      ".R..............c...",
       "ddddddd#sss#dddddddd",
       "ddddddd#sss#dddddddd",
       "ddddddd#sss#dddddddd",
