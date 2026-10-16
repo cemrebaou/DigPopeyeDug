@@ -1015,3 +1015,41 @@ window.BOLUMLER.push(
     ]
   }
 );
+
+// 51. BÖLÜM (zor, sıralama bulmacası). Reis kapalı odada bekler; her şey dokunarak çözülür.
+//  - Tüneldeki testere (Y) ahtapotu ancak önündeki kaya kalkınca keser; kayaya çarparsa biter (geri dönmez).
+//  - Kayanın altındaki kapak açılınca kaya kuyuya düşer, aşağıdaki yengeci ezer.
+//  - Üstteki kumu (üst kapak) alt kapak kapalıyken dökersen kum yan oluktan tünele akar, testereyi kapatır.
+//  Doğru sıra: kaya kapağı -> testere -> alt kapak -> üst kapak (alt kapak üst kapaktan önce açılırsa testere sona da kalabilir).
+window.BOLUMLER.push(
+  {
+    ad: "Bölüm 51",
+    ipucu: "Sıra önemli! Yanlış kapak her şeyi bozar.",
+    harita: [
+      "####################",
+      "###ssss###.........#",
+      "###ssss###.........#",
+      "###ssss###.........#",
+      "###ssss###.........#",
+      "###kkkk###.........#",
+      "###......#.........#",
+      "###......#.........#",
+      "###......#..R......#",
+      "###kkkk#.###########",
+      "###....#.###########",
+      "###....#.###########",
+      "###....#.###########",
+      "###....#.###########",
+      "###....#.###########",
+      "###.c..#.###########",
+      "########.###########",
+      "#..........TT......#",
+      "#Y.........TT...o..#",
+      "###########kk#######",
+      "###########..#######",
+      "##########...#######",
+      "##########.c.#######",
+      "####################"
+    ]
+  }
+);

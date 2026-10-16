@@ -2,6 +2,12 @@
 
 ## Bekleyenler
 
+## v0.50 — Bölüm 51: Sıralama Bulmacası (Zor)
+- Yeni son bölüm. Reis kapalı odada; her şey dokunarak çözülür. 3 düşman, 3 kapak, 1 kaya, 1 fırlayan testere.
+- Doğru sıra: kaya kapağı (kaya kuyuya düşüp alttaki yengeci ezer) -> testere (tüneldeki ahtapotu keser) -> alt kapak -> üst kapak (kum aşağıdaki yengeci gömer).
+- Tuzaklar: üst kapağı alt kapaktan önce açarsan kum yan oluktan tünele akar, testereyi kalıcı olarak kapatır. Testereyi kaya kalkmadan atarsan kayaya çarpıp biter.
+- Oyunda doğrulandı: doğru sıra kazanıyor, iki tuzak da kaybettiriyor.
+
 ## v0.49 — İlk 5 Bölüm Geçilebilir Hale Getirildi
 - Hata: Reis 3,5 kare boyunda; tüneller 4 kareydi. Dökülen kum tünel dibinde birikince Reis yükseliyor, kafası kırılmaz tavana takılıp ileri kazamıyordu. Tüm yeni bölümlerde tünel/oda yüksekliği en az 5 kare yapıldı.
 - Kum fiziği: haritanın altı açık (oyun dışı) yerlerde en alt satıra gelen kum artık dışarı düşüp kayboluyor (eskiden en alt satırda birikiyordu).
