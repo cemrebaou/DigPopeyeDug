@@ -1134,3 +1134,199 @@ window.BOLUMLER.push(
     ]
   }
 );
+
+// ---- KARMA BÖLÜMLER (56-65) ----
+// Önceki mekaniklerin birleşimi. Kurallar: dar cepler en az 4 satır (Reis 126 px), testere/düşman tünelleri
+// en az 3 satır, tek tıkla geçilmesin diye atlanmaması gereken çukurlar en az 5 kare geniş (zıplama ~4 kare).
+window.BOLUMLER.push(
+  // 56: Toprak cepleri. Aşağı ve yana kazarak dört cebe ulaş.
+  {
+    ipucu: { tr: "Toprağı kaz, ceplerdeki düşmanlara ulaş!", en: "Dig through the soil to reach the enemies in the pockets!" },
+    harita: [
+      HAVA, HAVA, HAVA,
+      ".R..................",
+      "dddddddddddddddddddd",
+      "dddddddddddddddddddd",
+      "ddd......dddd......d",
+      "ddd......dddd......d",
+      "ddd......dddd......d",
+      "ddd...c..dddd...o..d",
+      "dddddddddddddddddddd",
+      "dddddddddddddddddddd",
+      "d.......dddd.......d",
+      "d.......dddd.......d",
+      "d.......dddd.......d",
+      "d...o...dddd...c...d",
+      ZEMIN
+    ]
+  },
+  // 57: İki taş, iki kapak. Her taş bir kapağın üstünde; kapak açılınca taş cebe düşer, düşmanı ezer.
+  //  Sonra açılan 3 karelik boşluklardan zıplayarak sağa geç, son yengeci pompala. Taş itilirse kapaktan çıkar.
+  {
+    ipucu: { tr: "Taşları itme! Kapakları aç, taşlar düşmanları ezsin.", en: "Don't push the rocks! Open the hatches so they crush the enemies." },
+    harita: [
+      HAVA, HAVA, HAVA, HAVA,
+      "....TT......TT......",
+      ".R..TT......TT..d..c",
+      "ddddkkkdddddkkkddddd",
+      "####...#####...#####",
+      "####...#####...#####",
+      "####.c.#####.o.#####",
+      ZEMIN
+    ]
+  },
+  // 58: Rüzgarla kum köprüsü. Çukur 5 kare (atlanamaz), dibi dikenli. Heykel kumu çukura savurur;
+  //  sonra heykeli KAPAT (açıkken Reis de çukura savrulur), kumun üstünden geç, kenardan pompala.
+  {
+    ipucu: { tr: "Rüzgarla kumu çukura savur, kapat, sonra geç!", en: "Blow the sand into the pit, switch off, then cross!" },
+    harita: [
+      HAVA, HAVA, HAVA,
+      ZEMIN,
+      "d....sssss.........d",
+      "d....sssss.........d",
+      "dR.>.sssss.....d.c.o",
+      "##########.....#####",
+      "##########AAAAA#####",
+      ZEMIN
+    ]
+  },
+  // 59: Raydaki testere + tünel testeresi. Üstte raydaki testerenin üstünden zıpla, kenardan pompala;
+  //  alttaki kapalı tüneli fırlayan testere temizler.
+  {
+    ipucu: { tr: "Raydaki testereyi atla, alttakini fırlat!", en: "Jump the rail saw, launch the one below!" },
+    harita: [
+      "####################",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#R..dN.......d.c..o#",
+      "####################",
+      "#..................#",
+      "#..................#",
+      "#Y......c....o.....#",
+      ZEMIN
+    ]
+  },
+  // 60: Taş dikenleri örter (bölüm 32 gibi), alttaki odayı sallanan top temizler (bölüm 42 gibi).
+  {
+    ipucu: { tr: "Taşla dikenleri ört, sonra topu salla!", en: "Cover the spikes with the rock, then swing the ball!" },
+    zincir: 3.8,
+    harita: [
+      "....................",
+      "....................",
+      "...TT...............",
+      ".R.TT.........d.o...",
+      "dddddd......dddddddd",
+      "ddddddAAAAAAdddddddd",
+      "dddddddddddddddddddd",
+      "#####....P.....#####",
+      "#####..........#####",
+      "#####..........#####",
+      "#####..........#####",
+      "#####..c....o..#####",
+      ZEMIN
+    ]
+  },
+  // 61: Tavan dikenlerinin altından eğilerek geç, kuşu pompala (ya da eğilip altından geç),
+  //  kapağın üstüne çık, aç ve alttaki odaya in. Zemin kaya: kapaktan başka yol yok.
+  {
+    ipucu: { tr: "Eğil: dikenlerin ve kuşun altından geç, sonra kapaktan in!", en: "Crouch under the spikes and the bird, then drop through the hatch!" },
+    harita: [
+      "####################",
+      "#..................#",
+      "#..................#",
+      "#....#####.........#",
+      "#....WWWWW.........#",
+      "#..................#",
+      "#..................#",
+      "#R..............b..#",
+      "############kkkk####",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#...c........o.....#",
+      ZEMIN
+    ]
+  },
+  // 62: Rüzgar asansörü (bölüm 17 gibi). Deliğin solunda dikenler var: yukarıdayken SAĞA süzül, sonra heykeli kapat.
+  {
+    ipucu: { tr: "Rüzgarla yukarı çık, sağa süzül: dikenlere dikkat!", en: "Ride the wind up, drift right: watch the spikes!" },
+    harita: [
+      HAVA, HAVA, HAVA,
+      ZEMIN,
+      "d..................d",
+      "d..................d",
+      "d..c..AA.......o...d",
+      "########...#########",
+      "d..................d",
+      "d..................d",
+      "d..................d",
+      "dR.......^.........d",
+      ZEMIN
+    ]
+  },
+  // 63: Rüzgar taşı kuyuya iter (bölüm 25 gibi); kuyu alttaki tünele açılır. Taş tünele düşerse testerenin
+  //  yolunu kapatır: önce testereyi fırlat (yengeç + ahtapot), sonra yukarıdaki ahtapotu pompala.
+  {
+    ipucu: { tr: "Taş kuyuya düşerse testerenin yolunu kapatır: önce testere!", en: "If the rock falls in, it blocks the saw: saw first!" },
+    harita: [
+      HAVA, HAVA,
+      "....TT..............",
+      ".R>.TT.........d.o..",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "dddddddddddd..dddddd",
+      "#..................#",
+      "#..................#",
+      "#Y.........c.....o.#",
+      ZEMIN
+    ]
+  },
+  // 64: Kum köprüsü + kuş. Çukur 6 kare (atlanamaz), dibi dikenli; kapak kumu çukura döker.
+  //  Kuş çukurla kenar arasında uçar: eğil ya da pompala.
+  {
+    ipucu: { tr: "Kumu dök, dikenleri ört; kuşa dikkat!", en: "Drop the sand, cover the spikes; watch the bird!" },
+    harita: [
+      "####################",
+      "#######ssss#########",
+      "#######ssss#########",
+      "#######ssss#########",
+      "#######kkkk#########",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#..................#",
+      "#R.........b.d.c..o#",
+      "#####......#########",
+      "#####AAAAAA#########",
+      ZEMIN
+    ]
+  },
+  // 65: Final. Kapak + taş (yengeci ez), 3 karelik boşluğu ve dikenleri atla, kenardan ahtapotu pompala,
+  //  alttaki kapalı odayı sallanan topla temizle.
+  {
+    ipucu: { tr: "Final: kapak, taş, diken ve top. Hepsi sırayla!", en: "Finale: hatch, rock, spikes and ball. One by one!" },
+    zincir: 3.8,
+    harita: [
+      "....................",
+      "....................",
+      "....................",
+      "....................",
+      ".....TT.............",
+      ".R...TT..AA.d..o....",
+      "dddddkkkdddddddddddd",
+      "#####...############",
+      "#####...############",
+      "#####.c.############",
+      "####################",
+      "#####....P.....#####",
+      "#####..........#####",
+      "#####..........#####",
+      "#####..........#####",
+      "#####..c....o..#####",
+      ZEMIN
+    ]
+  }
+);

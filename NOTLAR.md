@@ -243,3 +243,16 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - Ekran 720x1280'den uzun/genişse (FIT ölçekleme) kalan bantlar artık koyu değil: canvas'taki gökyüzü/kum sınırının (ALT=994) ekrandaki yerinin üstü gökyüzü degradesi (#5bb8f0 -> #bfe9ff), altı kum dokusu (`doku_kum.png`).
 - Kod: `game.js` sonunda `bantlariDoldur()`. Kum `#kumBant` (fixed div) ile döşenir; ölçek ve dikey kaydırma `altKaya()` ile aynı, ek yeri görünmez. Pencere/ekran boyutu değişince yeniden hesaplanır. Oyun mantığı/koordinatlar değişmedi.
 - Yapılmadı (isteğe bağlı): üst arayüzü (Score, can, ses) üst banda taşımak.
+
+## v0.57 - 10 Yeni Bölüm (56-65)
+- Bölüm sayısı 55'ten 65'e çıkarıldı.
+- 56: Toprak cepleri (kazarak dört cebe ulaşma).
+- 57: İki taş, iki kapak (taşları itmeden kapak açarak düşman ezme ve zıplama).
+- 58: Rüzgarla kum köprüsü (dikenli çukuru doldurma, heykeli kapatıp geçme).
+- 59: Raydaki testere + tünel testeresi kombosu.
+- 60: Taşla diken örtme + sallanan top temizliği.
+- 61: Tavan dikeni altından eğilme, kuş atlatma, kapaktan iniş.
+- 62: Rüzgar asansörü ve hava dikenleri.
+- 63: Rüzgar-taş kuyusu öncesi tünel testeresi fırlatma.
+- 64: Kum köprüsü + uçan kuş.
+- 65: Büyük final (kapak, taş, diken, zıplama ve top kombosu).
