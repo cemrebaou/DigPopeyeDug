@@ -256,3 +256,9 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - 63: Rüzgar-taş kuyusu öncesi tünel testeresi fırlatma.
 - 64: Kum köprüsü + uçan kuş.
 - 65: Büyük final (kapak, taş, diken, zıplama ve top kombosu).
+
+## v0.58 - Bölüm 56 İniş Yolu Düzeltmesi
+- Bölüm 56'da dikey kazma olmadığı için takılma sorunu giderildi:
+  - Üst kattan sağdaki iniş boşluğuyla (`..`) koridora iniliyor,
+  - Koridordan sola doğru kazarak ilk kattaki yengeç ve ahtapota ulaşılıyor,
+  - Soldaki boşluktan (`##..`) alt kata inilip alt cepler kazılarak temizleniyor.

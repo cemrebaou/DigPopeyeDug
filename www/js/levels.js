@@ -1139,21 +1139,21 @@ window.BOLUMLER.push(
 // Önceki mekaniklerin birleşimi. Kurallar: dar cepler en az 4 satır (Reis 126 px), testere/düşman tünelleri
 // en az 3 satır, tek tıkla geçilmesin diye atlanmaması gereken çukurlar en az 5 kare geniş (zıplama ~4 kare).
 window.BOLUMLER.push(
-  // 56: Toprak cepleri. Aşağı ve yana kazarak dört cebe ulaş.
+  // 56: Toprak cepleri. Boşluklardan aşağı in, koridorları yana doğru kazarak ceplere ulaş!
   {
-    ipucu: { tr: "Toprağı kaz, ceplerdeki düşmanlara ulaş!", en: "Dig through the soil to reach the enemies in the pockets!" },
+    ipucu: { tr: "Boşluktan in, yana kazarak ceplerdeki düşmanlara ulaş!", en: "Drop down through the gap, dig sideways into the pockets!" },
     harita: [
       HAVA, HAVA, HAVA,
       ".R..................",
-      "dddddddddddddddddddd",
-      "dddddddddddddddddddd",
-      "ddd......dddd......d",
-      "ddd......dddd......d",
-      "ddd......dddd......d",
-      "ddd...c..dddd...o..d",
-      "dddddddddddddddddddd",
-      "dddddddddddddddddddd",
-      "d.......dddd.......d",
+      "dddddddddddddddd..dd",
+      "dddddddddddddddd..dd",
+      "ddd......dddd.....dd",
+      "ddd......dddd.....dd",
+      "ddd......dddd.....dd",
+      "ddd...c..dddd..o..dd",
+      "##..dddddddddddddd##",
+      "##..dddddddddddddd##",
+      "##..dd..dddd..dd..##",
       "d.......dddd.......d",
       "d.......dddd.......d",
       "d...o...dddd...c...d",
