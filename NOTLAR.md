@@ -238,3 +238,8 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - Simge: `android-res/mipmap-*` (kullanıcının PNG'sinden; adaptif ön plan %70 ölçek, arka plan #8D3F18). `scripts/hazirla.js android` bunları `cap add android`'den sonra projenin `res` klasörüne kopyalar.
 - Açılış görseli: eski Android'de `android-res/drawable/splash.png` (tüm yoğunluk klasörlerine kopyalanır); Android 12+ sistem sadece simgeyi gösterir. Oyun içinde ayrıca `www/assets/acilis.jpg` ilk açılışta ≥1,8 sn gösterilir (index.html `#acilis`, game.js create).
 - İmzalı AAB: GitHub Secrets'ta `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` olunca workflow `oyun-yayin.aab` üretir (Releases > son). Anahtar bu oyuna özel (alias `digpopeyedug`, 10000 gün). Anahtar dosyası ve şifre repoda DEĞİL; kullanıcıda saklanıyor. Play App Signing açık tutulmalı.
+
+## v0.56 - Boş bantlar dolduruldu
+- Ekran 720x1280'den uzun/genişse (FIT ölçekleme) kalan bantlar artık koyu değil: canvas'taki gökyüzü/kum sınırının (ALT=994) ekrandaki yerinin üstü gökyüzü degradesi (#5bb8f0 -> #bfe9ff), altı kum dokusu (`doku_kum.png`).
+- Kod: `game.js` sonunda `bantlariDoldur()`. Kum `#kumBant` (fixed div) ile döşenir; ölçek ve dikey kaydırma `altKaya()` ile aynı, ek yeri görünmez. Pencere/ekran boyutu değişince yeniden hesaplanır. Oyun mantığı/koordinatlar değişmedi.
+- Yapılmadı (isteğe bağlı): üst arayüzü (Score, can, ses) üst banda taşımak.

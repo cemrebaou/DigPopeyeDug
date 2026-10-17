@@ -1919,4 +1919,34 @@ window.oyun = new Phaser.Game({
   scene: [Oyun]
 });
 
+// Ekran oyun alanından uzun/geniş olunca kalan boş bantları doldur (oyun mantığı değişmez):
+// canvas'ın gökyüzü/kum sınırı (ALT) ekranda nerede ise, onun üstü gökyüzü, altı kum dokusu olur.
+// Kum dokusu canvas'taki alt kum (altKaya) ile aynı ölçek ve hizada döşenir, böylece ek yeri görünmez.
+const KUM_IMG = new Image();
+KUM_IMG.src = "assets/doku_kum.png";
+function bantlariDoldur() {
+  const cv = window.oyun && window.oyun.canvas;
+  if (!cv || !KUM_IMG.complete || !KUM_IMG.naturalHeight) return;
+  const r = cv.getBoundingClientRect();
+  if (!r.height) return;
+  const s = r.height / H, sinir = r.top + ALT * s;
+  document.body.style.background = `linear-gradient(to bottom, #5bb8f0 0px, #5bb8f0 ${r.top}px, #bfe9ff ${sinir}px)`;
+  let kum = document.getElementById("kumBant");
+  if (!kum) {
+    kum = document.createElement("div");
+    kum.id = "kumBant";
+    kum.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:url(assets/doku_kum.png);background-repeat:repeat";
+    document.body.appendChild(kum);
+  }
+  const tw = KUM_IMG.naturalWidth * s, th = KUM_IMG.naturalHeight * s;
+  const bas = -(ALAN_H % KUM_IMG.naturalHeight) * s; // altKaya() ile aynı dikey kaydırma
+  kum.style.top = sinir + "px";
+  kum.style.backgroundSize = `${tw}px ${th}px`;
+  kum.style.backgroundPosition = `${r.left}px ${bas}px`;
+}
+KUM_IMG.onload = bantlariDoldur;
+window.oyun.events.once("ready", bantlariDoldur);
+window.oyun.scale.on("resize", () => setTimeout(bantlariDoldur, 0));
+window.addEventListener("resize", () => setTimeout(bantlariDoldur, 60));
+
 Ads.baslat();

@@ -6,7 +6,7 @@
   <title>DigPopeyeDug</title>
   <style>
     html, body { margin: 0; height: 100%; background: #2b1d12; overflow: hidden; touch-action: none; user-select: none; }
-    #oyun { width: 100vw; height: 100vh; }
+    #oyun { width: 100vw; height: 100vh; position: relative; z-index: 1; } /* boş bant dolgusunun (#kumBant, game.js) üstünde */
     /* Açılış görseli: oyun yüklenene kadar görünür, sonra solarak kalkar (game.js > create) */
     #acilis { position: fixed; inset: 0; z-index: 10; background: #8d3f18 url(assets/acilis.jpg) center / cover no-repeat; transition: opacity .5s; }
   </style>
