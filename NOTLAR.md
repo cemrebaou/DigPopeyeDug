@@ -262,3 +262,7 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
   - Üst kattan sağdaki iniş boşluğuyla (`..`) koridora iniliyor,
   - Koridordan sola doğru kazarak ilk kattaki yengeç ve ahtapota ulaşılıyor,
   - Soldaki boşluktan (`##..`) alt kata inilip alt cepler kazılarak temizleniyor.
+
+## v0.59 - Kötü Bölüm Kaldırıldı
+- Eski 56. bölüm (toprak cepleri) oyun akışına ve kazma mekaniklerine uymadığı için tamamen silindi.
+- Toplam bölüm sayısı 64 oldu (önceki 57. bölüm artık 56. bölüm).
