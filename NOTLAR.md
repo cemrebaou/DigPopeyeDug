@@ -274,3 +274,6 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 - Android manifeste `AD_ID` izni eklendi (hazirla.js).
 - Bölüm ipucu hem düz yazı hem `{ tr, en }` olabilir.
 - Yayından önce: `config.js > reklam.testModu` false yapılmalı. app-ads.txt geliştirici sitesinde olmalı: `google.com, pub-7983529419004158, DIRECT, f08c47fec0942fa0`.
+
+## v0.61
+- Yayın modu: `reklam.testModu` false. Gerçek reklam kimlikleri kullanılır, Android manifestte gerçek AdMob uygulama kimliği yazılır. Kendi cihazında reklama TIKLAMA (hesap riski).
