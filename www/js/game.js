@@ -123,9 +123,9 @@ const YAZI = { fontFamily: "Arial Black, Arial", fontStyle: "bold", color: "#fff
 // Dil: varsayılan İngilizce, bayrak düğmesiyle Türkçe'ye geçilir. Seçim kaydedilir.
 const METIN = {
   en: { level: "Level", score: "Score", hint: "Tap the hatches to open them!", levels: "LEVELS", done: "Level Complete!", over: "Game Over",
-        next: "Next Level", harder: "Restart, Harder!", ad: "Watch Ad, Continue", startOver: "Start Over" },
+        next: "Next Level", harder: "Restart, Harder!", ad: "Watch Ad, Continue", startOver: "Start Over", adFail: "Ad not available, try again" },
   tr: { level: "Bölüm", score: "Skor", hint: "Kapaklara dokun, açılsın!", levels: "BÖLÜMLER", done: "Bölüm Tamam!", over: "Oyun Bitti",
-        next: "Sonraki Bölüm", harder: "Daha Zor Baştan Başla", ad: "Reklam izle, devam et", startOver: "Baştan Başla" }
+        next: "Sonraki Bölüm", harder: "Daha Zor Baştan Başla", ad: "Reklam izle, devam et", startOver: "Baştan Başla", adFail: "Reklam yüklenemedi, tekrar dene" }
 };
 let DIL = kayitOku("dpd_dil", "en");
 if (!METIN[DIL]) DIL = "en";
@@ -438,7 +438,7 @@ class Oyun extends Phaser.Scene {
   // ---------- Arayüz ----------
   skorMetni() { return metin("score") + ": " + this.skor; }
   bolumMetni() { return metin("level") + " " + (this.bolum + 1); }
-  ipucuMetni() { const h = BOLUMLER[this.bolum].ipucu; return h ? h[DIL] : metin("hint"); }
+  ipucuMetni() { const h = BOLUMLER[this.bolum].ipucu; return h ? (typeof h === "string" ? h : h[DIL] || h.en) : metin("hint"); } // ipucu düz yazı ya da { tr, en } olabilir
 
   arayuz() {
     // Bölüm ve skor sol üstte alt alta, canlar ortada, sağ üstte butonlar (yeniden, ses, dil).
@@ -1876,12 +1876,14 @@ class Oyun extends Phaser.Scene {
       }));
     } else {
       // Canlar bitti: reklam izleyip kalınan bölümden tam canla devam et, ya da en baştan başla
+      const hata = this.add.text(W / 2, 910, "", { ...YAZI, fontSize: "26px", color: "#ffd1d1", strokeThickness: 6 }).setOrigin(0.5);
+      grup.add(hata);
       grup.add(this.barButon(W / 2, 820, "bar_mor", metin("ad"), async () => {
         if (mesgul) return;
         mesgul = true;
         const izlendi = await Ads.odulluIzle();
         mesgul = false;
-        if (!izlendi) return;
+        if (!izlendi) { hata.setText(metin("adFail")); return; } // reklam yok ya da yarıda kapatıldı: tekrar denenebilir
         kayitYaz("dpd_can", CAN_MAX);
         this.scene.restart({ bolum: this.bolum, skor: this.baslangicSkor, tur: this.tur });
       }));

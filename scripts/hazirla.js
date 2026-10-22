@@ -39,6 +39,8 @@ if (adim === "android") {
   if (!m.includes("gms.ads.APPLICATION_ID")) {
     m = m.replace(/<application([^>]*)>/, `<application$1>\n        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="@string/admob_app_id" />`);
   }
+  // Android 13+ için reklam kimliği izni (AdMob ister; Play Console'daki "Reklam kimliği" beyanıyla uyumlu)
+  if (!m.includes("permission.AD_ID")) m = m.replace("<application", '<uses-permission android:name="com.google.android.gms.permission.AD_ID" />\n    <application');
   if (!m.includes("screenOrientation")) m = m.replace("<activity", '<activity\n            android:screenOrientation="portrait"');
   fs.writeFileSync(man, m);
 

@@ -266,3 +266,11 @@ Hepsi oyunda doğru sırayla oynanıp kazanıldı; tuzaklar da tek tek denendi.
 ## v0.59 - Kötü Bölüm Kaldırıldı
 - Eski 56. bölüm (toprak cepleri) oyun akışına ve kazma mekaniklerine uymadığı için tamamen silindi.
 - Toplam bölüm sayısı 64 oldu (önceki 57. bölüm artık 56. bölüm).
+
+## v0.60 — Reklam sağlamlaştırma
+- `ads.js`: reklamın gerçekten KAPANDIĞI olaylardan (interstitialAdDismissed, onRewardedVideoAdDismissed, appOpenAdClosed) beklenir. Önceden "göster" çağrısı reklam kapanmadan bitince, kapanışta uygulamaya "geri döndün" sanılıp üst üste açılış reklamı çıkabiliyordu.
+- Ödüllü reklam sadece ödül (onRewardedVideoAdReward) kazanılırsa true; yarıda kapatılırsa false ve ekranda "Ad not available, try again" yazar (tekrar denenebilir).
+- Geçiş reklamı gösterilemezse sayaç sıfırlanmaz, bir sonraki bölümde tekrar denenir. Açılış reklamları arası en az 60 sn.
+- Android manifeste `AD_ID` izni eklendi (hazirla.js).
+- Bölüm ipucu hem düz yazı hem `{ tr, en }` olabilir.
+- Yayından önce: `config.js > reklam.testModu` false yapılmalı. app-ads.txt geliştirici sitesinde olmalı: `google.com, pub-7983529419004158, DIRECT, f08c47fec0942fa0`.
